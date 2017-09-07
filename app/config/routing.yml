@@ -1,0 +1,3 @@
+runescape_lookup:
+    resource: "@RuneScapeLookupBundle/Controller/"
+    type:     annotation
