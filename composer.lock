@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "c0a49457919a1d1ae98a8074ba6f7c57",
+    "content-hash": "5a1f57efb3730088abab350017628cfa",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2252,16 +2252,16 @@
         },
         {
             "name": "villermen/runescape-lookup-commons",
-            "version": "v1.0.1",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/villermen/runescape-lookup-commons.git",
-                "reference": "32dc1476c9c4c5cbb8775da5285ae36e00275f87"
+                "reference": "9eaf1b34b45caefac719ef78ca0127fdfdd4c794"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/32dc1476c9c4c5cbb8775da5285ae36e00275f87",
-                "reference": "32dc1476c9c4c5cbb8775da5285ae36e00275f87",
+                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/9eaf1b34b45caefac719ef78ca0127fdfdd4c794",
+                "reference": "9eaf1b34b45caefac719ef78ca0127fdfdd4c794",
                 "shasum": ""
             },
             "require": {
@@ -2281,7 +2281,7 @@
                 "MIT"
             ],
             "description": "A PHP library containing RuneScape lookup components.",
-            "time": "2017-09-08T06:49:03+00:00"
+            "time": "2017-09-08T20:24:53+00:00"
         }
     ],
     "packages-dev": [
