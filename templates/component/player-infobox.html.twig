@@ -1,0 +1,25 @@
+<div class="infobox">
+    <div class="infobox-avatar avatar-chat" style="background-image: url('{{ player.chatHeadUrl }}')"></div>
+
+    <div class="infobox-text">
+        <h1>{{ player.name }}</h1>
+
+        <p>
+            <a href="{{ player.adventurersLogUrl }}">Adventurer's log</a>
+
+            {% if mode == "compare" %}
+                | <a href="{{ path("app_lookup_player", {"name": player.name}) }}">Look up</a>
+            {% endif %}
+
+            {% if not tracked %}
+                | <a href="{{ path("app_lookup_player", {"name": player.name, "track": true}) }}">Track</a>
+            {% endif %}
+        </p>
+
+        <p>
+            Combat level: {{ player.highscore.getCombatLevel(true) }} ({{ player.highscore.getCombatLevel(false) }}+{{ player.highscore.getCombatLevel(true) - player.highscore.getCombatLevel(false) }})
+        </p>
+    </div>
+
+    <div class="infobox-avatar avatar-body" style="background-image: url('{{ player.fullBodyUrl }}')"></div>
+</div>

@@ -34,7 +34,7 @@
                 // Clicking on tables with "row-select" class causes toggling of a "selected" class
                 $("table.row-select tr").click(function(){
                     // Clear selected for this table
-                    $(this).closest("table").find(".selected").removeClass("selected");
+                    $(this).closest("table").find("tr.selected").removeClass("selected");
                     $(this).addClass("selected");
                 });
 
