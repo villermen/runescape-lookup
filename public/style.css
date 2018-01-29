@@ -29,8 +29,8 @@ input {
 	margin-bottom: 20px;
 	margin-top: 20px;
 }
-.form-lookup,
-.form-compare {
+.lookup-form,
+.compare-form {
 	display: inline-block;
 }
 .swapicon {
@@ -119,7 +119,7 @@ th>a {
 }
 .activity-description {
 }
-.sortable th {
+.dataTable th {
 	cursor: pointer;
 }
 .spacer-cell {

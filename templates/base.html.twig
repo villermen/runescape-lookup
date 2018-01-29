@@ -11,60 +11,38 @@
             <p class="error">{{ error }}</p>
         {% endif %}
 
+        {% if notice is defined and notice is not empty %}
+            <p class="notice">{{ notice }}</p>
+        {% endif %}
+
         {% block body %}{% endblock %}
 
         {% block javascripts %}
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
             <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
             <script>
-                $(document).ready(function() {
-                    $.get = function(name) {
-                        var results = new RegExp("[\?&]" + name + "=([^&#]*)").exec(decodeURIComponent(window.location.href));
-                        if (results == null) {
-                            return "";
-                        }
-                        else {
-                            return results[1] || "";
-                        }
-                    };
+                // Set player1 in compare form after leaving lookup form to keep both in sync
+                $(".lookup-form [name='player1']").blur(function() {
+                    $(".compare-form [name='player1']").val($(this).val());
+                });
 
-                    // TODO: Fix
-                    $(".tracked-player").each(function() {
-                        if ($(this).text().toUpperCase() == $.get("player1").toUpperCase() ||
-                            $(this).text().toUpperCase() == $.get("player2").toUpperCase()) {
-                            $(this).addClass("active");
-                        }
-                    });
+                // Make elements with "data-href" attribute act as anchors
+                $("[data-href]").click(function() {
+                    window.location.href = $(this).data("href");
+                });
 
-                    $(".form-lookup [name='player1']").blur(function() {
-                        $(".form-compare [name='player1']").val($(this).val());
-                    });
+                // Clicking on tables with "row-select" class causes toggling of a "selected" class
+                $("table.row-select tr").click(function(){
+                    // Clear selected for this table
+                    $(this).closest("table").find(".selected").removeClass("selected");
+                    $(this).addClass("selected");
+                });
 
-                    $(".nolifer-table td").click(function() {
-                        var player = $(this).parent().children(":nth-child(2)").text().trim();
-                        location.href = "?player1=" + player;
-                    });
-
-                    $(".tracked-table td").click(function() {
-                        var player = $(this).parent().children(":nth-child(1)").text().trim();
-                        location.href = "?player1=" + player;
-                    });
-
-                    $(".tracked-player").click(function() {
-                        location.href = "?player1=" + $(this).text();
-                    });
-
-                    $(".sortable").dataTable({
-                        paging: false,
-                        searching: false,
-                        info: false,
-                        sorting: []
-                    });
-
-                    $("tr").click(function() {
-                        $("tr.selected").removeClass("selected");
-                        $(this).addClass("selected");
-                    })
+                $(".dataTable").dataTable({
+                    paging: false,
+                    searching: false,
+                    info: false,
+                    sorting: []
                 });
             </script>
         {% endblock %}

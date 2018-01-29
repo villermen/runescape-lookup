@@ -20,12 +20,28 @@ class LookupController extends Controller
     /**
      * @param EntityManagerInterface $entityManager
      * @param TimeKeeper $timeKeeper
+     * @param Request $request
      * @return Response
      *
      * @Route("", name="lookup_index")
      */
-    public function indexAction(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
+    public function indexAction(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper, Request $request)
     {
+        // Redirect to other actions from index for backwards compatibility
+        $name1 = $request->query->get("player1");
+        $name2 = $request->query->get("player2");
+
+        if ($name1 && $name2) {
+            return $this->redirectToRoute("app_lookup_compare", [
+                "name1" => $name1,
+                "name2" => $name2
+            ]);
+        } elseif ($name1) {
+            return $this->redirectToRoute("app_lookup_player", [
+                "name" => $name1
+            ]);
+        }
+
         $dailyRecords = $entityManager->getRepository(DailyRecord::class)->findBy(
             ["date" => new DateTime()],
             ["xpGain" => "desc"]
@@ -43,30 +59,6 @@ class LookupController extends Controller
             "timezone" => date_default_timezone_get(),
             "timeTillUpdate" => (new DateTime())->diff($timeKeeper->getUpdateTime(1))->format("%h:%I")
         ]);
-    }
-
-    /**
-     * @return Response
-     *
-     * @Route("/form", name="lookup_form")
-     */
-    public function formAction(Request $request)
-    {
-        $name1 = $request->query->get("player1");
-        $name2 = $request->query->get("player2");
-
-        if ($name1 && $name2) {
-            return $this->redirectToRoute("app_lookup_compare", [
-                "name1" => $name1,
-                "name2" => $name2
-            ]);
-        } elseif ($name1) {
-            return $this->redirectToRoute("app_lookup_player", [
-                "name" => $name1
-            ]);
-        } else {
-            return $this->redirectToRoute("app_lookup_index");
-        }
     }
 
     /**

@@ -1,7 +1,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
-    update_time: '3:00'
+    env(UPDATE_TIME): '3:00'
+    update_time: '%env(UPDATE_TIME)%'
 
 services:
     # default configuration for services in *this* file
