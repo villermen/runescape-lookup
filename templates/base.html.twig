@@ -2,12 +2,71 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>{% block title %}{% endblock %}{% if block(title) %} | {% endif %}Viller's RuneScape lookup tools</title>
-        {% block stylesheets %}{% endblock %}
-        {#<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />#}
+        <title>{% block title %}{% endblock %}{% if block("title") %} | {% endif %}Viller's RuneScape lookup tools</title>
+        <link rel="stylesheet" href="{{ asset("style.css") }}" />
     </head>
+
     <body>
+        {% if error is defined and error is not empty %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
         {% block body %}{% endblock %}
-        {% block javascripts %}{% endblock %}
+
+        {% block javascripts %}
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+            <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
+            <script>
+                $(document).ready(function() {
+                    $.get = function(name) {
+                        var results = new RegExp("[\?&]" + name + "=([^&#]*)").exec(decodeURIComponent(window.location.href));
+                        if (results == null) {
+                            return "";
+                        }
+                        else {
+                            return results[1] || "";
+                        }
+                    };
+
+                    // TODO: Fix
+                    $(".tracked-player").each(function() {
+                        if ($(this).text().toUpperCase() == $.get("player1").toUpperCase() ||
+                            $(this).text().toUpperCase() == $.get("player2").toUpperCase()) {
+                            $(this).addClass("active");
+                        }
+                    });
+
+                    $(".form-lookup [name='player1']").blur(function() {
+                        $(".form-compare [name='player1']").val($(this).val());
+                    });
+
+                    $(".nolifer-table td").click(function() {
+                        var player = $(this).parent().children(":nth-child(2)").text().trim();
+                        location.href = "?player1=" + player;
+                    });
+
+                    $(".tracked-table td").click(function() {
+                        var player = $(this).parent().children(":nth-child(1)").text().trim();
+                        location.href = "?player1=" + player;
+                    });
+
+                    $(".tracked-player").click(function() {
+                        location.href = "?player1=" + $(this).text();
+                    });
+
+                    $(".sortable").dataTable({
+                        paging: false,
+                        searching: false,
+                        info: false,
+                        sorting: []
+                    });
+
+                    $("tr").click(function() {
+                        $("tr.selected").removeClass("selected");
+                        $(this).addClass("selected");
+                    })
+                });
+            </script>
+        {% endblock %}
     </body>
 </html>

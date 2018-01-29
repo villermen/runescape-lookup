@@ -1,0 +1,44 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <h1>Viller's RuneScape lookup tools</h1>
+    <p>
+        Press enter in the first box to do a single player lookup, and in the second for a comparison.
+    </p>
+
+    {{ include("component/lookup-form.html.twig") }}
+
+    <h2>Yesterday's nolifers</h2>
+
+    <p>
+        Stats update daily at {{ updateTime }} {{ timezone }} (that's in {{ timeTillUpdate }}).
+    </p>
+
+    <table class="nolifer-table sortable">
+        <thead>
+            <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
+        </thead>
+
+        <tbody>
+            {% for record in dailyRecords %}
+                <tr data-href="{{ path("app_lookup_player", {"name": record.player.name}) }}">
+                    <td>{{ record.skill.name }}</td>
+                    <td>{{ record.player.name }}</td>
+                    <td>{{ record.xpGain|number_format(0, ".", ",") }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if trackedPlayers is not empty %}
+        <h2>Tracked players</h2>
+
+        <div class="tracked-players">
+            {% for player in trackedPlayers %}
+                <div class="tracked-player {% if player.active %}tracked-player--active{% else %}tracked-player--inactive{% endif %}">
+                    {{ player.name }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

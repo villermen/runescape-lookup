@@ -33,7 +33,7 @@ class TrackedHighScore extends HighScore
     /**
      * @var bool
      *
-     * @ORM\Column(name="oldschool", type="boolean")
+     * @ORM\Column(name="oldschool", type="boolean", )
      */
     protected $oldSchool;
 
@@ -48,7 +48,7 @@ class TrackedHighScore extends HighScore
      * @var TrackedPlayer
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer", inversedBy="trackedHighScores")
-     * @ORM\JoinColumn(name="player")
+     * @ORM\JoinColumn(name="player", nullable=false)
      */
     protected $player;
 

@@ -8,8 +8,6 @@ use Villermen\RuneScape\HighScore\HighScoreSkillComparison;
 use Villermen\RuneScape\Player;
 
 /**
- * TODO: Extend for activities
- *
  * @ORM\MappedSuperclass()
  */
 class Record
@@ -34,7 +32,7 @@ class Record
      * @var Player
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer")
-     * @ORM\JoinColumn(name="player")
+     * @ORM\JoinColumn(name="player", nullable=false)
      */
     protected $player;
 
@@ -53,20 +51,6 @@ class Record
     protected $xpGain;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="level_gain", type="integer")
-     */
-    protected $levelGain;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="rank_gain", type="integer")
-     */
-    protected $rankGain;
-
-    /**
      * Constructs a DailyHighScore from a skill comparison.
      *
      * @param Player $player
@@ -77,8 +61,6 @@ class Record
         $this->player = $player;
         $this->skill = $comparison->getSkill();
         $this->xpGain = $comparison->getXpDifference();
-        $this->levelGain = $comparison->getLevelDifference();
-        $this->rankGain = $comparison->getRankDifference();
         $this->date = new DateTime();
     }
 

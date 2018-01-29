@@ -2,8 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Villermen\RuneScape\Player;
 use Villermen\RuneScape\RuneScapeException;
@@ -29,14 +27,6 @@ class TrackedPlayer extends Player
     protected $name;
 
     /**
-     * @var Collection|TrackedHighScore[]
-     *
-     * @ORM\OneToMany(targetEntity="App\Entity\TrackedHighScore", mappedBy="player", cascade={"all"}, fetch="EXTRA_LAZY")
-     * @ORM\OrderBy({"date" = "DESC"})
-     */
-    protected $trackedHighScores;
-
-    /**
      * @var bool
      *
      * @ORM\Column(name="active", type="boolean")
@@ -50,8 +40,6 @@ class TrackedPlayer extends Player
     public function __construct(string $name)
     {
         parent::__construct($name);
-
-        $this->trackedHighScores = new ArrayCollection();
     }
 
     /**
@@ -66,17 +54,8 @@ class TrackedPlayer extends Player
     {
         $data = $this->getHighScoreData($oldSchool, $timeOut);
         $trackedHighScore = new TrackedHighScore($data, $this, $oldSchool);
-        $this->trackedHighScores->add($trackedHighScore);
 
         return $trackedHighScore;
-    }
-
-    /**
-     * @return Collection|TrackedHighScore[]
-     */
-    public function getTrackedHighScores()
-    {
-        return $this->trackedHighScores;
     }
 
     /**

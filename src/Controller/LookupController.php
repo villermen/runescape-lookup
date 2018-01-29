@@ -2,45 +2,82 @@
 
 namespace App\Controller;
 
-use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\DailyRecord;
 use App\Entity\TrackedPlayer;
+use App\Service\TimeKeeper;
+use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Villermen\RuneScape\RuneScapeException;
 
+/**
+ * @Route("/", name="app_")
+ */
 class LookupController extends Controller
 {
     /**
      * @param EntityManagerInterface $entityManager
+     * @param TimeKeeper $timeKeeper
      * @return Response
-     * @throws RuneScapeException
      *
-     * @Route("/")
+     * @Route("", name="lookup_index")
      */
-    public function indexAction(EntityManagerInterface $entityManager)
+    public function indexAction(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
     {
-        // TODO: Daily high score
-        // TODO: Personal daily high score
+        $dailyRecords = $entityManager->getRepository(DailyRecord::class)->findBy(
+            ["date" => new DateTime()],
+            ["xpGain" => "desc"]
+        );
 
-        $player = new TrackedPlayer("Villermen");
-        $trackedHighScore = $player->addTrackedHighScore();
+        $trackedPlayers = $entityManager->getRepository(TrackedPlayer::class)->findBy(
+            [],
+            ["name" => "asc"]
+        );
 
-        dump($player);
-        dump($trackedHighScore);
-
-        return new Response("index");
+        return $this->render("lookup/index.html.twig", [
+            "dailyRecords" => $dailyRecords,
+            "trackedPlayers" => $trackedPlayers,
+            "updateTime" => $timeKeeper->getUpdateTime(1)->format("G:i"),
+            "timezone" => date_default_timezone_get(),
+            "timeTillUpdate" => (new DateTime())->diff($timeKeeper->getUpdateTime(1))->format("%h:%I")
+        ]);
     }
 
     /**
-     * @param string $name1
      * @return Response
      *
-     * @Route("/{name1}")
+     * @Route("/form", name="lookup_form")
      */
-    public function lookupAction(string $name1)
+    public function formAction(Request $request)
     {
-        return new Response("lookup " . htmlspecialchars($name1));
+        $name1 = $request->query->get("player1");
+        $name2 = $request->query->get("player2");
+
+        if ($name1 && $name2) {
+            return $this->redirectToRoute("app_lookup_compare", [
+                "name1" => $name1,
+                "name2" => $name2
+            ]);
+        } elseif ($name1) {
+            return $this->redirectToRoute("app_lookup_player", [
+                "name" => $name1
+            ]);
+        } else {
+            return $this->redirectToRoute("app_lookup_index");
+        }
+    }
+
+    /**
+     * @param string $name
+     * @return Response
+     *
+     * @Route("/{name}", name="lookup_player")
+     */
+    public function playerAction(string $name)
+    {
+        return new Response("lookup " . htmlspecialchars($name));
     }
 
     /**
@@ -48,7 +85,7 @@ class LookupController extends Controller
      * @param string $name2
      * @return Response
      *
-     * @Route("/{name1}/{name2}")
+     * @Route("/{name1}/{name2}", name="lookup_compare")
      */
     public function compareAction(string $name1, string $name2)
     {
