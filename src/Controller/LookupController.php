@@ -7,11 +7,14 @@ use App\Entity\TrackedPlayer;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Villermen\RuneScape\RuneScapeException;
 
 class LookupController extends Controller
 {
     /**
+     * @param EntityManagerInterface $entityManager
      * @return Response
+     * @throws RuneScapeException
      *
      * @Route("/")
      */

@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Villermen\RuneScape\Player;
+use Villermen\RuneScape\RuneScapeException;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TrackedPlayerRepository")
@@ -42,6 +43,10 @@ class TrackedPlayer extends Player
      */
     protected $active = true;
 
+    /**
+     * @param string $name
+     * @throws RuneScapeException
+     */
     public function __construct(string $name)
     {
         parent::__construct($name);
@@ -55,6 +60,7 @@ class TrackedPlayer extends Player
      * @param bool $oldSchool
      * @param int $timeOut
      * @return TrackedHighScore
+     * @throws RuneScapeException
      */
     public function addTrackedHighScore($oldSchool = false, $timeOut = 5): TrackedHighScore
     {

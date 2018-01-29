@@ -52,9 +52,15 @@ class TrackedHighScore extends HighScore
      */
     protected $player;
 
+    /**
+     * @param string $data
+     * @param TrackedPlayer $player
+     * @param bool $oldSchool
+     * @throws \Villermen\RuneScape\RuneScapeException
+     */
     public function __construct(string $data, TrackedPlayer $player, bool $oldSchool)
     {
-        parent::__construct($data);
+        parent::__construct($player, $data);
 
         $this->data = $data;
 
@@ -66,7 +72,7 @@ class TrackedHighScore extends HighScore
     /**
      * @return TrackedPlayer
      */
-    public function getPlayer(): TrackedPlayer
+    public function getTrackedPlayer(): TrackedPlayer
     {
         return $this->player;
     }
