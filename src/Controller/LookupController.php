@@ -107,22 +107,34 @@ class LookupController extends Controller
         }
 
         if ($player) {
+            // Fetch live stats
             try {
-                // Fetch live stats
                 $stats = $player->getHighScore($request->query->has("oldschool"));
             } catch (RuneScapeException $exception) {
                 $error = "Could not fetch player stats.";
             }
-        }
 
-        if ($player && $player instanceof TrackedPlayer) {
             // Fetch and compare tracked stats
-            $trackedHighScoreRepository = $entityManager->getRepository(TrackedHighScore::class);
+            if ($stats && $player instanceof TrackedPlayer) {
+                $trackedHighScoreRepository = $entityManager->getRepository(TrackedHighScore::class);
 
-            $highScoreToday = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(0)]);
-            if ($highScoreToday) {
-                // TODO: Full HighScore comparison instead of per skill?
+                $highScoreToday = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(0)]);
+                if ($highScoreToday) {
+                    $trainedToday = $highScoreToday->compareTo($stats);
+
+                    $highScoreYesterday = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(-1)]);
+                    if ($highScoreYesterday) {
+                        $trainedYesterday = $highScoreYesterday->compareTo($highScoreToday);
+                    }
+
+                    $highScoreWeek = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(-7)]);
+                    if ($highScoreWeek) {
+                        $trainedWeek = $highScoreWeek->compareTo($highScoreToday);
+                    }
+                }
             }
+
+            // TODO: Activity feed (merged with db data)
         }
 
         return $this->render("lookup/player.html.twig", [

@@ -13,7 +13,7 @@ use Villermen\RuneScape\RuneScapeException;
 class TrackedPlayer extends Player
 {
     /**
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(type="integer")
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
      */
@@ -22,14 +22,14 @@ class TrackedPlayer extends Player
     /**
      * @inheritdoc
      *
-     * @ORM\Column(name="name", type="string", length=12)
+     * @ORM\Column(type="string", length=12, unique=true)
      */
     protected $name;
 
     /**
      * @var bool
      *
-     * @ORM\Column(name="active", type="boolean")
+     * @ORM\Column(type="boolean")
      */
     protected $active = true;
 

@@ -9,7 +9,7 @@ use Villermen\RuneScape\HighScore\HighScore;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TrackedHighScoreRepository")
  * @ORM\Table(name="highscore", uniqueConstraints={
- *     @ORM\UniqueConstraint(columns={"player", "date", "oldSchool"})
+ *     @ORM\UniqueConstraint(columns={"player_id", "date", "old_school"})
  * })
  */
 class TrackedHighScore extends HighScore
@@ -17,7 +17,7 @@ class TrackedHighScore extends HighScore
     /**
      * @var int
      *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(type="integer")
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
      */
@@ -26,21 +26,21 @@ class TrackedHighScore extends HighScore
     /**
      * @inheritdoc
      *
-     * @ORM\Column(name="data", type="string")
+     * @ORM\Column(type="string", length=10000)
      */
     protected $data;
 
     /**
      * @var bool
      *
-     * @ORM\Column(name="oldschool", type="boolean", )
+     * @ORM\Column(type="boolean")
      */
     protected $oldSchool;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="date", type="date")
+     * @ORM\Column(type="date")
      */
     protected $date;
 
@@ -48,7 +48,7 @@ class TrackedHighScore extends HighScore
      * @var TrackedPlayer
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer", inversedBy="trackedHighScores")
-     * @ORM\JoinColumn(name="player", nullable=false)
+     * @ORM\JoinColumn(nullable=false)
      */
     protected $player;
 

@@ -4,18 +4,21 @@ namespace App\Entity;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Villermen\RuneScape\HighScore\HighScoreSkillComparison;
+use Villermen\RuneScape\HighScore\HighScoreComparisonSkill;
 use Villermen\RuneScape\Player;
 
 /**
  * @ORM\MappedSuperclass()
+ * @ORM\Table(uniqueConstraints={
+ *     @ORM\UniqueConstraint(columns={"id", "date", "player_id"})
+ * })
  */
 class Record
 {
     /**
      * @var int
      *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(type="integer")
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
      */
@@ -24,7 +27,7 @@ class Record
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="date", type="date")
+     * @ORM\Column(type="date")
      */
     protected $date;
 
@@ -32,21 +35,21 @@ class Record
      * @var Player
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer")
-     * @ORM\JoinColumn(name="player", nullable=false)
+     * @ORM\JoinColumn(nullable=false)
      */
     protected $player;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="skill", type="skill")
+     * @ORM\Column(type="skill")
      */
     protected $skill;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="xp_gain", type="integer")
+     * @ORM\Column(type="integer")
      */
     protected $xpGain;
 
@@ -54,9 +57,9 @@ class Record
      * Constructs a DailyHighScore from a skill comparison.
      *
      * @param Player $player
-     * @param HighScoreSkillComparison $comparison
+     * @param HighScoreComparisonSkill $comparison
      */
-    public function __construct(Player $player, HighScoreSkillComparison $comparison)
+    public function __construct(Player $player, HighScoreComparisonSkill $comparison)
     {
         $this->player = $player;
         $this->skill = $comparison->getSkill();

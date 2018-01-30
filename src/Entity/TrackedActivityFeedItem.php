@@ -24,9 +24,16 @@ class TrackedActivityFeedItem extends ActivityFeedItem
     protected $databaseId;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="guid", type="string")
+     */
+    protected $id;
+
+    /**
      * @var DateTime
      *
-     * @ORM\Column(name="time", type="datetime")
+     * @ORM\Column(type="datetime")
      */
     protected $time;
 
@@ -34,21 +41,21 @@ class TrackedActivityFeedItem extends ActivityFeedItem
      * @var Player
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer")
-     * @ORM\JoinColumn(name="player", nullable=false)
+     * @ORM\JoinColumn(nullable=false)
      */
     protected $player;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="title", type="string")
+     * @ORM\Column(type="string", length=1000)
      */
     protected $title;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="description", type="string")
+     * @ORM\Column(type="string", length=10000)
      */
     protected $description;
 
