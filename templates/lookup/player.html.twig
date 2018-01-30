@@ -1,6 +1,8 @@
 {% extends "base.html.twig" %}
 
 {% block body %}
+    {{ include("component/lookup-form.html.twig") }}
+
     {% if not error %}
         <div class="infobox-container">
             {{ include("component/player-infobox.html.twig", {"player": player, "mode": "lookup", "tracked": tracked}) }}

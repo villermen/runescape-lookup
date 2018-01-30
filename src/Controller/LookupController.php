@@ -12,48 +12,54 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Villermen\RuneScape\HighScore\HighScoreSkill;
-use Villermen\RuneScape\HighScore\HighScoreSkillComparison;
 use Villermen\RuneScape\Player;
 use Villermen\RuneScape\RuneScapeException;
 
 /**
- * @Route("/", name="app_")
+ * @Route("/", name="lookup_")
  */
 class LookupController extends Controller
 {
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param TimeKeeper $timeKeeper
      * @param Request $request
      * @return Response
      *
-     * @Route("", name="lookup_index")
+     * @Route("", name="index")
      */
-    public function indexAction(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper, Request $request)
+    public function indexAction(Request $request)
     {
-        // Redirect to other actions from index for backwards compatibility
+        // Forward to other actions based on parameters
         $name1 = $request->query->get("player1");
         $name2 = $request->query->get("player2");
 
-        if ($name1) {
-            // Remove name query parameters but pass on the others
-            $query = array_filter($request->query->all(), function($parameter) {
-                return !in_array($parameter, ["player1", "player2"]);
-            }, ARRAY_FILTER_USE_KEY);
+        // Remove player parameters but pass on the others when forwarding
+        $query = array_filter($request->query->all(), function($parameter) {
+            return !in_array($parameter, ["player1", "player2"]);
+        }, ARRAY_FILTER_USE_KEY);
 
+        if ($name1) {
             if ($name2) {
-                return $this->redirectToRoute("app_lookup_compare", array_merge([
+                return $this->forward(self::class . "::compareAction", array_merge([
                     "name1" => $name1,
                     "name2" => $name2
                 ], $query));
             }
 
-            return $this->redirectToRoute("app_lookup_player", array_merge([
+            return $this->forward(self::class . "::playerAction", array_merge([
                 "name" => $name1
             ], $query));
         }
 
+        return $this->forward(self::class . "::overviewAction", [], $query);
+    }
+
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param TimeKeeper $timeKeeper
+     * @return Response
+     */
+    public function overviewAction(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
+    {
         $dailyRecords = $entityManager->getRepository(DailyRecord::class)->findBy(
             ["date" => new DateTime()],
             ["xpGain" => "desc"]
@@ -64,7 +70,7 @@ class LookupController extends Controller
             ["name" => "asc"]
         );
 
-        return $this->render("lookup/index.html.twig", [
+        return $this->render("lookup/overview.html.twig", [
             "dailyRecords" => $dailyRecords,
             "trackedPlayers" => $trackedPlayers,
             "updateTime" => $timeKeeper->getUpdateTime(1)->format("G:i"),
@@ -79,8 +85,6 @@ class LookupController extends Controller
      * @param Request $request
      * @param TimeKeeper $timeKeeper
      * @return Response
-     *
-     * @Route("/{name}", name="lookup_player")
      */
     public function playerAction(string $name, EntityManagerInterface $entityManager, Request $request,
         TimeKeeper $timeKeeper)
@@ -128,7 +132,8 @@ class LookupController extends Controller
             "tracked" => $player instanceof TrackedPlayer,
             "trainedToday" => $trainedToday,
             "trainedYesterday" => $trainedYesterday,
-            "trainedWeek" => $trainedWeek
+            "trainedWeek" => $trainedWeek,
+            "name1" => $name
         ]);
     }
 
@@ -136,11 +141,12 @@ class LookupController extends Controller
      * @param string $name1
      * @param string $name2
      * @return Response
-     *
-     * @Route("/{name1}/{name2}", name="lookup_compare")
      */
     public function compareAction(string $name1, string $name2)
     {
-        return new Response("compare " . htmlspecialchars($name1) . " " . htmlspecialchars($name2));
+        return $this->render("lookup/compare.html.twig", [
+            "name1" => $name1,
+            "name2" => $name2
+        ]);
     }
 }

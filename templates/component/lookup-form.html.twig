@@ -2,27 +2,27 @@
 {% set name2 = name2 is defined ? name2 : "" %}
 
 <div class="forms">
-    <form method="get" class="lookup-form" action="{{ path("app_lookup_index") }}">
+    <form method="get" class="lookup-form" action="{{ path("lookup_index") }}">
         <input type="text" name="player1" maxlength="12" placeholder="New user" value="{{ name1 }}" tabindex="1" />
     </form>
 
     <br class="mobile-show" />
 
-    <a href="{{ path("app_lookup_index", {"player1": name2, "player2": name1}) }}" tabindex="3">
+    <a href="{{ path("lookup_index", {"player1": name2, "player2": name1}) }}" tabindex="3">
         <img class="swapicon" src="{{ asset("swapicon.png") }}" alt="Swap players" title="Swap players" />
     </a>
 
     <br class="mobile-show" />
 
-    <form method="get" class="compare-form" action="{{ path("app_lookup_index") }}">
+    <form method="get" class="compare-form" action="{{ path("lookup_index") }}">
         <input type="hidden" name="player1" value="{{ name1 }}" />
         <input type="text" name="player2" value="{{ name2 }}" maxlength="12"
                placeholder="Compare with" tabindex="2" />
     </form>
 </div>
 
-{% if app.request.get("_route") != "app_lookup_index" %}
+{% if name1 %}
     <p class="back">
-        <a href="{{ path("app_lookup_index") }}">Main page</a>
+        <a href="{{ path("lookup_index") }}">Main page</a>
     </p>
 {% endif %}

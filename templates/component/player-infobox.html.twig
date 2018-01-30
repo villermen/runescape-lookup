@@ -8,11 +8,11 @@
             <a href="{{ player.adventurersLogUrl }}">Adventurer's log</a>
 
             {% if mode == "compare" %}
-                | <a href="{{ path("app_lookup_player", {"name": player.name}) }}">Look up</a>
+                | <a href="{{ path("lookup_index", {"player1": player.name}) }}">Look up</a>
             {% endif %}
 
             {% if not tracked %}
-                | <a href="{{ path("app_lookup_player", {"name": player.name, "track": true}) }}">Track</a>
+                | <a href="{{ path("lookup_index", {"player1": player.name, "track": true}) }}">Track</a>
             {% endif %}
         </p>
 
