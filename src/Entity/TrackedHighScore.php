@@ -47,7 +47,7 @@ class TrackedHighScore extends HighScore
     /**
      * @var TrackedPlayer
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer", inversedBy="trackedHighScores")
+     * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer")
      * @ORM\JoinColumn(nullable=false)
      */
     protected $player;

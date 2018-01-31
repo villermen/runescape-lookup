@@ -14,33 +14,92 @@
                     <tr>
                         <th>Skill</th>
                         <th>Level</th>
-                        <th>Xp</th>
+                        <th>XP</th>
                         <th>Rank</th>
-                        <th>Xp to next</th>
+                        <th>XP to next</th>
                         <th>Progress</th>
-                        <?php if ($this->trainedToday): ?>
-                        <th>Trained today</th>
-                        <?php endif; ?>
-                        <?php if ($this->trainedYesterday): ?>
-                        <th>Trained yesterday</th>
-                        <th>Ranked yesterday</th>
-                        <?php endif; ?>
-                        <?php if ($this->trainedLastWeek): ?>
-                        <th>Trained last week</th>
-                        <th>Ranked last week</th>
-                        <?php endif; ?>
-                        <?php if ($this->trainedCustom): ?>
-                        <th>Trained custom</th>
-                        <th>Ranked custom</th>
-                        <?php endif; ?>
-                        <?php if ($this->highscore): ?>
-                        <th>Highscore</th>
-                        <th>Highscore date</th>
-                        <?php endif; ?>
+                        {% if trainedToday %}
+                            <th>Trained today</th>
+                        {% endif %}
+                        {% if trainedYesterday %}
+                            <th>Trained yesterday</th>
+                            <th>Ranked yesterday</th>
+                        {% endif %}
+                        {% if trainedWeek %}
+                            <th>Trained last week</th>
+                            <th>Ranked last week</th>
+                        {% endif %}
+                            {#<th>Highscore</th>#}
+                            {#<th>Highscore date</th>#}
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach($this->stats["skills"] as $skillId => $skill): ?>
+                    {% for skill in stats.skills %}
+                        {% set levelColor = skill.level|red_to_green(0, 69) %}
+                        {% set rankColor = skill.rank|red_to_green(1000000, 1) %}
+                        {% set progressColor = skill.progressToNextLevel|red_to_green %}
+                        <tr>
+                            <td style="color:{{ levelColor }}">
+                                {{ skill.name }}
+                            </td>
+                            <td style="color:{{ levelColor }}">
+                                {{ skill.level(true) }}
+                            </td>
+                            <td style="color:{{ levelColor }}">
+                                {{ skill.xp|number_format(0, ".", ",") }}
+                            </td>
+                            <td style="color:{{ rankColor }}">
+                                {{ skill.rank|number_format(0, ".", ",") }}
+                            </td>
+                            <td style="color:{{ progressColor }}">
+                                {% if skill.xpToNextLevel %}
+                                    {{ skill.xpToNextLevel|number_format(0, ".", ",") }}
+                                {% endif %}
+                            </td>
+                            <td style="color:{{ progressColor }}">
+                                {% if skill.xpToNextLevel %}
+                                    {{ (skill.progressToNextLevel * 100)|number_format(2, ".", ",") }}%
+                                {% endif %}
+                            </td>
+                            <?php if ($this->trainedToday): ?>
+                            <td>
+                                <?php echo $trainedToday; ?>
+                            </td>
+                            <?php endif; ?>
+                            <?php if ($this->trainedYesterday): ?>
+                            <td>
+                                <?php echo $trainedYesterday; ?>
+                            </td>
+                            <td data-order="<?php echo $rankedYesterday; ?>" style="color:<?php echo $rankedYesterdayColor; ?>">
+                                <?php echo $rankedYesterdayFormatted; ?>
+                            </td>
+                            <?php endif; ?>
+                            <?php if ($this->trainedLastWeek): ?>
+                            <td>
+                                <?php echo $trainedLastWeek; ?>
+                            </td>
+                            <td data-order="<?php echo $rankedLastWeek; ?>" style="color:<?php echo $rankedLastWeekColor; ?>">
+                                <?php echo $rankedLastWeekFormatted; ?>
+                            </td>
+                            <?php endif; ?>
+                            <?php if ($this->trainedCustom): ?>
+                            <td>
+                                <?php echo $trainedCustom; ?>
+                            </td>
+                            <td data-order="<?php echo $rankedCustom; ?>" style="color:<?php echo $rankedCustomColor; ?>">
+                                <?php echo $rankedCustomFormatted; ?>
+                            </td>
+                            <?php endif; ?>
+                            <?php if ($this->highscore): ?>
+                            <td>
+                                <?php echo $highscoreFormatted ? $highscoreFormatted : ""; ?>
+                            </td>
+                            <td data-order="<?php echo $highscoreTimestamp; ?>">
+                                <?php echo $highscoreFormatted ? $highscoreDateFormatted : ""; ?>
+                            </td>
+                            <?php endif; ?>
+                        </tr>
+                    {% endfor %}
                     <?php
                         $levelColor = Common::getRedToGreenColor(min(max($skill["level"] - 30, 0), 69) / 69);
                         $rankColor = Common::getRedToGreenColor(1 - min(max($skill["rank"] - 1, 1), 999999) / 999999);
@@ -132,64 +191,6 @@
                     $highscoreDateFormatted = "";
                     }
                     ?>
-                    <tr>
-                        <td style="color:<?php echo $levelColor; ?>">
-                            <?php echo $name; ?>
-                        </td>
-                        <td style="color:<?php echo $levelColor; ?>">
-                            <?php echo $level; ?>
-                        </td>
-                        <td style="color:<?php echo $levelColor; ?>">
-                            <?php echo $xp; ?>
-                        </td>
-                        <td style="color:<?php echo $rankColor; ?>">
-                            <?php echo $rank; ?>
-                        </td>
-                        <td style="color:<?php echo $progressColor; ?>">
-                            <?php echo $xpToNext; ?>
-                        </td>
-                        <td style="color:<?php echo $progressColor; ?>">
-                            <?php echo $progressToNext; ?>
-                        </td>
-                        <?php if ($this->trainedToday): ?>
-                        <td>
-                            <?php echo $trainedToday; ?>
-                        </td>
-                        <?php endif; ?>
-                        <?php if ($this->trainedYesterday): ?>
-                        <td>
-                            <?php echo $trainedYesterday; ?>
-                        </td>
-                        <td data-order="<?php echo $rankedYesterday; ?>" style="color:<?php echo $rankedYesterdayColor; ?>">
-                            <?php echo $rankedYesterdayFormatted; ?>
-                        </td>
-                        <?php endif; ?>
-                        <?php if ($this->trainedLastWeek): ?>
-                        <td>
-                            <?php echo $trainedLastWeek; ?>
-                        </td>
-                        <td data-order="<?php echo $rankedLastWeek; ?>" style="color:<?php echo $rankedLastWeekColor; ?>">
-                            <?php echo $rankedLastWeekFormatted; ?>
-                        </td>
-                        <?php endif; ?>
-                        <?php if ($this->trainedCustom): ?>
-                        <td>
-                            <?php echo $trainedCustom; ?>
-                        </td>
-                        <td data-order="<?php echo $rankedCustom; ?>" style="color:<?php echo $rankedCustomColor; ?>">
-                            <?php echo $rankedCustomFormatted; ?>
-                        </td>
-                        <?php endif; ?>
-                        <?php if ($this->highscore): ?>
-                        <td>
-                            <?php echo $highscoreFormatted ? $highscoreFormatted : ""; ?>
-                        </td>
-                        <td data-order="<?php echo $highscoreTimestamp; ?>">
-                            <?php echo $highscoreFormatted ? $highscoreDateFormatted : ""; ?>
-                        </td>
-                        <?php endif; ?>
-                    </tr>
-                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
