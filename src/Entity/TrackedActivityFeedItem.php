@@ -11,6 +11,7 @@ use Villermen\RuneScape\Player;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TrackedActivityFeedItemRepository")
  * @ORM\Table(name="activity_feed_item")
+ * @ORM\HasLifecycleCallbacks()
  */
 class TrackedActivityFeedItem extends ActivityFeedItem
 {
@@ -90,5 +91,13 @@ class TrackedActivityFeedItem extends ActivityFeedItem
         $this->player = $player;
 
         return $this;
+    }
+
+    /**
+     * @ORM\PostLoad()
+     */
+    public function postLoad()
+    {
+        parent::__construct($this->getId(), $this->getTime(), $this->getTitle(), $this->getDescription());
     }
 }

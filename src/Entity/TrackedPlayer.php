@@ -9,6 +9,7 @@ use Villermen\RuneScape\RuneScapeException;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TrackedPlayerRepository")
  * @ORM\Table(name="player")
+ * @ORM\HasLifecycleCallbacks()
  */
 class TrackedPlayer extends Player
 {
@@ -84,5 +85,13 @@ class TrackedPlayer extends Player
         $this->active = $active;
 
         return $this;
+    }
+
+    /**
+     * @ORM\PostLoad()
+     */
+    public function postLoad()
+    {
+        parent::__construct($this->getName());
     }
 }

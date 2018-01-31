@@ -11,6 +11,7 @@ use Villermen\RuneScape\HighScore\HighScore;
  * @ORM\Table(name="highscore", uniqueConstraints={
  *     @ORM\UniqueConstraint(columns={"player_id", "date", "old_school"})
  * })
+ * @ORM\HasLifecycleCallbacks()
  */
 class TrackedHighScore extends HighScore
 {
@@ -99,5 +100,13 @@ class TrackedHighScore extends HighScore
     public function getDate(): DateTime
     {
         return $this->date;
+    }
+
+    /**
+     * @ORM\PostLoad()
+     */
+    public function postLoad()
+    {
+        parent::__construct($this->getPlayer(), $this->data);
     }
 }
