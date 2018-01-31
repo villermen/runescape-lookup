@@ -6,6 +6,7 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Villermen\RuneScape\HighScore\HighScoreComparisonSkill;
 use Villermen\RuneScape\Player;
+use Villermen\RuneScape\Skill;
 
 /**
  * @ORM\MappedSuperclass()
@@ -40,7 +41,7 @@ class Record
     protected $player;
 
     /**
-     * @var int
+     * @var Skill
      *
      * @ORM\Column(type="skill")
      */
@@ -76,9 +77,9 @@ class Record
     }
 
     /**
-     * @return int
+     * @return Skill
      */
-    public function getSkill(): int
+    public function getSkill(): Skill
     {
         return $this->skill;
     }
@@ -89,22 +90,6 @@ class Record
     public function getXpGain(): int
     {
         return $this->xpGain;
-    }
-
-    /**
-     * @return int
-     */
-    public function getLevelGain(): int
-    {
-        return $this->levelGain;
-    }
-
-    /**
-     * @return int
-     */
-    public function getRankGain(): int
-    {
-        return $this->rankGain;
     }
 
     /**

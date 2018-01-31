@@ -24,7 +24,7 @@
                 <tr data-href="{{ path("lookup_index", {"player1": record.player.name}) }}">
                     <td>{{ record.skill.name }}</td>
                     <td>{{ record.player.name }}</td>
-                    <td>{{ record.xpGain|number_format(0, ".", ",") }}</td>
+                    <td>{{ record.xpGain|number_format }}</td>
                 </tr>
             {% endfor %}
         </tbody>

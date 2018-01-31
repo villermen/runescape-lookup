@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\DailyRecord;
+use App\Entity\PersonalRecord;
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
 use App\Service\TimeKeeper;
@@ -94,6 +95,7 @@ class LookupController extends Controller
         $trainedToday = false;
         $trainedYesterday = false;
         $trainedWeek = false;
+        $records = [];
 
         $player = $entityManager->getRepository(TrackedPlayer::class)->findOneBy(["name" => $name]);
 
@@ -123,6 +125,7 @@ class LookupController extends Controller
                     $trainedToday = $highScoreToday->compareTo($stats);
 
                     $highScoreYesterday = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(-1)]);
+
                     if ($highScoreYesterday) {
                         $trainedYesterday = $highScoreYesterday->compareTo($highScoreToday);
                     }
@@ -132,6 +135,8 @@ class LookupController extends Controller
                         $trainedWeek = $highScoreWeek->compareTo($highScoreToday);
                     }
                 }
+
+                $records = $entityManager->getRepository(PersonalRecord::class)->findLatestRecords($player);
             }
 
             // TODO: Activity feed (merged with db data)
@@ -145,7 +150,8 @@ class LookupController extends Controller
             "trainedToday" => $trainedToday,
             "trainedYesterday" => $trainedYesterday,
             "trainedWeek" => $trainedWeek,
-            "name1" => $name
+            "name1" => $name,
+            "records" => $records
         ]);
     }
 

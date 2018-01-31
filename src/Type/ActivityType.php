@@ -5,7 +5,6 @@ namespace App\Type;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\IntegerType;
 use Villermen\RuneScape\Activity;
-use Villermen\RuneScape\Constants;
 use Villermen\RuneScape\RuneScapeException;
 
 class ActivityType extends IntegerType
@@ -23,7 +22,7 @@ class ActivityType extends IntegerType
     /** @inheritdoc */
     public function convertToPHPValue($value, AbstractPlatform $platform)
     {
-        return Constants::getActivity($value);
+        return Activity::getActivity($value);
     }
 
     /** @inheritdoc */
