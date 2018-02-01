@@ -96,6 +96,7 @@ class LookupController extends Controller
         $trainedYesterday = false;
         $trainedWeek = false;
         $records = [];
+        $activityFeedItems = [];
 
         $player = $entityManager->getRepository(TrackedPlayer::class)->findOneBy(["name" => $name]);
 
@@ -116,30 +117,37 @@ class LookupController extends Controller
                 $error = "Could not fetch player stats.";
             }
 
-            // Fetch and compare tracked stats
-            if ($stats && $player instanceof TrackedPlayer) {
-                $trackedHighScoreRepository = $entityManager->getRepository(TrackedHighScore::class);
+            if ($stats) {
+                if ($player instanceof TrackedPlayer) {
+                    // Fetch and compare tracked stats
+                    $trackedHighScoreRepository = $entityManager->getRepository(TrackedHighScore::class);
 
-                $highScoreToday = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(0)]);
-                if ($highScoreToday) {
-                    $trainedToday = $highScoreToday->compareTo($stats);
+                    $highScoreToday = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(0)]);
+                    if ($highScoreToday) {
+                        $trainedToday = $highScoreToday->compareTo($stats);
 
-                    $highScoreYesterday = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(-1)]);
+                        $highScoreYesterday = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(-1)]);
 
-                    if ($highScoreYesterday) {
-                        $trainedYesterday = $highScoreYesterday->compareTo($highScoreToday);
+                        if ($highScoreYesterday) {
+                            $trainedYesterday = $highScoreYesterday->compareTo($highScoreToday);
+                        }
+
+                        $highScoreWeek = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(-7)]);
+                        if ($highScoreWeek) {
+                            $trainedWeek = $highScoreWeek->compareTo($highScoreToday);
+                        }
                     }
 
-                    $highScoreWeek = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(-7)]);
-                    if ($highScoreWeek) {
-                        $trainedWeek = $highScoreWeek->compareTo($highScoreToday);
-                    }
+                    // Get records
+                    $records = $entityManager->getRepository(PersonalRecord::class)->findLatestRecords($player);
+
+                    // Get tracked activity feed
+                    $activityFeedItems = $player->getActivityFeedItems(true);
+                } else {
+                    // Only fetch live activity feed
+                    $activityFeedItems = $player->getActivityFeed()->getItems();
                 }
-
-                $records = $entityManager->getRepository(PersonalRecord::class)->findLatestRecords($player);
             }
-
-            // TODO: Activity feed (merged with db data)
         }
 
         return $this->render("lookup/player.html.twig", [
@@ -151,7 +159,8 @@ class LookupController extends Controller
             "trainedYesterday" => $trainedYesterday,
             "trainedWeek" => $trainedWeek,
             "name1" => $name,
-            "records" => $records
+            "records" => $records,
+            "activityFeedItems" => $activityFeedItems
         ]);
     }
 

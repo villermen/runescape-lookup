@@ -109,22 +109,22 @@
         </div>
 
         <h2>Activity feed</h2>
-        {#<?php if ($this->activityFeed): ?>#}
-        {#<div class="rss-link">#}
-            {#<a href="<?php echo $this->player->getActivityFeedUrl(); ?>">rss</a>#}
-        {#</div>#}
+        {% if activityFeedItems %}
+            <div class="rss-link">
+                <a href="{{ player.activityFeedUrl }}">rss</a>
+            </div>
 
-        {#<?php foreach($this->activityFeed as $activity): ?>#}
-        {#<div class="activity">#}
-            {#<div class="activity-title"><?php echo $activity["title"]; ?></div>#}
-            {#<div class="activity-time"><?php echo $activity["time"]->format("j-n-Y H:i"); ?></div>#}
-            {#<div class="activity-description"><?php echo $activity["description"]; ?></div>#}
-        {#</div>#}
-        {#<?php endforeach; ?>#}
-        {#<?php else: ?>#}
-        {#<p>#}
-            {#Player's adventurer's log is private, or the request timed out.#}
-        {#</p>#}
-        {#<?php endif; ?>#}
+            {% for activityFeedItem in activityFeedItems %}
+                <div class="activity">
+                    <div class="activity-title">{{ activityFeedItem.title }}</div>
+                    <div class="activity-time">{{ activityFeedItem.time|date }}</div>
+                    <div class="activity-description">{{ activityFeedItem.description }}</div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>
+                Player's adventurer's log is private, or the request to it timed out.
+            </p>
+        {% endif %}
     {% endif %}
 {% endblock %}

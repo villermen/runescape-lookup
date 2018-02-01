@@ -41,7 +41,7 @@ class TrackedActivityFeedItem extends ActivityFeedItem
     /**
      * @var Player
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer")
+     * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer", inversedBy="trackedActivityFeedItems")
      * @ORM\JoinColumn(nullable=false)
      */
     protected $player;

@@ -2,7 +2,11 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Villermen\RuneScape\ActivityFeed\ActivityFeed;
+use Villermen\RuneScape\ActivityFeed\ActivityFeedItem;
 use Villermen\RuneScape\Player;
 use Villermen\RuneScape\RuneScapeException;
 
@@ -35,12 +39,31 @@ class TrackedPlayer extends Player
     protected $active = true;
 
     /**
+     * @var Collection|TrackedHighScore[]
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\TrackedHighScore", mappedBy="player", fetch="LAZY")
+     * @ORM\OrderBy({"date"="DESC"})
+     */
+    protected $trackedHighScores;
+
+    /**
+     * @var Collection|TrackedActivityFeedItem[]
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\TrackedActivityFeedItem", mappedBy="player", fetch="LAZY")
+     * @ORM\OrderBy({"time"="DESC"})
+     */
+    protected $trackedActivityFeedItems;
+
+    /**
      * @param string $name
      * @throws RuneScapeException
      */
     public function __construct(string $name)
     {
         parent::__construct($name);
+
+        $this->trackedHighScores = new ArrayCollection();
+        $this->trackedActivityFeedItems = new ArrayCollection();
     }
 
     /**
@@ -88,10 +111,45 @@ class TrackedPlayer extends Player
     }
 
     /**
+     * Returns all tracked activity feed items from latest to earliest.
+     *
+     * @param bool $includeLive Fetch live activity feed and prepend.
+     * @param int $liveTimeOut
+     * @return ActivityFeedItem[]
+     */
+    public function getActivityFeedItems($includeLive = false, $liveTimeOut = 5)
+    {
+        $liveItems = [];
+
+        if ($includeLive) {
+            try {
+                $liveActivityFeed = $this->getActivityFeed($liveTimeOut);
+
+                if ($this->trackedActivityFeedItems->count() > 0) {
+                    $liveItems = $liveActivityFeed->getNewerItems($this->trackedActivityFeedItems->first());
+                } else {
+                    $liveItems = $liveActivityFeed->getItems();
+                }
+            } catch (RuneScapeException $exception) {
+            }
+        }
+
+        return array_merge($liveItems, $this->trackedActivityFeedItems->toArray());
+    }
+
+    /**
      * @ORM\PostLoad()
      */
     public function postLoad()
     {
         parent::__construct($this->getName());
+    }
+
+    /**
+     * @return TrackedHighScore[]|Collection
+     */
+    public function getTrackedHighScores()
+    {
+        return $this->trackedHighScores;
     }
 }
