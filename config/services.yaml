@@ -25,5 +25,10 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
+    # Services are publicly obtainable from container
+    App\Service\:
+        resource: '../src/Service'
+        public: true
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

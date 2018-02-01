@@ -10,7 +10,9 @@ use Villermen\RuneScape\Player;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TrackedActivityFeedItemRepository")
- * @ORM\Table(name="activity_feed_item")
+ * @ORM\Table(name="activity_feed_item", uniqueConstraints={
+ *     @ORM\UniqueConstraint(columns={"player_id", "time"})
+ * })
  * @ORM\HasLifecycleCallbacks()
  */
 class TrackedActivityFeedItem extends ActivityFeedItem
@@ -41,7 +43,7 @@ class TrackedActivityFeedItem extends ActivityFeedItem
     /**
      * @var Player
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer", inversedBy="trackedActivityFeedItems")
+     * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer")
      * @ORM\JoinColumn(nullable=false)
      */
     protected $player;
@@ -66,6 +68,13 @@ class TrackedActivityFeedItem extends ActivityFeedItem
             $originalItem->getDescription());
 
         $this->player = $player;
+
+        // Set time to current time, which is more accurate than the feed's time in most cases
+        // Skip when the difference in time is greater than a day, to prevent old items from being given the wrong time
+        $currentTime = new DateTime();
+        if ($currentTime->getTimestamp() - $originalItem->getTime()->getTimestamp() < 60 * 60 * 24) {
+            $this->time = $currentTime;
+        }
     }
 
     public function getDatabaseId(): int
@@ -89,6 +98,17 @@ class TrackedActivityFeedItem extends ActivityFeedItem
     public function setPlayer(Player $player)
     {
         $this->player = $player;
+
+        return $this;
+    }
+
+    /**
+     * @param DateTime $time
+     * @return TrackedActivityFeedItem
+     */
+    public function setTime(DateTime $time): TrackedActivityFeedItem
+    {
+        $this->time = $time;
 
         return $this;
     }

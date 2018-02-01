@@ -12,7 +12,7 @@
         "symfony/orm-pack": "^1.0",
         "symfony/twig-bundle": "^4.0",
         "symfony/yaml": "^4.0",
-        "villermen/runescape-lookup-commons": "^2.0.2"
+        "villermen/runescape-lookup-commons": "^3.0"
     },
     "require-dev": {
         "symfony/debug-pack": "^1.0",

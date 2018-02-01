@@ -8,7 +8,7 @@ use Villermen\RuneScape\HighScore\HighScore;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TrackedHighScoreRepository")
- * @ORM\Table(name="highscore", uniqueConstraints={
+ * @ORM\Table(name="high_score", uniqueConstraints={
  *     @ORM\UniqueConstraint(columns={"player_id", "date", "old_school"})
  * })
  * @ORM\HasLifecycleCallbacks()
@@ -48,7 +48,7 @@ class TrackedHighScore extends HighScore
     /**
      * @var TrackedPlayer
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer", inversedBy="trackedHighScores")
+     * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer")
      * @ORM\JoinColumn(nullable=false)
      */
     protected $player;
@@ -63,9 +63,6 @@ class TrackedHighScore extends HighScore
     {
         parent::__construct($player, $data);
 
-        $this->data = $data;
-
-        $this->player = $player;
         $this->oldSchool = $oldSchool;
         $this->date = new DateTime();
     }

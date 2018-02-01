@@ -15,7 +15,7 @@ class PersonalRecordRepository extends EntityRepository
      * @param TrackedPlayer $player
      * @return PersonalRecord[]
      */
-    public function findLatestRecords(TrackedPlayer $player)
+    public function findLatestRecords(TrackedPlayer $player): array
     {
         $qb = $this->createQueryBuilder("record");
 

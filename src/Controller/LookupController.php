@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\DailyRecord;
 use App\Entity\PersonalRecord;
+use App\Entity\TrackedActivityFeedItem;
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
 use App\Service\TimeKeeper;
@@ -96,7 +97,7 @@ class LookupController extends Controller
         $trainedYesterday = false;
         $trainedWeek = false;
         $records = [];
-        $activityFeedItems = [];
+        $activityFeed = false;
 
         $player = $entityManager->getRepository(TrackedPlayer::class)->findOneBy(["name" => $name]);
 
@@ -141,11 +142,14 @@ class LookupController extends Controller
                     // Get records
                     $records = $entityManager->getRepository(PersonalRecord::class)->findLatestRecords($player);
 
-                    // Get tracked activity feed
-                    $activityFeedItems = $player->getActivityFeedItems(true);
+                    // Get tracked and live activity feed
+                    try {
+                        $activityFeed = $entityManager->getRepository(TrackedActivityFeedItem::class)->findByPlayer($player, true);
+                    } catch (RuneScapeException $exception) {
+                    }
                 } else {
                     // Only fetch live activity feed
-                    $activityFeedItems = $player->getActivityFeed()->getItems();
+                    $activityFeed = $player->getActivityFeed();
                 }
             }
         }
@@ -160,7 +164,7 @@ class LookupController extends Controller
             "trainedWeek" => $trainedWeek,
             "name1" => $name,
             "records" => $records,
-            "activityFeedItems" => $activityFeedItems
+            "activityFeed" => $activityFeed
         ]);
     }
 

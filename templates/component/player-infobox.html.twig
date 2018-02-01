@@ -11,6 +11,7 @@
                 | <a href="{{ path("lookup_index", {"player1": player.name}) }}">Look up</a>
             {% endif %}
 
+            {# TODO: Track also when not active (but just set active to true instead, continue tracking) #}
             {% if not tracked %}
                 | <a href="{{ path("lookup_index", {"player1": player.name, "track": true}) }}">Track</a>
             {% endif %}

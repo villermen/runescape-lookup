@@ -109,12 +109,12 @@
         </div>
 
         <h2>Activity feed</h2>
-        {% if activityFeedItems %}
+        {% if activityFeed %}
             <div class="rss-link">
                 <a href="{{ player.activityFeedUrl }}">rss</a>
             </div>
 
-            {% for activityFeedItem in activityFeedItems %}
+            {% for activityFeedItem in activityFeed.items %}
                 <div class="activity">
                     <div class="activity-title">{{ activityFeedItem.title }}</div>
                     <div class="activity-time">{{ activityFeedItem.time|date }}</div>
