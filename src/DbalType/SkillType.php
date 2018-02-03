@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Type;
+namespace App\DbalType;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\IntegerType;
-use Villermen\RuneScape\Activity;
-use Villermen\RuneScape\RuneScapeException;
+use Exception;
+use Villermen\RuneScape\Skill;
 
-class ActivityType extends IntegerType
+class SkillType extends IntegerType
 {
     /** @inheritdoc */
     public function convertToDatabaseValue($value, AbstractPlatform $platform)
     {
-        if (!$value instanceof Activity) {
-            throw new RuneScapeException("Value to convert to database value is not of Activity class.");
+        if (!$value instanceof Skill) {
+            throw new Exception("Value to convert to database value is not of Skill class.");
         }
 
         return $value->getId();
@@ -22,12 +22,12 @@ class ActivityType extends IntegerType
     /** @inheritdoc */
     public function convertToPHPValue($value, AbstractPlatform $platform)
     {
-        return Activity::getActivity($value);
+        return Skill::getSkill($value);
     }
 
     /** @inheritdoc */
     public function getName()
     {
-        return "activity";
+        return "skill";
     }
 }

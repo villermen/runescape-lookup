@@ -14,8 +14,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Villermen\RuneScape\Exception\FetchFailedException;
+use Villermen\RuneScape\Exception\RuneScapeException;
 use Villermen\RuneScape\Player;
-use Villermen\RuneScape\RuneScapeException;
+use Villermen\RuneScape\PlayerDataFetcher;
 
 /**
  * @Route("/", name="lookup_")
@@ -86,10 +88,11 @@ class LookupController extends Controller
      * @param EntityManagerInterface $entityManager
      * @param Request $request
      * @param TimeKeeper $timeKeeper
+     * @param PlayerDataFetcher $dataFetcher
      * @return Response
      */
     public function playerAction(string $name, EntityManagerInterface $entityManager, Request $request,
-        TimeKeeper $timeKeeper)
+        TimeKeeper $timeKeeper, PlayerDataFetcher $dataFetcher)
     {
         $error = "";
         $stats = false;
@@ -99,12 +102,11 @@ class LookupController extends Controller
         $records = [];
         $activityFeed = false;
 
-        $player = $entityManager->getRepository(TrackedPlayer::class)->findOneBy(["name" => $name]);
-
         // Try to obtain a tracked player from the database
+        $player = $entityManager->getRepository(TrackedPlayer::class)->findOneBy(["name" => $name]);
         if (!$player) {
             try {
-                $player = new Player($name);
+                $player = new Player($name, $dataFetcher);
             } catch (RuneScapeException $exception) {
                 $error = "Invalid player name requested.";
             }
@@ -113,8 +115,12 @@ class LookupController extends Controller
         if ($player) {
             // Fetch live stats
             try {
-                $stats = $player->getHighScore($request->query->has("oldschool"));
-            } catch (RuneScapeException $exception) {
+                if ($request->query->has("oldschool")) {
+                    $stats = $player->getOldSchoolSkillHighScore();
+                } else {
+                    $stats = $player->getSkillHighScore();
+                }
+            } catch (FetchFailedException $exception) {
                 $error = "Could not fetch player stats.";
             }
 
@@ -143,13 +149,13 @@ class LookupController extends Controller
                     $records = $entityManager->getRepository(PersonalRecord::class)->findLatestRecords($player);
 
                     // Get tracked and live activity feed
-                    try {
-                        $activityFeed = $entityManager->getRepository(TrackedActivityFeedItem::class)->findByPlayer($player, true);
-                    } catch (RuneScapeException $exception) {
-                    }
+                    $activityFeed = $entityManager->getRepository(TrackedActivityFeedItem::class)->findByPlayer($player, true);
                 } else {
                     // Only fetch live activity feed
-                    $activityFeed = $player->getActivityFeed();
+                    try {
+                        $activityFeed = $player->getActivityFeed();
+                    } catch (FetchFailedException $exception) {
+                    }
                 }
             }
         }

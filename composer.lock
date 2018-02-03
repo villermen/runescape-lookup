@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "0b9a0e9e401992820296708bfececf56",
+    "content-hash": "b97af7b8b2fa16bce68070b760a755ea",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -2747,16 +2747,16 @@
         },
         {
             "name": "villermen/runescape-lookup-commons",
-            "version": "v3.0.0",
+            "version": "v4.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/villermen/runescape-lookup-commons.git",
-                "reference": "a82a6111da4b0121c14f0da0d7709b06f652f8c3"
+                "reference": "f6a1d72bdab835fd239f1c8841587e05b3493d63"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/a82a6111da4b0121c14f0da0d7709b06f652f8c3",
-                "reference": "a82a6111da4b0121c14f0da0d7709b06f652f8c3",
+                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/f6a1d72bdab835fd239f1c8841587e05b3493d63",
+                "reference": "f6a1d72bdab835fd239f1c8841587e05b3493d63",
                 "shasum": ""
             },
             "require": {
@@ -2777,7 +2777,7 @@
                 "MIT"
             ],
             "description": "A PHP library containing RuneScape lookup components.",
-            "time": "2018-02-01T16:10:39+00:00"
+            "time": "2018-02-03T23:17:33+00:00"
         },
         {
             "name": "zendframework/zend-code",

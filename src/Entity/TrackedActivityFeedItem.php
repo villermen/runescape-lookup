@@ -11,7 +11,7 @@ use Villermen\RuneScape\Player;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TrackedActivityFeedItemRepository")
  * @ORM\Table(name="activity_feed_item", uniqueConstraints={
- *     @ORM\UniqueConstraint(columns={"player_id", "time"})
+ *     @ORM\UniqueConstraint(columns={"player_id", "sequence_number"})
  * })
  * @ORM\HasLifecycleCallbacks()
  */
@@ -20,18 +20,18 @@ class TrackedActivityFeedItem extends ActivityFeedItem
     /**
      * @var int
      *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(type="integer")
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    protected $databaseId;
+    protected $id;
 
     /**
-     * @var string
+     * @var int
      *
-     * @ORM\Column(name="guid", type="string")
+     * @ORM\Column(type="integer")
      */
-    protected $id;
+    protected $sequenceNumber;
 
     /**
      * @var DateTime
@@ -62,24 +62,17 @@ class TrackedActivityFeedItem extends ActivityFeedItem
      */
     protected $description;
 
-    public function __construct(ActivityFeedItem $originalItem, TrackedPlayer $player)
+    public function __construct(ActivityFeedItem $originalItem, TrackedPlayer $player, int $sequenceNumber)
     {
-        parent::__construct($originalItem->getId(), $originalItem->getTime(), $originalItem->getTitle(),
-            $originalItem->getDescription());
+        parent::__construct($originalItem->getTime(), $originalItem->getTitle(), $originalItem->getDescription());
 
         $this->player = $player;
-
-        // Set time to current time, which is more accurate than the feed's time in most cases
-        // Skip when the difference in time is greater than a day, to prevent old items from being given the wrong time
-        $currentTime = new DateTime();
-        if ($currentTime->getTimestamp() - $originalItem->getTime()->getTimestamp() < 60 * 60 * 24) {
-            $this->time = $currentTime;
-        }
+        $this->sequenceNumber = $sequenceNumber;
     }
 
-    public function getDatabaseId(): int
+    public function getId(): int
     {
-        return $this->databaseId;
+        return $this->id;
     }
 
     /**
@@ -91,33 +84,18 @@ class TrackedActivityFeedItem extends ActivityFeedItem
     }
 
     /**
-     * @param Player $player
-     *
-     * @return TrackedActivityFeedItem
-     */
-    public function setPlayer(Player $player)
-    {
-        $this->player = $player;
-
-        return $this;
-    }
-
-    /**
-     * @param DateTime $time
-     * @return TrackedActivityFeedItem
-     */
-    public function setTime(DateTime $time): TrackedActivityFeedItem
-    {
-        $this->time = $time;
-
-        return $this;
-    }
-
-    /**
      * @ORM\PostLoad()
      */
     public function postLoad()
     {
-        parent::__construct($this->getId(), $this->getTime(), $this->getTitle(), $this->getDescription());
+        parent::__construct($this->getTime(), $this->getTitle(), $this->getDescription());
+    }
+
+    /**
+     * @return int
+     */
+    public function getSequenceNumber(): int
+    {
+        return $this->sequenceNumber;
     }
 }

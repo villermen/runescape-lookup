@@ -5,7 +5,7 @@
         <h1>{{ player.name }}</h1>
 
         <p>
-            <a href="{{ player.adventurersLogUrl }}">Adventurer's log</a>
+            <a href="{{ player.runeMetricsUrl }}">RuneMetrics</a>
 
             {% if mode == "compare" %}
                 | <a href="{{ path("lookup_index", {"player1": player.name}) }}">Look up</a>
@@ -18,7 +18,7 @@
         </p>
 
         <p>
-            Combat level: {{ player.highscore.getCombatLevel(true) }} ({{ player.highscore.getCombatLevel(false) }}+{{ player.highscore.getCombatLevel(true) - player.highscore.getCombatLevel(false) }})
+            Combat level: {{ player.skillHighScore.getCombatLevel(true) }} ({{ player.skillHighScore.getCombatLevel(false) }}+{{ player.skillHighScore.getCombatLevel(true) - player.skillHighScore.getCombatLevel(false) }})
         </p>
     </div>
 

@@ -2,13 +2,10 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Villermen\RuneScape\ActivityFeed\ActivityFeed;
-use Villermen\RuneScape\ActivityFeed\ActivityFeedItem;
+use Villermen\RuneScape\Exception\FetchFailedException;
+use Villermen\RuneScape\Exception\RuneScapeException;
 use Villermen\RuneScape\Player;
-use Villermen\RuneScape\RuneScapeException;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TrackedPlayerRepository")
@@ -48,17 +45,17 @@ class TrackedPlayer extends Player
     }
 
     /**
-     * Loads the player's high score data and adds an entry of it to the tracked high scores of this player.
-     *
      * @param bool $oldSchool
      * @param int $timeOut
      * @return TrackedHighScore
-     * @throws RuneScapeException
+     * @throws FetchFailedException
      */
-    public function addTrackedHighScore($oldSchool = false, $timeOut = 5): TrackedHighScore
+    public function getTrackedHighScore($oldSchool = false, $timeOut = 5): TrackedHighScore
     {
-        $data = $this->getHighScoreData($oldSchool, $timeOut);
-        $trackedHighScore = new TrackedHighScore($data, $this, $oldSchool);
+        $this->dataFetcher->setTimeOut($timeOut);
+
+        $highScore = $oldSchool ? $this->getSkillHighScore() : $this->getOldSchoolSkillHighScore();
+        $trackedHighScore = new TrackedHighScore($highScore->getSkills(), $this, $oldSchool);
 
         return $trackedHighScore;
     }

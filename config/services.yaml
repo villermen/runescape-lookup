@@ -30,5 +30,12 @@ services:
         resource: '../src/Service'
         public: true
 
+    Villermen\RuneScape\PlayerDataFetcher:
+        public: true
+
+    App\EventListener\EntityHydrator:
+        tags:
+            - {name: doctrine.event_listener, event: postLoad}
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

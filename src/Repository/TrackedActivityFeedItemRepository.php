@@ -6,8 +6,7 @@ use App\Entity\TrackedActivityFeedItem;
 use App\Entity\TrackedPlayer;
 use Doctrine\ORM\EntityRepository;
 use Villermen\RuneScape\ActivityFeed\ActivityFeed;
-use Villermen\RuneScape\ActivityFeed\ActivityFeedItem;
-use Villermen\RuneScape\RuneScapeException;
+use Villermen\RuneScape\Exception\FetchFailedException;
 
 class TrackedActivityFeedItemRepository extends EntityRepository
 {
@@ -16,7 +15,7 @@ class TrackedActivityFeedItemRepository extends EntityRepository
      * @param TrackedPlayer $player
      * @return TrackedActivityFeedItem|null
      */
-    public function findLatest(TrackedPlayer $player)
+    public function findLast(TrackedPlayer $player)
     {
         $qb = $this->createQueryBuilder("activity");
 
@@ -24,7 +23,7 @@ class TrackedActivityFeedItemRepository extends EntityRepository
         return $qb
             ->andWhere($qb->expr()->eq("activity.player", ":player"))
             ->setParameter("player", $player)
-            ->addOrderBy($qb->expr()->desc("activity.time"))
+            ->addOrderBy($qb->expr()->desc("activity.sequenceNumber"))
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -35,10 +34,9 @@ class TrackedActivityFeedItemRepository extends EntityRepository
      *
      * @param TrackedPlayer $player
      * @param bool $mergeLive Fetch live activity feed and prepend.
-     * @param int $liveTimeOut
      * @return ActivityFeed
      */
-    public function findByPlayer(TrackedPlayer $player, $mergeLive = false, $liveTimeOut = 5): ActivityFeed
+    public function findByPlayer(TrackedPlayer $player, $mergeLive = false): ActivityFeed
     {
         $qb = $this->createQueryBuilder("activity");
 
@@ -49,15 +47,14 @@ class TrackedActivityFeedItemRepository extends EntityRepository
             ->getQuery()
             ->getResult();
 
-        $activityFeed = new ActivityFeed($player, $trackedActivityFeedItems);
+        $activityFeed = new ActivityFeed($trackedActivityFeedItems);
 
         if ($mergeLive) {
             try {
-                $liveActivityFeed = $player->getActivityFeed($liveTimeOut);
+                $liveActivityFeed = $player->getActivityFeed();
 
                 $activityFeed = $activityFeed->merge($liveActivityFeed);
-            } catch (RuneScapeException $exception) {
-                dump($exception);
+            } catch (FetchFailedException $exception) {
             }
         }
 

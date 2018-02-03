@@ -110,10 +110,6 @@
 
         <h2>Activity feed</h2>
         {% if activityFeed %}
-            <div class="rss-link">
-                <a href="{{ player.activityFeedUrl }}">rss</a>
-            </div>
-
             {% for activityFeedItem in activityFeed.items %}
                 <div class="activity">
                     <div class="activity-title">{{ activityFeedItem.title }}</div>

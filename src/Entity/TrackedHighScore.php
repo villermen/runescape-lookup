@@ -4,7 +4,8 @@ namespace App\Entity;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Villermen\RuneScape\HighScore\HighScore;
+use Villermen\RuneScape\HighScore\HighScoreSkill;
+use Villermen\RuneScape\HighScore\SkillHighScore;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TrackedHighScoreRepository")
@@ -13,7 +14,7 @@ use Villermen\RuneScape\HighScore\HighScore;
  * })
  * @ORM\HasLifecycleCallbacks()
  */
-class TrackedHighScore extends HighScore
+class TrackedHighScore extends SkillHighScore
 {
     /**
      * @var int
@@ -27,9 +28,9 @@ class TrackedHighScore extends HighScore
     /**
      * @inheritdoc
      *
-     * @ORM\Column(type="string", length=10000)
+     * @ORM\Column(type="high_score_skill_array")
      */
-    protected $data;
+    protected $skills;
 
     /**
      * @var bool
@@ -54,14 +55,13 @@ class TrackedHighScore extends HighScore
     protected $player;
 
     /**
-     * @param string $data
+     * @param HighScoreSkill[] $skills
      * @param TrackedPlayer $player
      * @param bool $oldSchool
-     * @throws \Villermen\RuneScape\RuneScapeException
      */
-    public function __construct(string $data, TrackedPlayer $player, bool $oldSchool)
+    public function __construct(array $skills, TrackedPlayer $player, bool $oldSchool)
     {
-        parent::__construct($player, $data);
+        parent::__construct($skills);
 
         $this->oldSchool = $oldSchool;
         $this->date = new DateTime();
@@ -70,7 +70,7 @@ class TrackedHighScore extends HighScore
     /**
      * @return TrackedPlayer
      */
-    public function getTrackedPlayer(): TrackedPlayer
+    public function getPlayer(): TrackedPlayer
     {
         return $this->player;
     }
@@ -104,6 +104,6 @@ class TrackedHighScore extends HighScore
      */
     public function postLoad()
     {
-        parent::__construct($this->getPlayer(), $this->data);
+        parent::__construct($this->getSkills());
     }
 }

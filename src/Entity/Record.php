@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Villermen\RuneScape\HighScore\HighScoreComparisonSkill;
+use Villermen\RuneScape\HighScore\HighScoreSkillComparison;
 use Villermen\RuneScape\Player;
 use Villermen\RuneScape\Skill;
 
@@ -58,9 +58,9 @@ class Record
      * Constructs a DailyHighScore from a skill comparison.
      *
      * @param Player $player
-     * @param HighScoreComparisonSkill $comparison
+     * @param HighScoreSkillComparison $comparison
      */
-    public function __construct(Player $player, HighScoreComparisonSkill $comparison)
+    public function __construct(Player $player, HighScoreSkillComparison $comparison)
     {
         $this->player = $player;
         $this->skill = $comparison->getSkill();

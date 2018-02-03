@@ -13,15 +13,18 @@ class UpdateHighScoresCommand extends Command
     protected function configure()
     {
         $this
-            ->setName("app:update:high-scores")
+            ->setName("app:update-high-scores")
             ->setDescription("Adds current high scores for all tracked and active players to the database.");
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        // TODO: Lock
+
         // TODO: Implement
 
         // TODO: handle failedPlayers after the others
         // TODO: if all failed, don't set players as inactive because it's probably the API acting up
+        // TODO: Update name if it happens to be available (PlayerDataFetcher.has(), or isAvailable())
     }
 }
