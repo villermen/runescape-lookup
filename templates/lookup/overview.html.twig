@@ -14,31 +14,55 @@
         Stats update daily at {{ updateTime }} {{ timezone }} (that's in {{ timeTillUpdate }}).
     </p>
 
-    <table class="nolifer-table dataTable">
-        <thead>
-            <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
-        </thead>
+    <div class="nolifer-table-container">
+        <h3>RS3</h3>
 
-        <tbody>
-            {% for record in dailyRecords %}
-                <tr data-href="{{ path("lookup_index", {"player1": record.player.name}) }}">
-                    <td>{{ record.skill.name }}</td>
-                    <td>{{ record.player.name }}</td>
-                    <td>{{ record.xpGain|number_format }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        <table class="nolifer-table dataTable">
+            <thead>
+                <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
+            </thead>
+
+            <tbody>
+                {% for record in dailyRecords %}
+                    <tr data-href="{{ path("lookup_index", {"player1": record.player.name}) }}">
+                        <td>{{ record.skill.name }}</td>
+                        <td>{{ record.player.name }}</td>
+                        <td>{{ record.xpGain|number_format }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="nolifer-table-container">
+        <h3>OSRS</h3>
+
+        <table class="nolifer-table dataTable">
+            <thead>
+                <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
+            </thead>
+
+            <tbody>
+                {% for record in dailyOldSchoolRecords %}
+                    <tr data-href="{{ path("lookup_index", {"player1": record.player.name}) }}">
+                        <td>{{ record.skill.name }}</td>
+                        <td>{{ record.player.name }}</td>
+                        <td>{{ record.xpGain|number_format }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     {% if trackedPlayers is not empty %}
         <h2>Tracked players</h2>
 
         <div class="tracked-players">
-            {% for player in trackedPlayers %}
-                <div class="tracked-player {% if player.active %}tracked-player--active{% else %}tracked-player--inactive{% endif %}">
+            {%- for player in trackedPlayers -%}
+                <a href="{{ path("lookup_index", {"player1": player.name}) }}" class="tracked-player {% if player.active %}tracked-player--active{% else %}tracked-player--inactive{% endif %}">
                     {{ player.name }}
-                </div>
-            {% endfor %}
+                </a>
+            {%- endfor -%}
         </div>
     {% endif %}
 {% endblock %}

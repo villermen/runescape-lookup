@@ -32,7 +32,8 @@ class TrackedPlayerRepository extends EntityRepository
         $qb = $this->createQueryBuilder("player");
 
         return $qb
-            ->orderBy($qb->expr()->desc("player.name"))
+            ->addOrderBy($qb->expr()->desc("player.active"))
+            ->addOrderBy($qb->expr()->desc("player.name"))
             ->getQuery()
             ->getResult();
     }

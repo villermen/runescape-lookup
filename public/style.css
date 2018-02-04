@@ -9,9 +9,6 @@ body {
 	color: lime;
 	text-align: center;
 }
-.content {
-	overflow-x: hidden;
-}
 h1 {
 	margin-bottom: 5px;
 }
@@ -24,6 +21,12 @@ input {
 	border: 1px solid #505050;
 	color: #B0B0B0;
 	line-height: 27px;
+}
+[data-href] {
+    cursor: pointer;
+}
+.content {
+    overflow-x: hidden;
 }
 .forms {
 	margin-bottom: 20px;
@@ -139,9 +142,9 @@ th>a {
 }
 .notice {
 }
-.nolifer-table,
-.tracked-table {
-	margin: auto;
+.nolifer-table-container {
+    display: inline-block;
+    vertical-align: top;
 }
 .dataTables_wrapper {
 	display: inline;
@@ -151,23 +154,22 @@ th>a {
 	display: inline-block;
 	vertical-align: top;
 }
-.tracked-player-container {
+.tracked-players {
 	margin-bottom: 1em;
+}
+.tracked-player {
+    color: lime;
+    padding: 12px;
+    margin: 0;
+    display: inline-block;
+    border: 1px solid #505050;
+}
+.tracked-player--inactive {
+    color: red;
 }
 .horizontal-scroller {
 	white-space: nowrap;
 	overflow-x: auto;
-}
-.tracked-player {
-	border: 1px solid #505050;
-	padding: 6px 12px;
-	text-align: center;
-	display: inline-block;
-	cursor: pointer;
-	border-width: 1px 0 1px 1px;
-}
-.tracked-player:last-child {
-	border-right-width: 1px;
 }
 .sorting,
 .sorting_asc,

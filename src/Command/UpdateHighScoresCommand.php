@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use App\Entity\DailyRecord;
+use App\Entity\PersonalRecord;
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
 use App\Service\TimeKeeper;
@@ -24,6 +26,9 @@ class UpdateHighScoresCommand extends Command
 
     /** @var TimeKeeper */
     protected $timeKeeper;
+
+    /** @var DailyRecord[][] [bool oldSchool][int skillId] */
+    protected $dailyRecords = [false => [], true => []];
 
     public function __construct(?string $name = null, EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
     {
@@ -109,6 +114,13 @@ class UpdateHighScoresCommand extends Command
             return 1;
         }
 
+        // Persist daily records
+        foreach($this->dailyRecords as $dailyRecordArray) {
+            foreach($dailyRecordArray as $dailyRecord) {
+                $this->entityManager->persist($dailyRecord);
+            }
+        }
+
         $this->entityManager->flush();
 
         $output->writeln("<info>Successfully updated high scores.</info>");
@@ -144,8 +156,21 @@ class UpdateHighScoresCommand extends Command
                     if ($skillComparison->getXpDifference() > 0) {
                         $skillId = $skillComparison->getSkill()->getId();
                         if (!isset($records[$skillId]) || $skillComparison->getXpDifference() > $records[$skillId]->getXpGain()) {
-                            $newRecord = new PersonalRecord($player, $skillComparison->getSkill(), $skillComparison->getXpDifference(), $oldSchool);
+                            $newRecord = new PersonalRecord(
+                                $player, $skillComparison->getSkill(), $skillComparison->getXpDifference(),
+                                $oldSchool, $this->timeKeeper->getUpdateTime(-1)
+                            );
+
                             $this->entityManager->persist($newRecord);
+                        }
+
+                        // Set in daily records if it is greater
+                        if (!isset($this->dailyRecords[$oldSchool][$skillId]) ||
+                            $skillComparison->getXpDifference() > $this->dailyRecords[$oldSchool][$skillId]->getXpGain()) {
+                            $this->dailyRecords[$oldSchool][$skillId] = new DailyRecord(
+                                $player, $skillComparison->getSkill(), $skillComparison->getXpDifference(),
+                                $oldSchool, $this->timeKeeper->getUpdateTime(-1)
+                            );
                         }
                     }
                 }

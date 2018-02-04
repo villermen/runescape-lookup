@@ -43,15 +43,26 @@ class Version20180130212055 extends AbstractMigration implements ContainerAwareI
         ');
         $this->addSql('UPDATE activity_feed_item SET sequence_number = id');
 
-        $this->addSql('CREATE TABLE record (
+        $this->addSql('ALTER TABLE daily_highscore
+            RENAME daily_record,
+            CHANGE time date DATE NOT NULL,
+            CHANGE skill_id skill INT NOT NULL COMMENT \'(DC2Type:skill)\',
+            CHANGE xp xp_gain INT NOT NULL,
+            ADD old_school TINYINT(1) NOT NULL,
+            ADD UNIQUE INDEX UNIQ_1A0AA83DBF396750AA9E377A99E6F5DF (id, date, player_id),
+            RENAME INDEX player_id TO IDX_1A0AA83D99E6F5DF,
+            CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci
+        ');
+
+        $this->addSql('CREATE TABLE personal_record (
             id INT AUTO_INCREMENT NOT NULL,
             player_id INT NOT NULL,
             date DATE NOT NULL,
             skill INT NOT NULL COMMENT \'(DC2Type:skill)\',
             xp_gain INT NOT NULL,
             old_school TINYINT(1) NOT NULL,
-            INDEX IDX_9B349F9199E6F5DF (player_id),
-            UNIQUE INDEX UNIQ_9B349F91BF396750AA9E377A99E6F5DF (id, date, player_id),
+            INDEX IDX_6FB8738699E6F5DF (player_id),
+            UNIQUE INDEX UNIQ_6FB87386BF396750AA9E377A99E6F5DF (id, date, player_id),
             PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB');
 
@@ -73,16 +84,15 @@ class Version20180130212055 extends AbstractMigration implements ContainerAwareI
             CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci
         ');
 
-        $this->addSql('DROP TABLE daily_highscore');
-
-        $this->addSql('ALTER TABLE record ADD FOREIGN KEY FK_9B349F9199E6F5DF (player_id) REFERENCES player (id)');
         $this->addSql('ALTER TABLE activity_feed_item ADD FOREIGN KEY FK_7894E9FE99E6F5DF (player_id) REFERENCES player (id), ADD UNIQUE INDEX UNIQ_7894E9FE99E6F5DFF2803B3D (player_id, sequence_number)');
+        $this->addSql('ALTER TABLE daily_record ADD FOREIGN KEY FK_1A0AA83D99E6F5DF (player_id) REFERENCES player (id)');
         $this->addSql('ALTER TABLE high_score ADD FOREIGN KEY FK_BA6ECA4399E6F5DF (player_id) REFERENCES player (id)');
+        $this->addSql('ALTER TABLE personal_record ADD FOREIGN KEY FK_6FB8738699E6F5DF (player_id) REFERENCES player (id)');
     }
 
     public function postUp(Schema $schema)
     {
-        $this->convertPlayerHighScoreToRecords();
+        $this->convertPlayerHighScoreToPersonalRecords();
         $this->convertHighScoreDataToSkillsArray();
     }
 
@@ -90,7 +100,7 @@ class Version20180130212055 extends AbstractMigration implements ContainerAwareI
      * Converts JSON of player.highscore into entries for the newly created personal_record table.
      * Drops the highscore field after it is done.
      */
-    protected function convertPlayerHighScoreToRecords()
+    protected function convertPlayerHighScoreToPersonalRecords()
     {
         $this->write("Converting player.highscore JSON to record table entries...");
 
@@ -100,7 +110,7 @@ class Version20180130212055 extends AbstractMigration implements ContainerAwareI
             $highScoreDecoded = json_decode($highScore["highscore"]);
 
             foreach($highScoreDecoded as $skillId => $highScoreData) {
-                $this->connection->insert("record", [
+                $this->connection->insert("personal_record", [
                     "player_id" => $highScore["id"],
                     "date" => $highScoreData->date,
                     "skill" => $skillId,

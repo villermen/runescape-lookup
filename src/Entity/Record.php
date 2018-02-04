@@ -9,7 +9,7 @@ use Villermen\RuneScape\Player;
 use Villermen\RuneScape\Skill;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\RecordRepository")
+ * @ORM\MappedSuperclass()
  * @ORM\Table(uniqueConstraints={
  *     @ORM\UniqueConstraint(columns={"id", "date", "player_id"})
  * })
@@ -66,15 +66,15 @@ class Record
      * @param Skill $skill
      * @param int $xpGain
      * @param bool $oldSchool
-     * @param DateTime|null $date
+     * @param DateTime $date
      */
-    public function __construct(Player $player, Skill $skill, int $xpGain, bool $oldSchool, ?DateTime $date = null)
+    public function __construct(Player $player, Skill $skill, int $xpGain, bool $oldSchool, DateTime $date)
     {
         $this->player = $player;
         $this->skill = $skill;
         $this->xpGain = $xpGain;
         $this->oldSchool = $oldSchool;
-        $this->date = $date ?? new DateTime();
+        $this->date = $date;
     }
 
     /**

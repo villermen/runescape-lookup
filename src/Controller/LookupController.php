@@ -2,7 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Record;
+use App\Entity\DailyRecord;
+use App\Entity\PersonalRecord;
 use App\Entity\TrackedActivityFeedItem;
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
@@ -56,25 +57,24 @@ class LookupController extends Controller
             ], $query);
         }
 
-        return $this->forward(self::class . "::overviewAction", [
-            "oldSchool" => $oldSchool
-        ], $query);
+        return $this->forward(self::class . "::overviewAction", [], $query);
     }
 
     /**
-     * @param bool $oldSchool
      * @param EntityManagerInterface $entityManager
      * @param TimeKeeper $timeKeeper
      * @return Response
      */
-    public function overviewAction(bool $oldSchool, EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
+    public function overviewAction(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
     {
-        $dailyRecords = $entityManager->getRepository(Record::class)->findDailyRecords($timeKeeper->getUpdateTime(0), $oldSchool);
+        $dailyRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), false);
+        $dailyOldSchoolRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), true);
 
         $trackedPlayers = $entityManager->getRepository(TrackedPlayer::class)->findAll();
 
         return $this->render("lookup/overview.html.twig", [
             "dailyRecords" => $dailyRecords,
+            "dailyOldSchoolRecords" => $dailyOldSchoolRecords,
             "trackedPlayers" => $trackedPlayers,
             "updateTime" => $timeKeeper->getUpdateTime(1)->format("G:i"),
             "timezone" => date_default_timezone_get(),
@@ -93,7 +93,7 @@ class LookupController extends Controller
     public function playerAction(string $name, bool $oldSchool, EntityManagerInterface $entityManager,
         TimeKeeper $timeKeeper, PlayerDataFetcher $dataFetcher)
     {
-        // TODO: Track or retrack logic
+        // TODO: Track and retrack logic
 
         $error = "";
         $stats = false;
@@ -128,22 +128,21 @@ class LookupController extends Controller
 
                     $highScoreToday = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(0), $player, $oldSchool);
                     if ($highScoreToday) {
-                        $trainedToday = $highScoreToday->compareTo($stats);
+                        $trainedToday = $stats->compareTo($highScoreToday);
 
                         $highScoreYesterday = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(-1), $player, $oldSchool);
-
                         if ($highScoreYesterday) {
-                            $trainedYesterday = $highScoreYesterday->compareTo($highScoreToday);
+                            $trainedYesterday = $highScoreToday->compareTo($highScoreYesterday);
                         }
 
                         $highScoreWeek = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(-7), $player, $oldSchool);
                         if ($highScoreWeek) {
-                            $trainedWeek = $highScoreWeek->compareTo($highScoreToday);
+                            $trainedWeek = $highScoreToday->compareTo($highScoreWeek);
                         }
                     }
 
                     // Get records
-                    $records = $entityManager->getRepository(Record::class)->findHighestRecords($player, $oldSchool);
+                    $records = $entityManager->getRepository(PersonalRecord::class)->findHighestRecords($player, $oldSchool);
 
                     if (!$oldSchool) {
                         // Get tracked and live activity feed

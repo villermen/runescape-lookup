@@ -77,7 +77,7 @@
                             {% endif %}
                             {% if trainedYesterday %}
                                 <td>
-                                    {{ trainedYesterdaySkill.xpDifference }}
+                                    {{ trainedYesterdaySkill.xpDifference|number_format }}
                                 </td>
                                 <td style="color:{{ trainedYesterdaySkill.rankDifference|red_to_green(-1, 1) }}">
                                     {{ trainedYesterdaySkill.rankDifference|number_format }}
@@ -88,7 +88,7 @@
                                     {{ trainedWeekSkill.xpDifference|number_format }}
                                 </td>
                                 <td style="color:{{ trainedWeekSkill.rankDifference|red_to_green(-1, 1) }}">
-                                    {{ trainedWeekSkill.xpDifference|number_format }}
+                                    {{ trainedWeekSkill.rankDifference|number_format }}
                                 </td>
                             {% endif %}
                             {% if record %}
