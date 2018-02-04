@@ -57,15 +57,18 @@ class LookupController extends Controller
             ], $query);
         }
 
-        return $this->forward(self::class . "::overviewAction", [], $query);
+        return $this->forward(self::class . "::overviewAction", [
+            "name2" => $name2
+        ], $query);
     }
 
     /**
+     * @param string $name2
      * @param EntityManagerInterface $entityManager
      * @param TimeKeeper $timeKeeper
      * @return Response
      */
-    public function overviewAction(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
+    public function overviewAction(string $name2, EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
     {
         $dailyRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), false);
         $dailyOldSchoolRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), true);
@@ -78,7 +81,8 @@ class LookupController extends Controller
             "trackedPlayers" => $trackedPlayers,
             "updateTime" => $timeKeeper->getUpdateTime(1)->format("G:i"),
             "timezone" => date_default_timezone_get(),
-            "timeTillUpdate" => (new DateTime())->diff($timeKeeper->getUpdateTime(1))->format("%h:%I")
+            "timeTillUpdate" => (new DateTime())->diff($timeKeeper->getUpdateTime(1))->format("%h:%I"),
+            "name2" => $name2
         ]);
     }
 
