@@ -52,6 +52,7 @@ class Version20180130212055 extends AbstractMigration implements ContainerAwareI
             CHANGE time date DATE NOT NULL,
             CHANGE skill_id skill INT NOT NULL COMMENT \'(DC2Type:skill)\',
             CHANGE xp xp_gain INT NOT NULL,
+            ADD old_school TINYINT(1) NOT NULL,
             ADD UNIQUE INDEX UNIQ_1A0AA83DBF396750AA9E377A99E6F5DF (id, date, player_id),
             RENAME INDEX player_id TO IDX_1A0AA83D99E6F5DF,
             CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci
@@ -63,6 +64,7 @@ class Version20180130212055 extends AbstractMigration implements ContainerAwareI
             date DATE NOT NULL,
             skill INT NOT NULL COMMENT \'(DC2Type:skill)\',
             xp_gain INT NOT NULL,
+            old_school TINYINT(1) NOT NULL,
             INDEX IDX_6FB8738699E6F5DF (player_id),
             UNIQUE INDEX UNIQ_6FB87386BF396750AA9E377A99E6F5DF (id, date, player_id),
             PRIMARY KEY(id)
@@ -88,7 +90,7 @@ class Version20180130212055 extends AbstractMigration implements ContainerAwareI
 
         $this->addSql('ALTER TABLE personal_record ADD FOREIGN KEY FK_6FB8738699E6F5DF (player_id) REFERENCES player (id)');
         $this->addSql('ALTER TABLE daily_record ADD FOREIGN KEY FK_1A0AA83D99E6F5DF (player_id) REFERENCES player (id)');
-        $this->addSql('ALTER TABLE activity_feed_item ADD FOREIGN KEY FK_7894E9FE99E6F5DF (player_id) REFERENCES player (id), ADD UNIQUE INDEX UNIQ_7894E9FE99E6F5DF6F949845 (player_id, sequence_number)');
+        $this->addSql('ALTER TABLE activity_feed_item ADD FOREIGN KEY FK_7894E9FE99E6F5DF (player_id) REFERENCES player (id), ADD UNIQUE INDEX UNIQ_7894E9FE99E6F5DFF2803B3D (player_id, sequence_number)');
         $this->addSql('ALTER TABLE high_score ADD FOREIGN KEY FK_BA6ECA4399E6F5DF (player_id) REFERENCES player (id)');
     }
 

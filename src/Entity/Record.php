@@ -55,17 +55,26 @@ class Record
     protected $xpGain;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean")
+     */
+    protected $oldSchool;
+
+    /**
      * Constructs a DailyHighScore from a skill comparison.
      *
      * @param Player $player
      * @param HighScoreSkillComparison $comparison
+     * @param bool $oldSchool
      */
-    public function __construct(Player $player, HighScoreSkillComparison $comparison)
+    public function __construct(Player $player, HighScoreSkillComparison $comparison, bool $oldSchool)
     {
         $this->player = $player;
         $this->skill = $comparison->getSkill();
         $this->xpGain = $comparison->getXpDifference();
         $this->date = new DateTime();
+        $this->oldSchool = $oldSchool;
     }
 
     /**
