@@ -63,6 +63,7 @@ class TrackedHighScore extends SkillHighScore
     {
         parent::__construct($skills);
 
+        $this->player = $player;
         $this->oldSchool = $oldSchool;
         $this->date = new DateTime();
     }

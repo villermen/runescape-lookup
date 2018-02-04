@@ -60,7 +60,7 @@ class UpdateActivityFeedsCommand extends Command
         if (!$input->getOption("player")) {
             $players = $playerRepository->findActive();
         } else {
-            $player = $playerRepository->findOneBy(["name" => $input->getOption("player")]);
+            $player = $playerRepository->findByName($input->getOption("player"));
 
             if (!$player) {
                 throw new Exception("Player is not being tracked.");
@@ -99,9 +99,11 @@ class UpdateActivityFeedsCommand extends Command
                 $output->writeln(sprintf("Updated activity feed for %s with %d new items.", $player->getName(), count($newActivities)));
             } catch (FetchFailedException $exception) {
                 // Don't handle failed as this update should happen quite frequently and is easily correctable
-                $output->writeln(sprintf("Could not update activity feed for %s: <error>%s</error>", $player->getName(), $exception->getMessage()));
+                $output->writeln(sprintf("<error>Could not update activity feed for %s: %s</error>", $player->getName(), $exception->getMessage()));
             }
         }
+
+        $output->writeln("<info>Successfully updated activity feeds.</info>");
 
         return 0;
     }

@@ -5,7 +5,7 @@
 
     {% if not error %}
         <div class="infobox-container">
-            {{ include("component/player-infobox.html.twig", {"player": player, "mode": "lookup", "tracked": tracked}) }}
+            {{ include("component/player-infobox.html.twig", {"player": player, "mode": "lookup", "tracked": tracked, "oldSchool": oldSchool}) }}
         </div>
 
         <div class="horizontal-scroller">
@@ -108,19 +108,21 @@
             </table>
         </div>
 
-        <h2>Activity feed</h2>
-        {% if activityFeed %}
-            {% for activityFeedItem in activityFeed.items %}
-                <div class="activity">
-                    <div class="activity-title">{{ activityFeedItem.title }}</div>
-                    <div class="activity-time">{{ activityFeedItem.time|date }}</div>
-                    <div class="activity-description">{{ activityFeedItem.description }}</div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p>
-                Player's adventurer's log is private, or the request to it timed out.
-            </p>
+        {% if not oldSchool %}
+            <h2>Activity feed</h2>
+            {% if activityFeed %}
+                {% for activityFeedItem in activityFeed.items %}
+                    <div class="activity">
+                        <div class="activity-title">{{ activityFeedItem.title }}</div>
+                        <div class="activity-time">{{ activityFeedItem.time|date }}</div>
+                        <div class="activity-description">{{ activityFeedItem.description }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>
+                    Player's adventurer's log is private, or the request to it timed out.
+                </p>
+            {% endif %}
         {% endif %}
     {% endif %}
 {% endblock %}

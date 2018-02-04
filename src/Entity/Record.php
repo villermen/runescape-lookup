@@ -9,7 +9,7 @@ use Villermen\RuneScape\Player;
 use Villermen\RuneScape\Skill;
 
 /**
- * @ORM\MappedSuperclass()
+ * @ORM\Entity(repositoryClass="App\Repository\RecordRepository")
  * @ORM\Table(uniqueConstraints={
  *     @ORM\UniqueConstraint(columns={"id", "date", "player_id"})
  * })
@@ -62,19 +62,19 @@ class Record
     protected $oldSchool;
 
     /**
-     * Constructs a DailyHighScore from a skill comparison.
-     *
      * @param Player $player
-     * @param HighScoreSkillComparison $comparison
+     * @param Skill $skill
+     * @param int $xpGain
      * @param bool $oldSchool
+     * @param DateTime|null $date
      */
-    public function __construct(Player $player, HighScoreSkillComparison $comparison, bool $oldSchool)
+    public function __construct(Player $player, Skill $skill, int $xpGain, bool $oldSchool, ?DateTime $date = null)
     {
         $this->player = $player;
-        $this->skill = $comparison->getSkill();
-        $this->xpGain = $comparison->getXpDifference();
-        $this->date = new DateTime();
+        $this->skill = $skill;
+        $this->xpGain = $xpGain;
         $this->oldSchool = $oldSchool;
+        $this->date = $date ?? new DateTime();
     }
 
     /**
@@ -115,5 +115,13 @@ class Record
     public function getId(): int
     {
         return $this->id;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOldSchool(): bool
+    {
+        return $this->oldSchool;
     }
 }

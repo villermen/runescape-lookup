@@ -2,8 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\DailyRecord;
-use App\Entity\PersonalRecord;
+use App\Entity\Record;
 use App\Entity\TrackedActivityFeedItem;
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
@@ -35,44 +34,44 @@ class LookupController extends Controller
         // Forward to other actions based on parameters
         $name1 = $request->query->get("player1");
         $name2 = $request->query->get("player2");
+        $oldSchool = $request->query->has("oldschool");
 
-        // Remove player parameters but pass on the others when forwarding
+        // Remove standard parameters but pass on the others when forwarding
         $query = array_filter($request->query->all(), function($parameter) {
-            return !in_array($parameter, ["player1", "player2"]);
+            return !in_array($parameter, ["player1", "player2", "oldSchool"]);
         }, ARRAY_FILTER_USE_KEY);
 
         if ($name1) {
             if ($name2) {
-                return $this->forward(self::class . "::compareAction", array_merge([
+                return $this->forward(self::class . "::compareAction", [
                     "name1" => $name1,
-                    "name2" => $name2
-                ], $query));
+                    "name2" => $name2,
+                    "oldSchool" => $oldSchool
+                ], $query);
             }
 
-            return $this->forward(self::class . "::playerAction", array_merge([
-                "name" => $name1
-            ], $query));
+            return $this->forward(self::class . "::playerAction", [
+                "name" => $name1,
+                "oldSchool" => $oldSchool
+            ], $query);
         }
 
-        return $this->forward(self::class . "::overviewAction", [], $query);
+        return $this->forward(self::class . "::overviewAction", [
+            "oldSchool" => $oldSchool
+        ], $query);
     }
 
     /**
+     * @param bool $oldSchool
      * @param EntityManagerInterface $entityManager
      * @param TimeKeeper $timeKeeper
      * @return Response
      */
-    public function overviewAction(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
+    public function overviewAction(bool $oldSchool, EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
     {
-        $dailyRecords = $entityManager->getRepository(DailyRecord::class)->findBy(
-            ["date" => new DateTime()],
-            ["xpGain" => "desc"]
-        );
+        $dailyRecords = $entityManager->getRepository(Record::class)->findDailyRecords($timeKeeper->getUpdateTime(0), $oldSchool);
 
-        $trackedPlayers = $entityManager->getRepository(TrackedPlayer::class)->findBy(
-            [],
-            ["name" => "asc"]
-        );
+        $trackedPlayers = $entityManager->getRepository(TrackedPlayer::class)->findAll();
 
         return $this->render("lookup/overview.html.twig", [
             "dailyRecords" => $dailyRecords,
@@ -85,15 +84,17 @@ class LookupController extends Controller
 
     /**
      * @param string $name
+     * @param bool $oldSchool
      * @param EntityManagerInterface $entityManager
-     * @param Request $request
      * @param TimeKeeper $timeKeeper
      * @param PlayerDataFetcher $dataFetcher
      * @return Response
      */
-    public function playerAction(string $name, EntityManagerInterface $entityManager, Request $request,
+    public function playerAction(string $name, bool $oldSchool, EntityManagerInterface $entityManager,
         TimeKeeper $timeKeeper, PlayerDataFetcher $dataFetcher)
     {
+        // TODO: Track or retrack logic
+
         $error = "";
         $stats = false;
         $trainedToday = false;
@@ -103,7 +104,7 @@ class LookupController extends Controller
         $activityFeed = false;
 
         // Try to obtain a tracked player from the database
-        $player = $entityManager->getRepository(TrackedPlayer::class)->findOneBy(["name" => $name]);
+        $player = $entityManager->getRepository(TrackedPlayer::class)->findByName($name);
         if (!$player) {
             try {
                 $player = new Player($name, $dataFetcher);
@@ -115,11 +116,7 @@ class LookupController extends Controller
         if ($player) {
             // Fetch live stats
             try {
-                if ($request->query->has("oldschool")) {
-                    $stats = $player->getOldSchoolSkillHighScore();
-                } else {
-                    $stats = $player->getSkillHighScore();
-                }
+                $stats = $oldSchool ? $player->getOldSchoolSkillHighScore() : $player->getSkillHighScore();
             } catch (FetchFailedException $exception) {
                 $error = "Could not fetch player stats.";
             }
@@ -129,31 +126,35 @@ class LookupController extends Controller
                     // Fetch and compare tracked stats
                     $trackedHighScoreRepository = $entityManager->getRepository(TrackedHighScore::class);
 
-                    $highScoreToday = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(0)]);
+                    $highScoreToday = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(0), $player, $oldSchool);
                     if ($highScoreToday) {
                         $trainedToday = $highScoreToday->compareTo($stats);
 
-                        $highScoreYesterday = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(-1)]);
+                        $highScoreYesterday = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(-1), $player, $oldSchool);
 
                         if ($highScoreYesterday) {
                             $trainedYesterday = $highScoreYesterday->compareTo($highScoreToday);
                         }
 
-                        $highScoreWeek = $trackedHighScoreRepository->findOneBy(["date" => $timeKeeper->getUpdateTime(-7)]);
+                        $highScoreWeek = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(-7), $player, $oldSchool);
                         if ($highScoreWeek) {
                             $trainedWeek = $highScoreWeek->compareTo($highScoreToday);
                         }
                     }
 
                     // Get records
-                    $records = $entityManager->getRepository(PersonalRecord::class)->findLatestRecords($player);
+                    $records = $entityManager->getRepository(Record::class)->findHighestRecords($player, $oldSchool);
 
-                    // Get tracked and live activity feed
-                    $activityFeed = $entityManager->getRepository(TrackedActivityFeedItem::class)->findByPlayer($player, true);
+                    if (!$oldSchool) {
+                        // Get tracked and live activity feed
+                        $activityFeed = $entityManager->getRepository(TrackedActivityFeedItem::class)->findByPlayer($player, true);
+                    }
                 } else {
                     // Only fetch live activity feed
                     try {
-                        $activityFeed = $player->getActivityFeed();
+                        if (!$oldSchool) {
+                            $activityFeed = $player->getActivityFeed();
+                        }
                     } catch (FetchFailedException $exception) {
                     }
                 }
@@ -170,20 +171,25 @@ class LookupController extends Controller
             "trainedWeek" => $trainedWeek,
             "name1" => $name,
             "records" => $records,
-            "activityFeed" => $activityFeed
+            "activityFeed" => $activityFeed,
+            "oldSchool" => $oldSchool
         ]);
     }
 
     /**
      * @param string $name1
      * @param string $name2
+     * @param bool $oldSchool
      * @return Response
      */
-    public function compareAction(string $name1, string $name2)
+    public function compareAction(string $name1, string $name2, bool $oldSchool)
     {
+        // TODO: Implement
+
         return $this->render("lookup/compare.html.twig", [
             "name1" => $name1,
-            "name2" => $name2
+            "name2" => $name2,
+            "oldSchool" => $oldSchool
         ]);
     }
 }
