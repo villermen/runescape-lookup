@@ -9,16 +9,18 @@
         <h1>{{ player.name }}</h1>
 
         <p>
-            {% if not oldSchool %}
-                <a href="{{ player.runeMetricsUrl }}">RuneMetrics</a>
+            {% if mode == "lookup" %}
+                <a href="{{ path("lookup_index", {"player1": player.name, "oldschool": not oldSchool}) }}">{{ oldSchool ? "RS3" : "OSRS" }}</a>
+            {% else %}
+                <a href="{{ path("lookup_index", {"player1": player.name, "oldschool": oldSchool}) }}">Details</a>
             {% endif %}
 
-            {% if mode == "compare" %}
-                | <a href="{{ path("lookup_index", {"player1": player.name}) }}">Look up</a>
+            {% if not oldSchool %}
+                | <a href="{{ player.runeMetricsUrl }}">RuneMetrics</a>
             {% endif %}
 
             {% if not tracked or not player.active %}
-                | <a href="{{ path("lookup_index", {"player1": player.name, "track": true}) }}">Track</a>
+                | <a href="{{ path("lookup_index", {"player1": player.name, "track": true, "oldschool": oldSchool}) }}">Track</a>
             {% endif %}
         </p>
 

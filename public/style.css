@@ -146,6 +146,9 @@ th>a {
     display: inline-block;
     vertical-align: top;
 }
+.nolifer-table-container--rs3 {
+    margin-right: 30px;
+}
 .dataTables_wrapper {
 	display: inline;
 }

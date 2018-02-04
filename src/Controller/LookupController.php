@@ -35,7 +35,7 @@ class LookupController extends Controller
         // Forward to other actions based on parameters
         $name1 = $request->query->get("player1");
         $name2 = $request->query->get("player2");
-        $oldSchool = $request->query->has("oldschool");
+        $oldSchool = (bool)$request->query->get("oldschool");
 
         // Remove standard parameters but pass on the others when forwarding
         $query = array_filter($request->query->all(), function($parameter) {

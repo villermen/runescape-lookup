@@ -14,10 +14,10 @@
         Stats update daily at {{ updateTime }} {{ timezone }} (that's in {{ timeTillUpdate }}).
     </p>
 
-    <div class="nolifer-table-container">
+    <div class="nolifer-table-container nolifer-table-container--rs3">
         <h3>RS3</h3>
 
-        <table class="nolifer-table dataTable">
+        <table class="nolifer-table nolifer-table--rs3 dataTable">
             <thead>
                 <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
             </thead>
@@ -34,17 +34,17 @@
         </table>
     </div>
 
-    <div class="nolifer-table-container">
+    <div class="nolifer-table-container nolifer-table-container--osrs">
         <h3>OSRS</h3>
 
-        <table class="nolifer-table dataTable">
+        <table class="nolifer-table nolifer-table--osrs dataTable">
             <thead>
                 <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
             </thead>
 
             <tbody>
                 {% for record in dailyOldSchoolRecords %}
-                    <tr data-href="{{ path("lookup_index", {"player1": record.player.name}) }}">
+                    <tr data-href="{{ path("lookup_index", {"player1": record.player.name, "oldschool": true}) }}">
                         <td>{{ record.skill.name }}</td>
                         <td>{{ record.player.name }}</td>
                         <td>{{ record.xpGain|number_format }}</td>
