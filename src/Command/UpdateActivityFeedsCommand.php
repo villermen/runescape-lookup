@@ -8,6 +8,7 @@ use App\Service\TimeKeeper;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,6 +17,8 @@ use Villermen\RuneScape\Exception\FetchFailedException;
 
 class UpdateActivityFeedsCommand extends Command
 {
+    use LockableTrait;
+
     /** @var EntityManagerInterface */
     protected $entityManager;
 
@@ -41,12 +44,16 @@ class UpdateActivityFeedsCommand extends Command
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return void
+     * @return int
      * @throws Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        // TODO: Lock
+        if (!$this->lock()) {
+            $output->writeln("<error>Command is already running in another process.</error>");
+
+            return 1;
+        }
 
         $playerRepository = $this->entityManager->getRepository(TrackedPlayer::class);
 
@@ -95,5 +102,7 @@ class UpdateActivityFeedsCommand extends Command
                 $output->writeln(sprintf("Could not update activity feed for %s: <error>%s</error>", $player->getName(), $exception->getMessage()));
             }
         }
+
+        return 0;
     }
 }
