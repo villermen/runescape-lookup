@@ -134,9 +134,7 @@ class UpdateHighScoresCommand extends Command
             $highScore = $oldSchool ? $player->getOldSchoolSkillHighScore() : $player->getSkillHighScore();
 
             // Fix name if readily available
-            if ($player->getDataFetcher()->getCachedRealName($player->getName())) {
-                $player->fixName();
-            }
+            $player->fixNameIfCached();
 
             $trackedHighScore = new TrackedHighScore($highScore->getSkills(), $player, $oldSchool);
 

@@ -92,13 +92,12 @@ class LookupController extends Controller
      * @param EntityManagerInterface $entityManager
      * @param TimeKeeper $timeKeeper
      * @param PlayerDataFetcher $dataFetcher
+     * @param Request $request
      * @return Response
      */
     public function playerAction(string $name, bool $oldSchool, EntityManagerInterface $entityManager,
-        TimeKeeper $timeKeeper, PlayerDataFetcher $dataFetcher)
+        TimeKeeper $timeKeeper, PlayerDataFetcher $dataFetcher, Request $request)
     {
-        // TODO: Track and retrack logic
-
         $error = "";
         $stats = false;
         $trainedToday = false;
@@ -121,11 +120,38 @@ class LookupController extends Controller
             // Fetch live stats
             try {
                 $stats = $oldSchool ? $player->getOldSchoolSkillHighScore() : $player->getSkillHighScore();
+
+                $player->fixNameIfCached();
             } catch (FetchFailedException $exception) {
                 $error = "Could not fetch player stats.";
             }
 
             if ($stats) {
+                // Track or retrack player
+                if ($request->query->get("track")) {
+                    if (!($player instanceof TrackedPlayer)) {
+                        /** @noinspection PhpUnhandledExceptionInspection */
+                        $player = new TrackedPlayer($player->getName());
+                        $entityManager->persist($player);
+                        $entityManager->flush();
+
+                        return $this->redirectToRoute("lookup_index", [
+                            "player1" => $player->getName(),
+                            "oldschool" => $oldSchool
+                        ]);
+                    } elseif (!$player->isActive()) {
+                        $player->setActive(true);
+                        $entityManager->flush();
+
+                        return $this->redirectToRoute("lookup_index", [
+                            "player1" => $player->getName(),
+                            "oldschool" => $oldSchool
+                        ]);
+                    } else {
+                        $error = "Player is already being tracked.";
+                    }
+                }
+
                 if ($player instanceof TrackedPlayer) {
                     // Fetch and compare tracked stats
                     $trackedHighScoreRepository = $entityManager->getRepository(TrackedHighScore::class);
