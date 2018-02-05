@@ -80,7 +80,6 @@ class LookupController extends Controller
             "dailyOldSchoolRecords" => $dailyOldSchoolRecords,
             "trackedPlayers" => $trackedPlayers,
             "updateTime" => $timeKeeper->getUpdateTime(1)->format("G:i"),
-            "timezone" => date_default_timezone_get(),
             "timeTillUpdate" => (new DateTime())->diff($timeKeeper->getUpdateTime(1))->format("%h:%I"),
             "name2" => $name2
         ]);
