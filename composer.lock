@@ -2808,16 +2808,16 @@
         },
         {
             "name": "villermen/runescape-lookup-commons",
-            "version": "v4.2.0",
+            "version": "v4.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/villermen/runescape-lookup-commons.git",
-                "reference": "fad44ef24682af88239d74bba89dd41dceaa1720"
+                "reference": "3e24dadbdc5e20b755280e5110f4ca0a1758b04c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/fad44ef24682af88239d74bba89dd41dceaa1720",
-                "reference": "fad44ef24682af88239d74bba89dd41dceaa1720",
+                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/3e24dadbdc5e20b755280e5110f4ca0a1758b04c",
+                "reference": "3e24dadbdc5e20b755280e5110f4ca0a1758b04c",
                 "shasum": ""
             },
             "require": {
@@ -2838,7 +2838,7 @@
                 "MIT"
             ],
             "description": "A PHP library containing RuneScape lookup components.",
-            "time": "2018-02-04T23:26:51+00:00"
+            "time": "2018-02-05T01:42:22+00:00"
         },
         {
             "name": "zendframework/zend-code",

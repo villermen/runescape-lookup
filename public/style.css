@@ -73,6 +73,7 @@ a {
 table {
 	border-collapse: collapse;
     border: 1px solid #505050;
+    margin-bottom: 1rem;
 }
 th,
 td {
@@ -102,7 +103,8 @@ th {
 	width: 25px;
 }
 .center {
-	margin: auto;
+	margin-left: auto;
+	margin-right: auto;
 }
 th>a {
 	color: #B0B0B0;
@@ -128,9 +130,6 @@ th>a {
 }
 .spacer-cell {
 	width: 50px;
-	background-color: black !important;
-	border-top-color: black;
-	border-bottom-color: black;
 }
 .compare-table {
 	width: 1250px;

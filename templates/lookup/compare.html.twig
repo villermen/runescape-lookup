@@ -61,28 +61,28 @@
                             <td style="color:{{ levelColor1 }}">
                                 {{ skill1.xp|number_format }}
                             </td>
-                            <td style="color:{{ skill1.rank|red_to_green(1000000, 1) }}">
-                                {{ skill1.rank|number_format }}
+                            <td style="color:{{ skill1.rank|red_to_green(1000000, 1) }}" data-order="{{ skill1.rank ? skill1.rank : 10000000 }}">
+                                {{ skill1.rank ? skill1.rank|number_format : "" }}
                             </td>
                             {% if trained1 %}
-                                <td>
+                                <td style="color:{{ trainedSkill1.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedSkill1.xpDifference }}">
                                     {{ trainedSkill1.xpDifference|format_difference }}
                                 </td>
                             {% endif %}
 
                             <td class="spacer-cell"></td>
 
-                            <td style="color:{{ comparisonSkill.virtualLevelDifference|red_to_green(-1, 1) }}">
+                            <td style="color:{{ comparisonSkill.virtualLevelDifference|red_to_green(-1, 1) }}" data-order="{{ comparisonSkill.virtualLevelDifference }}">
                                 {{ comparisonSkill.virtualLevelDifference|format_difference }}
                             </td>
-                            <td style="color:{{ comparisonSkill.xpDifference|red_to_green(-1, 1) }}">
+                            <td style="color:{{ comparisonSkill.xpDifference|red_to_green(-1, 1) }}" data-order="{{ comparisonSkill.xpDifference }}">
                                 {{ comparisonSkill.xpDifference|format_difference }}
                             </td>
-                            <td style="color:{{ comparisonSkill.rankDifference|red_to_green(-1, 1) }}">
-                                {{ comparisonSkill.rankDifference|format_difference }}
+                            <td style="color:{{ comparisonSkill.rankDifference|red_to_green(-1, 1) }}" data-order="{{ comparisonSkill.rankDifference }}">
+                                {{ comparisonSkill.rankDifference ? comparisonSkill.rankDifference|format_difference : "" }}
                             </td>
                             {% if trained1 and trained2 %}
-                                <td style="color:{{ (trainedSkill1.xpDifference - trained2Skill.xpDifference)|red_to_green(-1, 1) }}">
+                                <td style="color:{{ (trainedSkill1.xpDifference - trained2Skill.xpDifference)|red_to_green(-1, 1) }}" data-order="{{ (trainedSkill1.xpDifference - trained2Skill.xpDifference) }}">
                                     {{ (trainedSkill1.xpDifference  - trained2Skill.xpDifference)|format_difference }}
                                 </td>
                             {% endif %}
@@ -95,11 +95,11 @@
                             <td style="color:{{ levelColor2 }}">
                                 {{ skill2.xp|number_format }}
                             </td>
-                            <td style="color:{{ skill2.rank|red_to_green(1000000, 1) }}">
-                                {{ skill2.rank|number_format }}
+                            <td style="color:{{ skill2.rank|red_to_green(1000000, 1) }}" data-order="{{ skill2.rank ? skill2.rank : 10000000 }}">
+                                {{ skill2.rank ? skill2.rank|number_format : "" }}
                             </td>
                             {% if trained2 %}
-                                <td>
+                                <td style="color:{{ trainedSkill2.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedSkill2.xpDifference }}">
                                     {{ trainedSkill2.xpDifference|format_difference }}
                                 </td>
                             {% endif %}

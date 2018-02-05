@@ -55,42 +55,42 @@
                             <td style="color:{{ levelColor }}">
                                 {{ skill.xp|number_format }}
                             </td>
-                            <td style="color:{{ skill.rank|red_to_green(1000000, 1) }}">
-                                {{ skill.rank|number_format }}
+                            <td style="color:{{ skill.rank|red_to_green(1000000, 1) }}" data-order="{{ skill.rank ? skill.rank : 10000000 }}">
+                                {{ skill.rank ? skill.rank|number_format : "" }}
                             </td>
                             <td style="color:{{ progressColor }}" data-order="{{ skill.xpToNextLevel ?: 100000000 }}">
                                 {% if skill.xpToNextLevel %}
                                     {{ skill.xpToNextLevel|number_format }}
                                 {% endif %}
                             </td>
-                            <td style="color:{{ progressColor }}">
+                            <td style="color:{{ progressColor }}" data-order="{{ skill.progressToNextLevel }}">
                                 {% if skill.xpToNextLevel %}
                                     {{ (skill.progressToNextLevel * 100)|number_format(2) }}%
                                 {% endif %}
                             </td>
                             {% if trainedToday %}
-                                <td style="color:{{ trainedTodaySkill.xpDifference|red_to_green(-1, 1) }}">
+                                <td style="color:{{ trainedTodaySkill.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedTodaySkill.xpDifference }}">
                                     {{ trainedTodaySkill.xpDifference|format_difference }}
                                 </td>
                             {% endif %}
                             {% if trainedYesterday %}
-                                <td style="color:{{ trainedYesterdaySkill.xpDifference|red_to_green(-1, 1) }}">
+                                <td style="color:{{ trainedYesterdaySkill.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedYesterdaySkill.xpDifference }}">
                                     {{ trainedYesterdaySkill.xpDifference|format_difference }}
                                 </td>
-                                <td style="color:{{ trainedYesterdaySkill.rankDifference|red_to_green(-1, 1) }}">
+                                <td style="color:{{ trainedYesterdaySkill.rankDifference|red_to_green(-1, 1) }}" data-order="{{ trainedYesterdaySkill.rankDifference }}">
                                     {{ trainedYesterdaySkill.rankDifference|format_difference }}
                                 </td>
                             {% endif %}
                             {% if trainedWeek %}
-                                <td style="color:{{ trainedWeekSkill.xpDifference|red_to_green(-1, 1) }}">
+                                <td style="color:{{ trainedWeekSkill.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedWeekSkill.xpDifference }}">
                                     {{ trainedWeekSkill.xpDifference|format_difference }}
                                 </td>
-                                <td style="color:{{ trainedWeekSkill.rankDifference|red_to_green(-1, 1) }}">
+                                <td style="color:{{ trainedWeekSkill.rankDifference|red_to_green(-1, 1) }}" data-order="{{ trainedWeekSkill.rankDifference }}">
                                     {{ trainedWeekSkill.rankDifference|format_difference }}
                                 </td>
                             {% endif %}
                             {% if record %}
-                                <td>
+                                <td data-order="{{ record.xpGain }}">
                                     {{ record.xpGain|format_difference }}
                                 </td>
                                 <td data-order="{{ record.date.timestamp }}">

@@ -1,14 +1,16 @@
 {% set name1 = name1 is defined ? name1 : "" %}
 {% set name2 = name2 is defined ? name2 : "" %}
+{% set oldSchool = oldSchool is defined ? oldSchool : false %}
 
 <div class="forms">
     <form method="get" class="lookup-form" action="{{ path("lookup_index") }}">
         <input type="text" name="player1" maxlength="12" placeholder="New user" value="{{ name1 }}" tabindex="1" />
+        <input type="hidden" name="oldschool" value="{{ oldSchool }}" />
     </form>
 
     <br class="mobile-show" />
 
-    <a href="{{ path("lookup_index", {"player1": name2, "player2": name1}) }}" tabindex="3">
+    <a href="{{ path("lookup_index", {"player1": name2, "player2": name1, "oldschool": oldSchool}) }}" tabindex="3">
         <img class="swapicon" src="{{ asset("swapicon.png") }}" alt="Swap players" title="Swap players" />
     </a>
 
@@ -16,8 +18,8 @@
 
     <form method="get" class="compare-form" action="{{ path("lookup_index") }}">
         <input type="hidden" name="player1" value="{{ name1 }}" />
-        <input type="text" name="player2" value="{{ name2 }}" maxlength="12"
-               placeholder="Compare with" tabindex="2" />
+        <input type="text" name="player2" value="{{ name2 }}" maxlength="12" placeholder="Compare with" tabindex="2" />
+        <input type="hidden" name="oldschool" value="{{ oldSchool }}" />
     </form>
 </div>
 
