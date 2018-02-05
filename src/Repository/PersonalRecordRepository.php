@@ -27,7 +27,8 @@ class PersonalRecordRepository extends EntityRepository
             ->setParameter("player", $player)
             ->setParameter("oldSchool", $oldSchool)
             ->addGroupBy("record.skill")
-            ->andHaving($qb->expr()->eq("record.date", "MAX(record.date)"))
+            ->addGroupBy("record.id")
+            ->andHaving($qb->expr()->eq("record.xpGain", "MAX(record.xpGain)"))
             ->getQuery()
             ->getResult();
 
