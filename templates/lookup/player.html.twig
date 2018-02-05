@@ -106,21 +106,15 @@
             </table>
         </div>
 
-        {% if not oldSchool %}
+        {% if not oldSchool and activityFeed and activityFeed.items is not empty %}
             <h2>Activity feed</h2>
-            {% if activityFeed %}
-                {% for activityFeedItem in activityFeed.items %}
-                    <div class="activity">
-                        <div class="activity-title">{{ activityFeedItem.title }}</div>
-                        <div class="activity-time">{{ activityFeedItem.time|date }}</div>
-                        <div class="activity-description">{{ activityFeedItem.description }}</div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>
-                    Player's adventurer's log is private, or the request to it timed out.
-                </p>
-            {% endif %}
+            {% for activityFeedItem in activityFeed.items %}
+                <div class="activity">
+                    <div class="activity-title">{{ activityFeedItem.title }}</div>
+                    <div class="activity-time">{{ activityFeedItem.time|date }}</div>
+                    <div class="activity-description">{{ activityFeedItem.description }}</div>
+                </div>
+            {% endfor %}
         {% endif %}
     {% endif %}
 {% endblock %}

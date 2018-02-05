@@ -73,7 +73,6 @@ a {
 table {
 	border-collapse: collapse;
     border: 1px solid #505050;
-    margin-bottom: 1rem;
 }
 th,
 td {
@@ -173,6 +172,7 @@ th>a {
 .horizontal-scroller {
 	white-space: nowrap;
 	overflow-x: auto;
+    margin-bottom: 1rem;
 }
 .sorting,
 .sorting_asc,
