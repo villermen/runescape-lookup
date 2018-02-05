@@ -4,12 +4,12 @@
     {{ include("component/lookup-form.html.twig") }}
 
     {% if not error %}
-        <div class="infobox-container">
-            {{ include("component/player-infobox.html.twig", {"player": player1, "mode": "compare", "tracked": tracked1, "oldSchool": oldSchool}) }}
-            {{ include("component/player-infobox.html.twig", {"player": player2, "mode": "compare", "tracked": tracked2, "oldSchool": oldSchool}) }}
-        </div>
-
         <div class="horizontal-scroller">
+            <div class="infobox-container">
+                {{ include("component/player-infobox.html.twig", {"player": player1, "mode": "compare", "tracked": tracked1, "oldSchool": oldSchool}) }}
+                {{ include("component/player-infobox.html.twig", {"player": player2, "mode": "compare", "tracked": tracked2, "oldSchool": oldSchool}) }}
+            </div>
+
             <table class="center dataTable row-select compare-table">
                 <thead>
                     <tr>

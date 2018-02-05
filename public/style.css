@@ -40,24 +40,38 @@ input {
 	vertical-align: middle;
 	height: 27px;
 }
+.infobox-container {
+    position: relative;
+    height: 150px;
+    width: 100%;
+    margin: 0 auto;
+}
 .infobox {
-	display: inline-flex;
-	min-height: 100px;
+    height: 150px;
     margin: 0 20px;
+    display: inline-block;
 }
 .infobox-text {
 	display: inline-block;
 	vertical-align: top;
+    margin: 0 20px;
 }
 .infobox-avatar {
-	background-position: bottom;
-	background-repeat: no-repeat;
+    vertical-align: bottom;
+    max-height: 150px;
+    width: 100px;
 }
-.avatar-chat {
-	width: 100px;
+.infobox-avatar--body {
+    width: 60px;
+    margin-right: 40px;
 }
-.avatar-body {
-	width: 60px;
+.infobox--compare {
+    position: absolute;
+    left: 0;
+}
+.infobox--compare:nth-child(2) {
+    right: 0;
+    left: unset;
 }
 .statstable {
 	margin: auto;
@@ -134,9 +148,6 @@ th>a {
 }
 .compare-table {
 	width: 1250px;
-}
-.infobox-container {
-	margin: auto;
 }
 .error {
 	color: red;
@@ -230,8 +241,5 @@ th>a {
 	}
 	.mobile-hide {
 		display: none;
-	}
-	.infobox-text {
-		order: -1;
 	}
 }

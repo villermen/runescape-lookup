@@ -42,7 +42,10 @@
                     paging: false,
                     searching: false,
                     info: false,
-                    sorting: []
+                    sorting: [],
+                    drawCallback: function() {
+                        $(".infobox-container").css("width", $(this).css("width"));
+                    }
                 });
             </script>
         {% endblock %}
