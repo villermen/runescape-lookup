@@ -6,6 +6,7 @@
         "ext-iconv": "*",
         "symfony/asset": "^4.0",
         "symfony/console": "^4.0",
+        "symfony/dotenv": "^4.0",
         "symfony/flex": "^1.0",
         "symfony/framework-bundle": "^4.0",
         "symfony/lock": "^4.0",
@@ -17,7 +18,6 @@
     },
     "require-dev": {
         "symfony/debug-pack": "^1.0",
-        "symfony/dotenv": "^4.0",
         "symfony/profiler-pack": "^1.0",
         "symfony/var-dumper": "^4.0",
         "symfony/web-server-bundle": "^4.0"
