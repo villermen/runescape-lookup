@@ -44,7 +44,9 @@
                     info: false,
                     sorting: [],
                     drawCallback: function() {
-                        $(".infobox-container").css("width", $(this).css("width"));
+                        if ($(this).hasClass("compare-table")) {
+                            $(".infobox-container").css("width", $(this).css("width"));
+                        }
                     }
                 });
             </script>

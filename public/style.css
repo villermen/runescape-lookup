@@ -45,11 +45,12 @@ input {
     height: 150px;
     width: 100%;
     margin: 0 auto;
+    overflow: hidden;
 }
 .infobox {
     height: 150px;
     margin: 0 20px;
-    display: inline-block;
+    white-space: nowrap;
 }
 .infobox-text {
 	display: inline-block;
