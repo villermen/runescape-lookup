@@ -10,7 +10,8 @@ class Formatter extends Twig_Extension
     public function getFilters()
     {
         return [
-            new Twig_SimpleFilter("red_to_green", [$this, "redToGreen"])
+            new Twig_SimpleFilter("red_to_green", [$this, "redToGreen"]),
+            new Twig_SimpleFilter("format_difference", [$this, "formatDifference"])
         ];
     }
 
@@ -22,7 +23,7 @@ class Formatter extends Twig_Extension
      * @param float $greenBound
      * @return string
      */
-    public function redToGreen(float $value, float $redBound = 0, float $greenBound = 1)
+    public function redToGreen(float $value, float $redBound = 0, float $greenBound = 1): string
     {
         $fraction = ($value - $redBound) / ($greenBound - $redBound);
         $fraction = max(0, min(1, $fraction));
@@ -37,5 +38,18 @@ class Formatter extends Twig_Extension
         }
 
         return sprintf("#%06X", $redComponent * 256 * 256 + $greenComponent * 256);
+    }
+
+    /**
+     * @param float $difference
+     * @return string
+     */
+    public function formatDifference(float $difference): string
+    {
+        if (!$difference) {
+            return "=";
+        }
+
+        return ($difference > 0 ? "+" : "") . number_format($difference);
     }
 }

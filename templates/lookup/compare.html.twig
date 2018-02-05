@@ -1,0 +1,115 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    {{ include("component/lookup-form.html.twig") }}
+
+    {% if not error %}
+        <div class="infobox-container">
+            {{ include("component/player-infobox.html.twig", {"player": player1, "mode": "compare", "tracked": tracked1, "oldSchool": oldSchool}) }}
+            {{ include("component/player-infobox.html.twig", {"player": player2, "mode": "compare", "tracked": tracked2, "oldSchool": oldSchool}) }}
+        </div>
+
+        <div class="horizontal-scroller">
+            <table class="center dataTable row-select compare-table">
+                <thead>
+                    <tr>
+                        <th>Skill</th>
+                        <th>Level</th>
+                        <th>XP</th>
+                        <th>Rank</th>
+                        {% if trained1 %}
+                            <th>Trained</th>
+                        {% endif %}
+
+                        <th class="spacer-cell">
+
+                        <th>Level</th>
+                        <th>XP</th>
+                        <th>Rank</th>
+                        {% if trained1 and trained2 %}
+                            <th>Trained</th>
+                        {% endif %}
+
+                        <th class="spacer-cell">
+
+                        <th>Level</th>
+                        <th>XP</th>
+                        <th>Rank</th>
+                        {% if trained2 %}
+                            <th>Trained</th>
+                        {% endif %}
+                        <th>Skill</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for skill1 in stats1.skills %}
+                        {% set skill2 = stats2.getSkill(skill1.skill.id) %}
+                        {% set trainedSkill1 = trained1 ? trained1.getSkill(skill1.skill.id) : false %}
+                        {% set trainedSkill2 = trained2 ? trained2.getSkill(skill1.skill.id) : false %}
+                        {% set comparisonSkill = comparison.getSkill(skill1.skill.id) %}
+
+                        {% set levelColor1 = skill1.level|red_to_green(0, 69) %}
+                        {% set levelColor2 = skill2.level|red_to_green(0, 69) %}
+
+                        <tr>
+                            <td style="color:{{ levelColor1 }}">
+                                {{ skill1.name }}
+                            </td>
+                            <td style="color:{{ levelColor1 }}">
+                                {{ skill1.virtualLevel }}
+                            </td>
+                            <td style="color:{{ levelColor1 }}">
+                                {{ skill1.xp|number_format }}
+                            </td>
+                            <td style="color:{{ skill1.rank|red_to_green(1000000, 1) }}">
+                                {{ skill1.rank|number_format }}
+                            </td>
+                            {% if trained1 %}
+                                <td>
+                                    {{ trainedSkill1.xpDifference|format_difference }}
+                                </td>
+                            {% endif %}
+
+                            <td class="spacer-cell"></td>
+
+                            <td style="color:{{ comparisonSkill.virtualLevelDifference|red_to_green(-1, 1) }}">
+                                {{ comparisonSkill.virtualLevelDifference|format_difference }}
+                            </td>
+                            <td style="color:{{ comparisonSkill.xpDifference|red_to_green(-1, 1) }}">
+                                {{ comparisonSkill.xpDifference|format_difference }}
+                            </td>
+                            <td style="color:{{ comparisonSkill.rankDifference|red_to_green(-1, 1) }}">
+                                {{ comparisonSkill.rankDifference|format_difference }}
+                            </td>
+                            {% if trained1 and trained2 %}
+                                <td style="color:{{ (trainedSkill1.xpDifference - trained2Skill.xpDifference)|red_to_green(-1, 1) }}">
+                                    {{ (trainedSkill1.xpDifference  - trained2Skill.xpDifference)|format_difference }}
+                                </td>
+                            {% endif %}
+
+                            <td class="spacer-cell"></td>
+
+                            <td style="color:{{ levelColor2 }}">
+                                {{ skill2.virtualLevel }}
+                            </td>
+                            <td style="color:{{ levelColor2 }}">
+                                {{ skill2.xp|number_format }}
+                            </td>
+                            <td style="color:{{ skill2.rank|red_to_green(1000000, 1) }}">
+                                {{ skill2.rank|number_format }}
+                            </td>
+                            {% if trained2 %}
+                                <td>
+                                    {{ trainedSkill2.xpDifference|format_difference }}
+                                </td>
+                            {% endif %}
+                            <td style="color:{{ levelColor2 }}">
+                                {{ skill1.name }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}

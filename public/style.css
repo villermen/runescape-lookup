@@ -43,6 +43,7 @@ input {
 .infobox {
 	display: inline-flex;
 	min-height: 100px;
+    margin: 0 20px;
 }
 .infobox-text {
 	display: inline-block;
@@ -71,12 +72,12 @@ a {
 }
 table {
 	border-collapse: collapse;
+    border: 1px solid #505050;
 }
 th,
 td {
 	background-color: black;
 	height: 21px;
-	border: 1px solid #505050;
 	padding: 4px 6px;
 	text-align: center;
 }
@@ -162,7 +163,7 @@ th>a {
 }
 .tracked-player {
     color: lime;
-    padding: 12px;
+    padding: 6px 12px;
     margin: 0;
     display: inline-block;
     border: 1px solid #505050;
@@ -187,10 +188,15 @@ th>a {
 }
 
 /* fixed first column */
+.lookup-table {
+    border-left-width: 0;
+}
 .lookup-table td:first-child,
 .lookup-table th:first-child {
 	position: absolute;
 	width: 160px;
+    border-right: 1px solid #505050;
+    border-left: 1px solid #505050;
 }
 .lookup-table td:nth-child(2),
 .lookup-table th:nth-child(2) {

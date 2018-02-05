@@ -63,12 +63,12 @@ class LookupController extends Controller
     }
 
     /**
-     * @param string $name2
+     * @param string|null $name2
      * @param EntityManagerInterface $entityManager
      * @param TimeKeeper $timeKeeper
      * @return Response
      */
-    public function overviewAction(string $name2, EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
+    public function overviewAction($name2, EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
     {
         $dailyRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), false);
         $dailyOldSchoolRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), true);
@@ -86,6 +86,7 @@ class LookupController extends Controller
         ]);
     }
 
+    /** @noinspection PhpDocMissingThrowsInspection */
     /**
      * @param string $name
      * @param bool $oldSchool
@@ -211,14 +212,103 @@ class LookupController extends Controller
      * @param bool $oldSchool
      * @return Response
      */
-    public function compareAction(string $name1, string $name2, bool $oldSchool)
+    public function compareAction(string $name1, string $name2, bool $oldSchool,
+        EntityManagerInterface $entityManager, PlayerDataFetcher $dataFetcher, TimeKeeper $timeKeeper)
     {
-        // TODO: Implement
+        $error = "";
+        $stats1 = false;
+        $stats2 = false;
+        $trained1 = false;
+        $trained2 = false;
+        $player2 = false;
+        $comparison = false;
+
+        // Get player objects
+        $player1 = $entityManager->getRepository(TrackedPlayer::class)->findByName($name1);
+        if (!$player1) {
+            try {
+                $player1 = new Player($name1, $dataFetcher);
+            } catch (RuneScapeException $exception) {
+                $error = "Player 1's name is invalid.";
+            }
+        }
+
+        if ($player1) {
+            $player2 = $entityManager->getRepository(TrackedPlayer::class)->findByName($name2);
+            if (!$player2) {
+                try {
+                    $player2 = new Player($name2, $dataFetcher);
+                } catch (RuneScapeException $exception) {
+                    $error = "Player 2's name is invalid.";
+                }
+            }
+        }
+
+        if ($player1 && $player2) {
+            $trackedHighScoreRepository = $entityManager->getRepository(TrackedHighScore::class);
+
+            // Fetch stats
+            try {
+                $stats1 = $oldSchool ? $player1->getOldSchoolSkillHighScore() : $player1->getSkillHighScore();
+                $player1->fixNameIfCached();
+
+                // Calculate trained1
+                if ($player1 instanceof TrackedPlayer) {
+                    $highScoreToday1 = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(0), $player1, $oldSchool);
+
+                    if ($highScoreToday1) {
+                        $highScoreYesterday1 = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(-1), $player1, $oldSchool);
+
+                        if ($highScoreYesterday1) {
+                            $trained1 = $highScoreToday1->compareTo($highScoreYesterday1);
+                        }
+                    }
+                }
+            } catch (FetchFailedException $exception) {
+                $error = "Could not fetch stats for player 1.";
+            }
+
+            if ($stats1) {
+                try {
+                    $stats2 = $oldSchool ? $player2->getOldSchoolSkillHighScore() : $player2->getSkillHighScore();
+                    $player2->fixNameIfCached();
+
+                    // Calculate trained2
+                    if ($player2 instanceof TrackedPlayer) {
+                        $highScoreToday2 = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(0), $player2, $oldSchool);
+
+                        if ($highScoreToday2) {
+                            $highScoreYesterday2 = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(-1), $player2, $oldSchool);
+
+                            if ($highScoreYesterday2) {
+                                $trained2 = $highScoreToday2->compareTo($highScoreYesterday2);
+                            }
+                        }
+                    }
+                } catch (FetchFailedException $exception) {
+                    $error = "Could not fetch stats for player 2.";
+                }
+            }
+
+            if ($stats1 && $stats2) {
+                $comparison = $stats1->compareTo($stats2);
+            }
+        }
 
         return $this->render("lookup/compare.html.twig", [
+            "error" => $error,
+            "player1" => $player1,
+            "player2" => $player2,
+            "stats1" => $stats1,
+            "stats2" => $stats2,
+            "trained1" => $trained1,
+            "trained2" => $trained2,
+            "comparison" => $comparison,
             "name1" => $name1,
             "name2" => $name2,
-            "oldSchool" => $oldSchool
+            "oldSchool" => $oldSchool,
+            "tracked1" => $player1 instanceof TrackedPlayer,
+            "tracked2" => $player2 instanceof TrackedPlayer
         ]);
     }
 }

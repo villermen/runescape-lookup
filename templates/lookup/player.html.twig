@@ -29,8 +29,6 @@
                             <th>Trained last week</th>
                             <th>Ranked last week</th>
                         {% endif %}
-                        {# TODO: Custom period? #}
-                        {# TODO: Record #}
                         {% if records is not empty %}
                             <th>Record</th>
                             <th>Record date</th>
@@ -52,7 +50,7 @@
                                 {{ skill.name }}
                             </td>
                             <td style="color:{{ levelColor }}">
-                                {{ skill.level(true) }}
+                                {{ skill.virtualLevel }}
                             </td>
                             <td style="color:{{ levelColor }}">
                                 {{ skill.xp|number_format }}
@@ -71,29 +69,29 @@
                                 {% endif %}
                             </td>
                             {% if trainedToday %}
-                                <td>
-                                    {{ trainedTodaySkill.xpDifference }}
+                                <td style="color:{{ trainedTodaySkill.xpDifference|red_to_green(-1, 1) }}">
+                                    {{ trainedTodaySkill.xpDifference|format_difference }}
                                 </td>
                             {% endif %}
                             {% if trainedYesterday %}
-                                <td>
-                                    {{ trainedYesterdaySkill.xpDifference|number_format }}
+                                <td style="color:{{ trainedYesterdaySkill.xpDifference|red_to_green(-1, 1) }}">
+                                    {{ trainedYesterdaySkill.xpDifference|format_difference }}
                                 </td>
                                 <td style="color:{{ trainedYesterdaySkill.rankDifference|red_to_green(-1, 1) }}">
-                                    {{ trainedYesterdaySkill.rankDifference|number_format }}
+                                    {{ trainedYesterdaySkill.rankDifference|format_difference }}
                                 </td>
                             {% endif %}
                             {% if trainedWeek %}
-                                <td>
-                                    {{ trainedWeekSkill.xpDifference|number_format }}
+                                <td style="color:{{ trainedWeekSkill.xpDifference|red_to_green(-1, 1) }}">
+                                    {{ trainedWeekSkill.xpDifference|format_difference }}
                                 </td>
                                 <td style="color:{{ trainedWeekSkill.rankDifference|red_to_green(-1, 1) }}">
-                                    {{ trainedWeekSkill.rankDifference|number_format }}
+                                    {{ trainedWeekSkill.rankDifference|format_difference }}
                                 </td>
                             {% endif %}
                             {% if record %}
                                 <td>
-                                    {{ record.xpGain|number_format }}
+                                    {{ record.xpGain|format_difference }}
                                 </td>
                                 <td data-order="{{ record.date.timestamp }}">
                                     {{ record.date|date }}
