@@ -97,8 +97,8 @@ th {
 	color: #B0B0B0;
 }
 .tablespacer {
-	border-top-width: 0px;
-	border-bottom-width: 0px;
+	border-top-width: 0;
+	border-bottom-width: 0;
 	width: 25px;
 }
 .center {
@@ -128,7 +128,9 @@ th>a {
 	cursor: pointer;
 }
 .spacer-cell {
-	width: 50px;
+	padding: 0;
+    position: relative;
+    border-right: 1px solid #505050;
 }
 .compare-table {
 	width: 1250px;
