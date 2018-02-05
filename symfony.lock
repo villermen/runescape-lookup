@@ -198,10 +198,10 @@
         "version": "v1.6.0"
     },
     "symfony/polyfill-php72": {
-        "version": "v1.6.0"
+        "version": "v1.7.0"
     },
     "symfony/process": {
-        "version": "v4.0.3"
+        "version": "v4.0.4"
     },
     "symfony/profiler-pack": {
         "version": "v1.0.3"
@@ -231,7 +231,7 @@
         }
     },
     "symfony/var-dumper": {
-        "version": "v4.0.3"
+        "version": "v4.0.4"
     },
     "symfony/web-profiler-bundle": {
         "version": "3.3",
