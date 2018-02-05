@@ -18,7 +18,7 @@ class TimeKeeper
     {
         $updateTime = new DateTime($container->getParameter("update_time"));
 
-        if (new DateTime() < $this->updateTime) {
+        if (new DateTime() < $updateTime) {
             $updateTime->modify("-1 day");
         }
 
