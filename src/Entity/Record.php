@@ -10,9 +10,6 @@ use Villermen\RuneScape\Skill;
 
 /**
  * @ORM\MappedSuperclass()
- * @ORM\Table(uniqueConstraints={
- *     @ORM\UniqueConstraint(columns={"id", "date", "player_id"})
- * })
  */
 class Record
 {
