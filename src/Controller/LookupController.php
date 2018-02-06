@@ -70,8 +70,9 @@ class LookupController extends Controller
      */
     public function overviewAction($name2, EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
     {
-        $dailyRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), false);
-        $dailyOldSchoolRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), true);
+        // Fetch yesterday's records
+        $dailyRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-2), false);
+        $dailyOldSchoolRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-2), true);
 
         $trackedPlayers = $entityManager->getRepository(TrackedPlayer::class)->findAll();
 
@@ -209,6 +210,9 @@ class LookupController extends Controller
      * @param string $name1
      * @param string $name2
      * @param bool $oldSchool
+     * @param EntityManagerInterface $entityManager
+     * @param PlayerDataFetcher $dataFetcher
+     * @param TimeKeeper $timeKeeper
      * @return Response
      */
     public function compareAction(string $name1, string $name2, bool $oldSchool,

@@ -53,6 +53,7 @@ class Version20180130212055 extends AbstractMigration implements ContainerAwareI
             RENAME INDEX player_id TO IDX_1A0AA83D99E6F5DF,
             CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci
         ');
+        $this->addSql('UPDATE daily_record SET date = DATE_SUB(date, INTERVAL 1 DAY)');
 
         $this->addSql('CREATE TABLE personal_record (
             id INT AUTO_INCREMENT NOT NULL,
@@ -120,6 +121,7 @@ class Version20180130212055 extends AbstractMigration implements ContainerAwareI
             }
         }
 
+        $this->addSql('UPDATE personal_record SET date = DATE_SUB(date, INTERVAL 1 DAY)');
         $this->connection->executeQuery("ALTER TABLE player DROP highscore");
     }
 
