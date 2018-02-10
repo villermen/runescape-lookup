@@ -232,15 +232,13 @@ th>a {
     display: table-column;
 }
 
-.mobile-show {
-	display: none;
-}
-
 @media (max-width: 360px) {
-	.mobile-show {
-		display: initial;
-	}
-	.mobile-hide {
-		display: none;
-	}
+    .lookup-form, .compare-form {
+        display: block;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .infobox-avatar {
+        display: none;
+    }
 }

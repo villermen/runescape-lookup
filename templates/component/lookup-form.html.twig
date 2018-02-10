@@ -8,13 +8,9 @@
         <input type="hidden" name="oldschool" value="{{ oldSchool }}" />
     </form>
 
-    <br class="mobile-show" />
-
     <a href="{{ path("lookup_index", {"player1": name2, "player2": name1, "oldschool": oldSchool}) }}" tabindex="3">
         <img class="swapicon" src="{{ asset("swapicon.png") }}" alt="Swap players" title="Swap players" />
     </a>
-
-    <br class="mobile-show" />
 
     <form method="get" class="compare-form" action="{{ path("lookup_index") }}">
         <input type="hidden" name="player1" value="{{ name1 }}" />
