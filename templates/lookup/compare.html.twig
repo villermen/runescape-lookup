@@ -82,8 +82,8 @@
                                 {{ comparisonSkill.rankDifference ? comparisonSkill.rankDifference|format_difference : "" }}
                             </td>
                             {% if trained1 and trained2 %}
-                                <td style="color:{{ (trainedSkill1.xpDifference - trained2Skill.xpDifference)|red_to_green(-1, 1) }}" data-order="{{ (trainedSkill1.xpDifference - trained2Skill.xpDifference) }}">
-                                    {{ (trainedSkill1.xpDifference  - trained2Skill.xpDifference)|format_difference }}
+                                <td style="color:{{ (trainedSkill1.xpDifference - trainedSkill2.xpDifference)|red_to_green(-1, 1) }}" data-order="{{ (trainedSkill1.xpDifference - trainedSkill2.xpDifference) }}">
+                                    {{ (trainedSkill1.xpDifference  - trainedSkill2.xpDifference)|format_difference }}
                                 </td>
                             {% endif %}
 
