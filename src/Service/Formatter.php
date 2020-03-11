@@ -2,16 +2,16 @@
 
 namespace App\Service;
 
-use Twig_Extension;
-use Twig_SimpleFilter;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
-class Formatter extends Twig_Extension
+class Formatter extends AbstractExtension
 {
     public function getFilters()
     {
         return [
-            new Twig_SimpleFilter("red_to_green", [$this, "redToGreen"]),
-            new Twig_SimpleFilter("format_difference", [$this, "formatDifference"])
+            new TwigFilter("red_to_green", [$this, "redToGreen"]),
+            new TwigFilter("format_difference", [$this, "formatDifference"])
         ];
     }
 
