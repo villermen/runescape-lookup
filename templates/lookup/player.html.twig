@@ -38,8 +38,8 @@
                 <tbody>
                     {% for skill in stats.skills %}
                         {% set trainedTodaySkill = trainedToday ? trainedToday.getSkill(skill.skill.id) : false %}
-                        {% set trainedYesterdaySkill = trainedYesterday ? trainedYesterday.getSkill(skill.skill.id) : false %}
-                        {% set trainedWeekSkill = trainedWeek ? trainedWeek.getSkill(skill.skill.id) : false %}
+                        {% set trainedYesterdaySkill = trainedYesterday and trainedYesterday.hasSkill(skill.skill.id) ? trainedYesterday.getSkill(skill.skill.id) : false %}
+                        {% set trainedWeekSkill = trainedWeek and trainedWeek.hasSkill(skill.skill.id) ? trainedWeek.getSkill(skill.skill.id) : false %}
                         {% set record = records[skill.skill.id] is defined ? records[skill.skill.id] : false %}
 
                         {% set levelColor = skill.level|red_to_green(0, 69) %}

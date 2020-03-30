@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9ef424317edb3137d71e4a8d14db6d04",
+    "content-hash": "ccab0e05a8a135bcf77d58babdfb04e0",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -4624,16 +4624,16 @@
         },
         {
             "name": "villermen/runescape-lookup-commons",
-            "version": "v5.0.0",
+            "version": "v5.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/villermen/runescape-lookup-commons.git",
-                "reference": "a996a4061613fd5ffa55c8db84b3cb37f0fa5dc9"
+                "reference": "b72c4c48c8e489b488fe1d64e1b22df3bf3a9896"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/a996a4061613fd5ffa55c8db84b3cb37f0fa5dc9",
-                "reference": "a996a4061613fd5ffa55c8db84b3cb37f0fa5dc9",
+                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/b72c4c48c8e489b488fe1d64e1b22df3bf3a9896",
+                "reference": "b72c4c48c8e489b488fe1d64e1b22df3bf3a9896",
                 "shasum": ""
             },
             "require": {
@@ -4657,7 +4657,7 @@
                 "MIT"
             ],
             "description": "A PHP library containing RuneScape lookup components.",
-            "time": "2020-03-30T21:03:19+00:00"
+            "time": "2020-03-30T22:18:52+00:00"
         }
     ],
     "packages-dev": [
