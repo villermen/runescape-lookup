@@ -9,8 +9,6 @@ use Doctrine\ORM\EntityRepository;
 class DailyRecordRepository extends EntityRepository
 {
     /**
-     * @param DateTime $date
-     * @param bool $oldSchool
      * @return DailyRecord[]
      */
     public function findByDate(DateTime $date, bool $oldSchool): array

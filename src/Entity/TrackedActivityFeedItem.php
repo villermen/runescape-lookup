@@ -75,9 +75,6 @@ class TrackedActivityFeedItem extends ActivityFeedItem
         return $this->id;
     }
 
-    /**
-     * @return Player
-     */
     public function getPlayer(): Player
     {
         return $this->player;
@@ -86,14 +83,11 @@ class TrackedActivityFeedItem extends ActivityFeedItem
     /**
      * @ORM\PostLoad()
      */
-    public function postLoad()
+    public function postLoad(): void
     {
         parent::__construct($this->getTime(), $this->getTitle(), $this->getDescription());
     }
 
-    /**
-     * @return int
-     */
     public function getSequenceNumber(): int
     {
         return $this->sequenceNumber;

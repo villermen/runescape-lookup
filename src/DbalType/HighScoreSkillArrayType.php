@@ -11,8 +11,7 @@ class HighScoreSkillArrayType extends Type
 {
     const DEFAULT_LENGTH = 10000;
 
-    /** @inheritdoc */
-    public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform)
+    public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
         // Set default length
         if (!$fieldDeclaration["length"]) {
@@ -24,10 +23,8 @@ class HighScoreSkillArrayType extends Type
 
     /**
      * @param HighScoreSkill[] $value
-     * @param AbstractPlatform $platform
-     * @return mixed|string
      */
-    public function convertToDatabaseValue($value, AbstractPlatform $platform)
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): string
     {
         $serializedSkills = [];
         foreach($value as $skill) {
@@ -42,8 +39,11 @@ class HighScoreSkillArrayType extends Type
         return implode(";", $serializedSkills);
     }
 
-    /** @inheritdoc */
-    public function convertToPHPValue($value, AbstractPlatform $platform)
+    /**
+     * @param string $value
+     * @return HighScoreSkill[]
+     */
+    public function convertToPHPValue($value, AbstractPlatform $platform): array
     {
         $skills = [];
         foreach(explode(";", $value) as $skillData) {
@@ -55,8 +55,7 @@ class HighScoreSkillArrayType extends Type
         return $skills;
     }
 
-    /** @inheritdoc */
-    public function getName()
+    public function getName(): string
     {
         return "high_score_skill_array";
     }

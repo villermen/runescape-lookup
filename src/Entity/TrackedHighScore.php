@@ -26,8 +26,6 @@ class TrackedHighScore extends SkillHighScore
     protected $id;
 
     /**
-     * @inheritdoc
-     *
      * @ORM\Column(type="high_score_skill_array")
      */
     protected $skills;
@@ -56,8 +54,6 @@ class TrackedHighScore extends SkillHighScore
 
     /**
      * @param HighScoreSkill[] $skills
-     * @param TrackedPlayer $player
-     * @param bool $oldSchool
      */
     public function __construct(array $skills, TrackedPlayer $player, bool $oldSchool)
     {
@@ -68,33 +64,21 @@ class TrackedHighScore extends SkillHighScore
         $this->date = new DateTime();
     }
 
-    /**
-     * @return TrackedPlayer
-     */
     public function getPlayer(): TrackedPlayer
     {
         return $this->player;
     }
 
-    /**
-     * @return bool
-     */
     public function isOldSchool(): bool
     {
         return $this->oldSchool;
     }
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return DateTime
-     */
     public function getDate(): DateTime
     {
         return $this->date;
@@ -103,7 +87,7 @@ class TrackedHighScore extends SkillHighScore
     /**
      * @ORM\PostLoad()
      */
-    public function postLoad()
+    public function postLoad(): void
     {
         parent::__construct($this->getSkills());
     }

@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Villermen\RuneScape\HighScore\HighScoreSkillComparison;
 use Villermen\RuneScape\Player;
 use Villermen\RuneScape\Skill;
 
@@ -58,13 +57,6 @@ class Record
      */
     protected $oldSchool;
 
-    /**
-     * @param Player $player
-     * @param Skill $skill
-     * @param int $xpGain
-     * @param bool $oldSchool
-     * @param DateTime $date
-     */
     public function __construct(Player $player, Skill $skill, int $xpGain, bool $oldSchool, DateTime $date)
     {
         $this->player = $player;
@@ -74,49 +66,31 @@ class Record
         $this->date = $date;
     }
 
-    /**
-     * @return Player
-     */
     public function getPlayer(): Player
     {
         return $this->player;
     }
 
-    /**
-     * @return Skill
-     */
     public function getSkill(): Skill
     {
         return $this->skill;
     }
 
-    /**
-     * @return int
-     */
     public function getXpGain(): int
     {
         return $this->xpGain;
     }
 
-    /**
-     * @return DateTime
-     */
     public function getDate(): DateTime
     {
         return $this->date;
     }
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return bool
-     */
     public function isOldSchool(): bool
     {
         return $this->oldSchool;

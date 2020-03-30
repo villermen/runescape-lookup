@@ -17,7 +17,7 @@ class EntityHydrator
         $this->dataFetcher = $dataFetcher;
     }
 
-    public function postLoad(LifecycleEventArgs $eventArgs)
+    public function postLoad(LifecycleEventArgs $eventArgs): void
     {
         $entity = $eventArgs->getEntity();
         if ($entity instanceof TrackedPlayer) {

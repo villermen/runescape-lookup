@@ -7,16 +7,10 @@ use Doctrine\ORM\EntityRepository;
 
 class TrackedPlayerRepository extends EntityRepository
 {
-    /** @noinspection PhpDocMissingThrowsInspection */
-    /**
-     * @param string $name
-     * @return TrackedPlayer|null
-     */
     public function findByName(string $name): ?TrackedPlayer
     {
         $qb = $this->createQueryBuilder("player");
 
-        /** @noinspection PhpUnhandledExceptionInspection */
         return $qb
             ->andWhere($qb->expr()->eq("player.name", ":name"))
             ->setParameter("name", $name)

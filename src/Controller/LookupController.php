@@ -8,9 +8,8 @@ use App\Entity\TrackedActivityFeedItem;
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
 use App\Service\TimeKeeper;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,15 +21,12 @@ use Villermen\RuneScape\PlayerDataFetcher;
 /**
  * @Route("/", name="lookup_")
  */
-class LookupController extends Controller
+class LookupController extends AbstractController
 {
     /**
-     * @param Request $request
-     * @return Response
-     *
      * @Route("", name="index")
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         // Forward to other actions based on parameters
         $name1 = $request->query->get("player1");
@@ -62,14 +58,11 @@ class LookupController extends Controller
         ], $query);
     }
 
-    /**
-     * @param string|null $name2
-     * @param EntityManagerInterface $entityManager
-     * @param TimeKeeper $timeKeeper
-     * @return Response
-     */
-    public function overviewAction($name2, EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
-    {
+    public function overviewAction(
+        ?string $name2,
+        EntityManagerInterface $entityManager,
+        TimeKeeper $timeKeeper
+    ): Response {
         // Fetch yesterday's records
         $dailyRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), false);
         $dailyOldSchoolRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), true);
@@ -81,24 +74,19 @@ class LookupController extends Controller
             "dailyOldSchoolRecords" => $dailyOldSchoolRecords,
             "trackedPlayers" => $trackedPlayers,
             "updateTime" => $timeKeeper->getUpdateTime(1)->format("G:i"),
-            "timeTillUpdate" => (new DateTime())->diff($timeKeeper->getUpdateTime(1))->format("%h:%I"),
+            "timeTillUpdate" => (new \DateTime())->diff($timeKeeper->getUpdateTime(1))->format("%h:%I"),
             "name2" => $name2
         ]);
     }
 
-    /** @noinspection PhpDocMissingThrowsInspection */
-    /**
-     * @param string $name
-     * @param bool $oldSchool
-     * @param EntityManagerInterface $entityManager
-     * @param TimeKeeper $timeKeeper
-     * @param PlayerDataFetcher $dataFetcher
-     * @param Request $request
-     * @return Response
-     */
-    public function playerAction(string $name, bool $oldSchool, EntityManagerInterface $entityManager,
-        TimeKeeper $timeKeeper, PlayerDataFetcher $dataFetcher, Request $request)
-    {
+    public function playerAction(
+        string $name,
+        bool $oldSchool,
+        EntityManagerInterface $entityManager,
+        TimeKeeper $timeKeeper,
+        PlayerDataFetcher $dataFetcher,
+        Request $request
+    ): Response {
         $error = "";
         $stats = false;
         $trainedToday = false;
@@ -110,9 +98,9 @@ class LookupController extends Controller
         // Try to obtain a tracked player from the database
         $player = $entityManager->getRepository(TrackedPlayer::class)->findByName($name);
         if (!$player) {
-            try {
+            if (Player::validateName($name)) {
                 $player = new Player($name, $dataFetcher);
-            } catch (RuneScapeException $exception) {
+            } else {
                 $error = "Invalid player name requested.";
             }
         }
@@ -131,7 +119,6 @@ class LookupController extends Controller
                 // Track or retrack player
                 if ($request->query->get("track")) {
                     if (!($player instanceof TrackedPlayer)) {
-                        /** @noinspection PhpUnhandledExceptionInspection */
                         $player = new TrackedPlayer($player->getName());
                         $entityManager->persist($player);
                         $entityManager->flush();
@@ -206,18 +193,14 @@ class LookupController extends Controller
         ]);
     }
 
-    /**
-     * @param string $name1
-     * @param string $name2
-     * @param bool $oldSchool
-     * @param EntityManagerInterface $entityManager
-     * @param PlayerDataFetcher $dataFetcher
-     * @param TimeKeeper $timeKeeper
-     * @return Response
-     */
-    public function compareAction(string $name1, string $name2, bool $oldSchool,
-        EntityManagerInterface $entityManager, PlayerDataFetcher $dataFetcher, TimeKeeper $timeKeeper)
-    {
+    public function compareAction(
+        string $name1,
+        string $name2,
+        bool $oldSchool,
+        EntityManagerInterface $entityManager,
+        PlayerDataFetcher $dataFetcher,
+        TimeKeeper $timeKeeper
+    ): Response {
         $error = "";
         $stats1 = false;
         $stats2 = false;
@@ -229,9 +212,9 @@ class LookupController extends Controller
         // Get player objects
         $player1 = $entityManager->getRepository(TrackedPlayer::class)->findByName($name1);
         if (!$player1) {
-            try {
+            if (Player::validateName($name1)) {
                 $player1 = new Player($name1, $dataFetcher);
-            } catch (RuneScapeException $exception) {
+            } else {
                 $error = "Player 1's name is invalid.";
             }
         }
@@ -239,9 +222,9 @@ class LookupController extends Controller
         if ($player1) {
             $player2 = $entityManager->getRepository(TrackedPlayer::class)->findByName($name2);
             if (!$player2) {
-                try {
+                if (Player::validateName($name2)) {
                     $player2 = new Player($name2, $dataFetcher);
-                } catch (RuneScapeException $exception) {
+                } else {
                     $error = "Player 2's name is invalid.";
                 }
             }

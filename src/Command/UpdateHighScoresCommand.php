@@ -30,19 +30,18 @@ class UpdateHighScoresCommand extends Command
     /** @var DailyRecord[][] [bool oldSchool][int skillId] */
     protected $dailyRecords = [false => [], true => []];
 
-    public function __construct(?string $name = null, EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
+    public function __construct(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
     {
-        parent::__construct($name);
+        parent::__construct();
 
         $this->entityManager = $entityManager;
         $this->timeKeeper = $timeKeeper;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
-        $this
-            ->setName("app:update-high-scores")
-            ->setDescription("Adds current high scores for all tracked and active players to the database.");
+        $this->setName("app:update-high-scores");
+        $this->setDescription("Adds current high scores for all tracked and active players to the database.");
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

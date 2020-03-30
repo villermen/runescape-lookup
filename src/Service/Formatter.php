@@ -17,15 +17,10 @@ class Formatter extends AbstractExtension
 
     /**
      * Converts a value into a hex color scaled by the bounds supplied by $redValue and $greenValue.
-     *
-     * @param float $value
-     * @param float $redBound
-     * @param float $greenBound
-     * @return string
      */
-    public function redToGreen(float $value, float $redBound = 0, float $greenBound = 1): string
+    public function redToGreen(?float $value, float $redBound = 0, float $greenBound = 1): string
     {
-        $fraction = ($value - $redBound) / ($greenBound - $redBound);
+        $fraction = (($value ?? 0.0) - $redBound) / ($greenBound - $redBound);
         $fraction = max(0, min(1, $fraction));
 
         $redComponent = 255;
@@ -40,11 +35,7 @@ class Formatter extends AbstractExtension
         return sprintf("#%06X", $redComponent * 256 * 256 + $greenComponent * 256);
     }
 
-    /**
-     * @param float $difference
-     * @return string
-     */
-    public function formatDifference(float $difference): string
+    public function formatDifference(?float $difference): string
     {
         if (!$difference) {
             return "=";

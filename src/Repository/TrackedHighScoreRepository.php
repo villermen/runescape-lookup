@@ -9,18 +9,10 @@ use Doctrine\ORM\EntityRepository;
 
 class TrackedHighScoreRepository extends EntityRepository
 {
-    /** @noinspection PhpDocMissingThrowsInspection */
-    /**
-     * @param DateTime $date
-     * @param TrackedPlayer $player
-     * @param bool $oldSchool
-     * @return TrackedHighScore|null
-     */
     public function findByDate(DateTime $date, TrackedPlayer $player, bool $oldSchool): ?TrackedHighScore
     {
         $qb = $this->createQueryBuilder("highScore");
 
-        /** @noinspection PhpUnhandledExceptionInspection */
         return $qb
             ->andWhere($qb->expr()->eq("highScore.date", ":date"))
             ->andWhere($qb->expr()->eq("highScore.player", ":player"))

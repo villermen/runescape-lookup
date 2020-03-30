@@ -22,8 +22,6 @@ class TrackedPlayer extends Player
     protected $id;
 
     /**
-     * @inheritdoc
-     *
      * @ORM\Column(type="string", length=12, unique=true)
      */
     protected $name;
@@ -35,52 +33,32 @@ class TrackedPlayer extends Player
      */
     protected $active = true;
 
-    /**
-     * @param string $name
-     * @throws RuneScapeException
-     */
     public function __construct(string $name)
     {
         parent::__construct($name);
     }
 
     /**
-     * @param bool $oldSchool
-     * @param int $timeOut
-     * @return TrackedHighScore
      * @throws FetchFailedException
      */
-    public function getTrackedHighScore($oldSchool = false, $timeOut = 5): TrackedHighScore
+    public function getTrackedHighScore(bool $oldSchool = false, int $timeOut = 5): TrackedHighScore
     {
         $this->dataFetcher->setTimeOut($timeOut);
 
         $highScore = $oldSchool ? $this->getSkillHighScore() : $this->getOldSchoolSkillHighScore();
-        $trackedHighScore = new TrackedHighScore($highScore->getSkills(), $this, $oldSchool);
-
-        return $trackedHighScore;
+        return new TrackedHighScore($highScore->getSkills(), $this, $oldSchool);
     }
 
-    /**
-     * @return mixed
-     */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return bool
-     */
     public function isActive(): bool
     {
         return $this->active;
     }
 
-    /**
-     * @param bool $active
-     *
-     * @return TrackedPlayer
-     */
     public function setActive(bool $active): TrackedPlayer
     {
         $this->active = $active;
@@ -90,9 +68,8 @@ class TrackedPlayer extends Player
 
     /**
      * @ORM\PostLoad()
-     * @throws RuneScapeException
      */
-    public function postLoad()
+    public function postLoad(): void
     {
         parent::__construct($this->getName());
     }

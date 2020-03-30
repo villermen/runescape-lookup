@@ -9,11 +9,9 @@ use Doctrine\ORM\EntityRepository;
 class PersonalRecordRepository extends EntityRepository
 {
     /**
-     * Returns the most recent/highest record for each skill of the given player.
-     * Records are indexed by skill id for convenience.
+     * Returns the most recent/highest record for each skill of the given player. Records are indexed by skill id for
+     * convenience.
      *
-     * @param TrackedPlayer $player
-     * @param bool $oldSchool
      * @return PersonalRecord[]
      */
     public function findHighestRecords(TrackedPlayer $player, bool $oldSchool): array

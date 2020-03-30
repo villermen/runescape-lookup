@@ -9,8 +9,7 @@ use Villermen\RuneScape\Skill;
 
 class SkillType extends IntegerType
 {
-    /** @inheritdoc */
-    public function convertToDatabaseValue($value, AbstractPlatform $platform)
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): string
     {
         if (!$value instanceof Skill) {
             throw new Exception("Value to convert to database value is not of Skill class.");
@@ -19,14 +18,12 @@ class SkillType extends IntegerType
         return $value->getId();
     }
 
-    /** @inheritdoc */
-    public function convertToPHPValue($value, AbstractPlatform $platform)
+    public function convertToPHPValue($value, AbstractPlatform $platform): Skill
     {
         return Skill::getSkill($value);
     }
 
-    /** @inheritdoc */
-    public function getName()
+    public function getName(): string
     {
         return "skill";
     }

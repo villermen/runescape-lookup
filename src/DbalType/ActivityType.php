@@ -9,8 +9,7 @@ use Villermen\RuneScape\Activity;
 
 class ActivityType extends IntegerType
 {
-    /** @inheritdoc */
-    public function convertToDatabaseValue($value, AbstractPlatform $platform)
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): int
     {
         if (!$value instanceof Activity) {
             throw new Exception("Value to convert to database value is not of Activity class.");
@@ -19,14 +18,12 @@ class ActivityType extends IntegerType
         return $value->getId();
     }
 
-    /** @inheritdoc */
-    public function convertToPHPValue($value, AbstractPlatform $platform)
+    public function convertToPHPValue($value, AbstractPlatform $platform): Activity
     {
         return Activity::getActivity($value);
     }
 
-    /** @inheritdoc */
-    public function getName()
+    public function getName(): string
     {
         return "activity";
     }

@@ -25,28 +25,21 @@ class UpdateActivityFeedsCommand extends Command
     /** @var TimeKeeper */
     protected $timeKeeper;
 
-    public function __construct(?string $name = null, EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
+    public function __construct(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
     {
-        parent::__construct($name);
+        parent::__construct();
 
         $this->entityManager = $entityManager;
         $this->timeKeeper = $timeKeeper;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
-        $this
-            ->setName("app:update-activity-feeds")
-            ->setDescription("Add new activities for all tracked and active players to the database.")
-            ->addOption("player", null, InputOption::VALUE_REQUIRED, "Update only a single player with the given name.");
+        $this->setName("app:update-activity-feeds");
+        $this->setDescription("Add new activities for all tracked and active players to the database.");
+        $this->addOption("player", null, InputOption::VALUE_REQUIRED, "Update only a single player with the given name.");
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
-     * @throws Exception
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$this->lock()) {

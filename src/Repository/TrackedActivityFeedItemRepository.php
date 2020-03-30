@@ -10,16 +10,10 @@ use Villermen\RuneScape\Exception\FetchFailedException;
 
 class TrackedActivityFeedItemRepository extends EntityRepository
 {
-    /** @noinspection PhpDocMissingThrowsInspection */
-    /**
-     * @param TrackedPlayer $player
-     * @return TrackedActivityFeedItem|null
-     */
-    public function findLast(TrackedPlayer $player)
+    public function findLast(TrackedPlayer $player): ?TrackedActivityFeedItem
     {
         $qb = $this->createQueryBuilder("activity");
 
-        /** @noinspection PhpUnhandledExceptionInspection */
         return $qb
             ->andWhere($qb->expr()->eq("activity.player", ":player"))
             ->setParameter("player", $player)
@@ -32,9 +26,7 @@ class TrackedActivityFeedItemRepository extends EntityRepository
     /**
      * Returns all tracked activity feed items from latest to earliest.
      *
-     * @param TrackedPlayer $player
      * @param bool $mergeLive Fetch live activity feed and prepend.
-     * @return ActivityFeed
      */
     public function findByPlayer(TrackedPlayer $player, $mergeLive = false): ActivityFeed
     {
