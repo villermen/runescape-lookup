@@ -1,26 +1,26 @@
 ﻿html,
 body {
-	padding: 0;
-	margin: 0;
+    padding: 0;
+    margin: 0;
 }
 body {
-	font: 12pt Verdana;
-	background-color: black;
-	color: lime;
-	text-align: center;
+    font: 12pt Verdana;
+    background-color: black;
+    color: lime;
+    text-align: center;
 }
 h1 {
-	margin-bottom: 5px;
+    margin-bottom: 5px;
 }
 input {
-	width: 12em;
-	height: 2em;
-	font: bold 12pt Verdana;
-	text-align: center;
-	background-color: black;
-	border: 1px solid #505050;
-	color: #B0B0B0;
-	line-height: 27px;
+    width: 12em;
+    height: 2em;
+    font: bold 12pt Verdana;
+    text-align: center;
+    background-color: black;
+    border: 1px solid #505050;
+    color: #B0B0B0;
+    line-height: 27px;
 }
 [data-href] {
     cursor: pointer;
@@ -29,41 +29,50 @@ input {
     overflow-x: hidden;
 }
 .forms {
-	margin-bottom: 20px;
-	margin-top: 20px;
+    margin-bottom: 20px;
+    margin-top: 20px;
 }
 .lookup-form,
 .compare-form {
-	display: inline-block;
+    display: inline-block;
 }
 .swapicon {
-	vertical-align: middle;
-	height: 27px;
+    vertical-align: middle;
+    height: 27px;
 }
 .infobox-container {
     position: relative;
-    height: 150px;
+    height: 140px;
     width: 100%;
     margin: 0 auto;
     overflow: hidden;
 }
 .infobox {
-    height: 150px;
+    height: 140px;
     margin: 0 20px;
     white-space: nowrap;
 }
 .infobox-text {
-	display: inline-block;
-	vertical-align: top;
+    display: inline-block;
+    vertical-align: top;
     margin: 0 20px;
 }
+.infobox-title {
+    margin: 10px 0 0 0;
+}
+.infobox-line {
+    margin-top: 0.5em;
+}
 .infobox-avatar {
-    vertical-align: bottom;
-    max-height: 150px;
+    margin-top: 30px;
     width: 100px;
+    height: 100px;
+}
+.infobox-avatar--head {
 }
 .infobox-avatar--body {
     width: 60px;
+    /* Same total width (100px) as .infobox-avatar--head to center .infobox-text */
     margin-right: 40px;
 }
 .infobox--compare {
@@ -75,83 +84,83 @@ input {
     left: unset;
 }
 .statstable {
-	margin: auto;
+    margin: auto;
 }
 a {
-	color: #00FF7F;
-	text-decoration: none;
+    color: #00FF7F;
+    text-decoration: none;
 }
 #loadtimes {
-	color: #505050;
-	margin: 10px auto auto auto;
+    color: #505050;
+    margin: 10px auto auto auto;
 }
 table {
-	border-collapse: collapse;
+    border-collapse: collapse;
     border: 1px solid #505050;
 }
 th,
 td {
-	background-color: black;
-	height: 21px;
-	padding: 4px 6px;
-	text-align: center;
+    background-color: black;
+    height: 21px;
+    padding: 4px 6px;
+    text-align: center;
 }
 td {
-	white-space: nowrap;
+    white-space: nowrap;
 }
 tr:nth-child(odd) td {
-	background-color: #2e2e2e;
+    background-color: #2e2e2e;
 }
 tr:hover td,
 .active,
 tr.selected td {
-	background-color: #707070;
+    background-color: #707070;
 }
 th {
-	font-weight: bold;
-	color: #B0B0B0;
+    font-weight: bold;
+    color: #B0B0B0;
 }
 .tablespacer {
-	border-top-width: 0;
-	border-bottom-width: 0;
-	width: 25px;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    width: 25px;
 }
 .center {
-	margin-left: auto;
-	margin-right: auto;
+    margin-left: auto;
+    margin-right: auto;
 }
 th>a {
-	color: #B0B0B0;
-	text-decoration: underline;
+    color: #B0B0B0;
+    text-decoration: underline;
 }
 .activity {
-	border-bottom: 1px solid #505050;
-	display: table;
-	padding-top: 20px;
-	padding-bottom: 20px;
-	margin: auto;
+    border-bottom: 1px solid #505050;
+    display: table;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    margin: auto;
 }
 .activity-title {
-	font-size: 20px;
+    font-size: 20px;
 }
 .activity-time {
-	font-size: 14px;
+    font-size: 14px;
 }
 .activity-description {
 }
 .dataTable th {
-	cursor: pointer;
+    cursor: pointer;
 }
 .spacer-cell {
-	padding: 0;
+    padding: 0;
     position: relative;
     border-right: 1px solid #505050;
 }
 .compare-table {
-	width: 1250px;
+    width: 1250px;
 }
 .error {
-	color: red;
+    color: red;
 }
 .notice {
 }
@@ -163,15 +172,15 @@ th>a {
     margin-right: 30px;
 }
 .dataTables_wrapper {
-	display: inline;
+    display: inline;
 }
 .index-infotable {
-	margin: 50px 50px 0 0;
-	display: inline-block;
-	vertical-align: top;
+    margin: 50px 50px 0 0;
+    display: inline-block;
+    vertical-align: top;
 }
 .tracked-players {
-	margin-bottom: 1em;
+    margin-bottom: 1em;
 }
 .tracked-player {
     color: lime;
@@ -184,20 +193,20 @@ th>a {
     color: red;
 }
 .horizontal-scroller {
-	white-space: nowrap;
-	overflow-x: auto;
+    white-space: nowrap;
+    overflow-x: auto;
     margin-bottom: 1rem;
 }
 .sorting,
 .sorting_asc,
 .sorting_desc {
-	white-space: nowrap;
+    white-space: nowrap;
 }
 .sorting_asc::after {
-	content: " ▲";
+    content: " ▲";
 }
 .sorting_desc::after {
-	content: " ▼";
+    content: " ▼";
 }
 
 /* fixed first column */
@@ -206,14 +215,14 @@ th>a {
 }
 .lookup-table td:first-child,
 .lookup-table th:first-child {
-	position: absolute;
-	width: 160px;
+    position: absolute;
+    width: 160px;
     border-right: 1px solid #505050;
     border-left: 1px solid #505050;
 }
 .lookup-table td:nth-child(2),
 .lookup-table th:nth-child(2) {
-	padding-left: 179px;
+    padding-left: 179px;
 }
 
 .table {

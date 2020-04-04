@@ -6,9 +6,8 @@
     {% endif %}
 
     <div class="infobox-text">
-        <h1>{{ player.name }}</h1>
-
-        <p>
+        <h1 class="infobox-title">{{ player.name }}</h1>
+        <div class="infobox-line">
             {% if mode == "lookup" %}
                 <a href="{{ path("lookup_index", {"player1": player.name, "oldschool": not oldSchool}) }}">{{ oldSchool ? "RS3" : "OSRS" }}</a>
             {% else %}
@@ -22,18 +21,21 @@
             {% if not tracked or not player.active %}
                 | <a href="{{ path("lookup_index", {"player1": player.name, "track": true, "oldschool": oldSchool}) }}">Track</a>
             {% endif %}
-        </p>
-
-        <p>
+        </div>
+        <div class="infobox-line">
             Combat level
             {% if oldSchool %}
                 {{ player.oldSchoolSkillHighScore.getCombatLevel(true) }}
             {% else %}
                 {{ player.skillHighScore.getCombatLevel(true) }} ({{ player.skillHighScore.getCombatLevel(false) }}+{{ player.skillHighScore.getCombatLevel(true) - player.skillHighScore.getCombatLevel(false) }})
             {% endif %}
-        </p>
+        </div>
+        {% if not oldSchool %}
+            <div class="infobox-line">
+                {{ player.activityHighScore.activity(constant('Villermen\\RuneScape\\Activity::ACTIVITY_RUNESCORE')).score|number_format }} RuneScore
+            </div>
+        {% endif %}
     </div>
-
     {% if not oldSchool %}
         <img class="infobox-avatar infobox-avatar--body" src="{{ player.fullBodyUrl }}" />
     {% endif %}

@@ -4,24 +4,25 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ccab0e05a8a135bcf77d58babdfb04e0",
+    "content-hash": "db456a596f0cdb1876ee5f18f4699adc",
     "packages": [
         {
             "name": "doctrine/annotations",
-            "version": "v1.8.0",
+            "version": "1.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/annotations.git",
-                "reference": "904dca4eb10715b92569fbcd79e201d5c349b6bc"
+                "reference": "5eb79f3dbdffed6544e1fc287572c0f462bd29bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/annotations/zipball/904dca4eb10715b92569fbcd79e201d5c349b6bc",
-                "reference": "904dca4eb10715b92569fbcd79e201d5c349b6bc",
+                "url": "https://api.github.com/repos/doctrine/annotations/zipball/5eb79f3dbdffed6544e1fc287572c0f462bd29bb",
+                "reference": "5eb79f3dbdffed6544e1fc287572c0f462bd29bb",
                 "shasum": ""
             },
             "require": {
                 "doctrine/lexer": "1.*",
+                "ext-tokenizer": "*",
                 "php": "^7.1"
             },
             "require-dev": {
@@ -31,7 +32,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.7.x-dev"
+                    "dev-master": "1.9.x-dev"
                 }
             },
             "autoload": {
@@ -72,7 +73,7 @@
                 "docblock",
                 "parser"
             ],
-            "time": "2019-10-01T18:55:10+00:00"
+            "time": "2020-04-02T12:33:25+00:00"
         },
         {
             "name": "doctrine/cache",
@@ -1336,16 +1337,16 @@
         },
         {
             "name": "laminas/laminas-zendframework-bridge",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laminas/laminas-zendframework-bridge.git",
-                "reference": "faf68f6109ceeff24241226033ab59640c7eb63b"
+                "reference": "bfbbdb6c998d50dbf69d2187cb78a5f1fa36e1e9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laminas/laminas-zendframework-bridge/zipball/faf68f6109ceeff24241226033ab59640c7eb63b",
-                "reference": "faf68f6109ceeff24241226033ab59640c7eb63b",
+                "url": "https://api.github.com/repos/laminas/laminas-zendframework-bridge/zipball/bfbbdb6c998d50dbf69d2187cb78a5f1fa36e1e9",
+                "reference": "bfbbdb6c998d50dbf69d2187cb78a5f1fa36e1e9",
                 "shasum": ""
             },
             "require": {
@@ -1384,7 +1385,13 @@
                 "laminas",
                 "zf"
             ],
-            "time": "2020-03-26T16:07:12+00:00"
+            "funding": [
+                {
+                    "url": "https://funding.communitybridge.org/projects/laminas-project",
+                    "type": "community_bridge"
+                }
+            ],
+            "time": "2020-04-03T16:01:00+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -4624,16 +4631,16 @@
         },
         {
             "name": "villermen/runescape-lookup-commons",
-            "version": "v5.1.0",
+            "version": "v5.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/villermen/runescape-lookup-commons.git",
-                "reference": "b72c4c48c8e489b488fe1d64e1b22df3bf3a9896"
+                "reference": "a9a17495df82aa7dfb09590a7b3541e67bb5517a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/b72c4c48c8e489b488fe1d64e1b22df3bf3a9896",
-                "reference": "b72c4c48c8e489b488fe1d64e1b22df3bf3a9896",
+                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/a9a17495df82aa7dfb09590a7b3541e67bb5517a",
+                "reference": "a9a17495df82aa7dfb09590a7b3541e67bb5517a",
                 "shasum": ""
             },
             "require": {
@@ -4657,7 +4664,7 @@
                 "MIT"
             ],
             "description": "A PHP library containing RuneScape lookup components.",
-            "time": "2020-03-30T22:18:52+00:00"
+            "time": "2020-04-04T19:37:32+00:00"
         }
     ],
     "packages-dev": [
