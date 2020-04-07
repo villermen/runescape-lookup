@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Villermen\RuneScape\Activity;
 use Villermen\RuneScape\Exception\FetchFailedException;
 use Villermen\RuneScape\Exception\RuneScapeException;
 use Villermen\RuneScape\Player;
@@ -94,6 +95,7 @@ class LookupController extends AbstractController
         $trainedWeek = false;
         $records = [];
         $activityFeed = false;
+        $runeScore = null;
 
         // Try to obtain a tracked player from the database
         $player = $entityManager->getRepository(TrackedPlayer::class)->findByName($name);
@@ -108,7 +110,18 @@ class LookupController extends AbstractController
         if ($player) {
             // Fetch live stats
             try {
-                $stats = $oldSchool ? $player->getOldSchoolSkillHighScore() : $player->getSkillHighScore();
+                if (!$oldSchool) {
+                    $stats = $player->getSkillHighScore();
+
+                    // It is possible for RuneMetrics to return stats without the user being listed on index_lite, so
+                    // this can fail individually.
+                    try {
+                        $runeScore = $player->getActivityHighScore()->getActivity(Activity::ACTIVITY_RUNESCORE)->getScore();
+                    } catch (FetchFailedException $exception) {
+                    }
+                } else {
+                    $stats = $player->getOldSchoolSkillHighScore();
+                }
 
                 $player->fixNameIfCached();
             } catch (FetchFailedException $exception) {
@@ -189,7 +202,8 @@ class LookupController extends AbstractController
             "name1" => $name,
             "records" => $records,
             "activityFeed" => $activityFeed,
-            "oldSchool" => $oldSchool
+            "oldSchool" => $oldSchool,
+            "runeScore" => $runeScore,
         ]);
     }
 
@@ -208,6 +222,8 @@ class LookupController extends AbstractController
         $trained2 = false;
         $player2 = false;
         $comparison = false;
+        $runeScore1 = null;
+        $runeScore2 = null;
 
         // Get player objects
         $player1 = $entityManager->getRepository(TrackedPlayer::class)->findByName($name1);
@@ -238,6 +254,13 @@ class LookupController extends AbstractController
                 $stats1 = $oldSchool ? $player1->getOldSchoolSkillHighScore() : $player1->getSkillHighScore();
                 $player1->fixNameIfCached();
 
+                if (!$oldSchool) {
+                    try {
+                        $runeScore1 = $player1->getActivityHighScore()->getActivity(Activity::ACTIVITY_RUNESCORE)->getScore();
+                    } catch (FetchFailedException $exception) {
+                    }
+                }
+
                 // Calculate trained1
                 if ($player1 instanceof TrackedPlayer) {
                     $highScoreToday1 = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(0), $player1, $oldSchool);
@@ -258,6 +281,13 @@ class LookupController extends AbstractController
                 try {
                     $stats2 = $oldSchool ? $player2->getOldSchoolSkillHighScore() : $player2->getSkillHighScore();
                     $player2->fixNameIfCached();
+
+                    if (!$oldSchool) {
+                        try {
+                            $runeScore2 = $player2->getActivityHighScore()->getActivity(Activity::ACTIVITY_RUNESCORE)->getScore();
+                        } catch (FetchFailedException $exception) {
+                        }
+                    }
 
                     // Calculate trained2
                     if ($player2 instanceof TrackedPlayer) {
@@ -294,7 +324,9 @@ class LookupController extends AbstractController
             "name2" => $name2,
             "oldSchool" => $oldSchool,
             "tracked1" => $player1 instanceof TrackedPlayer,
-            "tracked2" => $player2 instanceof TrackedPlayer
+            "tracked2" => $player2 instanceof TrackedPlayer,
+            "runeScore1" => $runeScore1,
+            "runeScore2" => $runeScore2,
         ]);
     }
 }

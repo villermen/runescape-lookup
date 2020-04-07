@@ -1,5 +1,4 @@
-{# Arguments: Player player, bool tracked, bool oldSchool #}
-
+{# Arguments: Player player, bool tracked, bool oldSchool, int runeScore #}
 <div class="infobox infobox--{{ mode }}">
     {% if not oldSchool %}
         <img class="infobox-avatar infobox-avatar--head" src="{{ player.chatHeadUrl }}" />
@@ -30,9 +29,9 @@
                 {{ player.skillHighScore.getCombatLevel(true) }} ({{ player.skillHighScore.getCombatLevel(false) }}+{{ player.skillHighScore.getCombatLevel(true) - player.skillHighScore.getCombatLevel(false) }})
             {% endif %}
         </div>
-        {% if not oldSchool %}
+        {% if runeScore %}
             <div class="infobox-line">
-                {{ player.activityHighScore.activity(constant('Villermen\\RuneScape\\Activity::ACTIVITY_RUNESCORE')).score|number_format }} RuneScore
+                {{ runeScore|number_format }} RuneScore
             </div>
         {% endif %}
     </div>
