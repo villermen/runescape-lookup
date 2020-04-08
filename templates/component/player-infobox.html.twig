@@ -30,8 +30,8 @@
             {% endif %}
         </div>
         {% if runeScore %}
-            <div class="infobox-line">
-                {{ runeScore|number_format }} RuneScore
+            <div class="infobox-line" title="Rank {{ runeScore.rank|number_format }}">
+                {{ runeScore.score|number_format }} RuneScore
             </div>
         {% endif %}
     </div>

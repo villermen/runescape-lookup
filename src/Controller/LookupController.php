@@ -116,7 +116,7 @@ class LookupController extends AbstractController
                     // It is possible for RuneMetrics to return stats without the user being listed on index_lite, so
                     // this can fail individually.
                     try {
-                        $runeScore = $player->getActivityHighScore()->getActivity(Activity::ACTIVITY_RUNESCORE)->getScore();
+                        $runeScore = $player->getActivityHighScore()->getActivity(Activity::ACTIVITY_RUNESCORE);
                     } catch (FetchFailedException $exception) {
                     }
                 } else {
@@ -256,7 +256,7 @@ class LookupController extends AbstractController
 
                 if (!$oldSchool) {
                     try {
-                        $runeScore1 = $player1->getActivityHighScore()->getActivity(Activity::ACTIVITY_RUNESCORE)->getScore();
+                        $runeScore1 = $player1->getActivityHighScore()->getActivity(Activity::ACTIVITY_RUNESCORE);
                     } catch (FetchFailedException $exception) {
                     }
                 }
@@ -284,7 +284,7 @@ class LookupController extends AbstractController
 
                     if (!$oldSchool) {
                         try {
-                            $runeScore2 = $player2->getActivityHighScore()->getActivity(Activity::ACTIVITY_RUNESCORE)->getScore();
+                            $runeScore2 = $player2->getActivityHighScore()->getActivity(Activity::ACTIVITY_RUNESCORE);
                         } catch (FetchFailedException $exception) {
                         }
                     }
