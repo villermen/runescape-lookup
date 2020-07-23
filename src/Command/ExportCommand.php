@@ -2,19 +2,13 @@
 
 namespace App\Command;
 
-use App\Entity\DailyRecord;
-use App\Entity\PersonalRecord;
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
-use App\Service\TimeKeeper;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Villermen\RuneScape\Exception\FetchFailedException;
 use Villermen\RuneScape\Skill;
 
 class ExportCommand extends Command
@@ -22,18 +16,11 @@ class ExportCommand extends Command
     /** @var EntityManagerInterface */
     protected $entityManager;
 
-    /** @var TimeKeeper */
-    protected $timeKeeper;
-
-    /** @var DailyRecord[][] [bool oldSchool][int skillId] */
-    protected $dailyRecords = [false => [], true => []];
-
-    public function __construct(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         parent::__construct();
 
         $this->entityManager = $entityManager;
-        $this->timeKeeper = $timeKeeper;
     }
 
     protected function configure(): void
@@ -74,7 +61,7 @@ class ExportCommand extends Command
 
         foreach ($highScores as $highScore) {
             $line = [
-                $highScore->getDate()->format('Y-m-d'),
+                $highScore->getDate()->format("Y-m-d"),
             ];
             foreach (Skill::getSkills() as $skill) {
                 $highScoreSkill = $highScore->getSkill($skill->getId());
@@ -85,58 +72,5 @@ class ExportCommand extends Command
         }
 
         return 0;
-    }
-
-    protected function updatePlayer(TrackedPlayer $player, bool $oldSchool): bool
-    {
-        try {
-            $highScore = $oldSchool ? $player->getOldSchoolSkillHighScore() : $player->getSkillHighScore();
-
-            // Fix name if readily available
-            $player->fixNameIfCached();
-
-            $trackedHighScore = new TrackedHighScore($highScore->getSkills(), $player, $oldSchool);
-
-            $this->entityManager->persist($trackedHighScore);
-
-            // Create personal records
-            $previousHighScore = $this->entityManager->getRepository(TrackedHighScore::class)->findByDate(
-                $this->timeKeeper->getUpdateTime(-1), $player, $oldSchool
-            );
-
-            if ($previousHighScore) {
-                $comparison = $highScore->compareTo($previousHighScore);
-
-                $records = $this->entityManager->getRepository(PersonalRecord::class)->findHighestRecords($player, $oldSchool);
-
-                foreach($comparison->getSkills() as $skillComparison) {
-                    if ($skillComparison->getXpDifference() > 0) {
-                        $skillId = $skillComparison->getSkill()->getId();
-                        if (!isset($records[$skillId]) || $skillComparison->getXpDifference() > $records[$skillId]->getXpGain()) {
-                            $newRecord = new PersonalRecord(
-                                $player, $skillComparison->getSkill(), $skillComparison->getXpDifference(),
-                                $oldSchool, $this->timeKeeper->getUpdateTime(-1)
-                            );
-
-                            $this->entityManager->persist($newRecord);
-                        }
-
-                        // Set in daily records if it is greater
-                        if (!isset($this->dailyRecords[$oldSchool][$skillId]) ||
-                            $skillComparison->getXpDifference() > $this->dailyRecords[$oldSchool][$skillId]->getXpGain()) {
-                            $this->dailyRecords[$oldSchool][$skillId] = new DailyRecord(
-                                $player, $skillComparison->getSkill(), $skillComparison->getXpDifference(),
-                                $oldSchool, $this->timeKeeper->getUpdateTime(-1)
-                            );
-                        }
-                    }
-                }
-            }
-
-            return true;
-        } catch (FetchFailedException $exception) {
-        }
-
-        return false;
     }
 }
