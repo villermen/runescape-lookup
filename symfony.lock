@@ -53,6 +53,9 @@
     "doctrine/orm": {
         "version": "v2.6.0"
     },
+    "doctrine/sql-formatter": {
+        "version": "1.1.1"
+    },
     "easycorp/easy-log-handler": {
         "version": "1.0",
         "recipe": {
@@ -61,6 +64,9 @@
             "version": "1.0",
             "ref": "70062abc2cd58794d2a90274502f81b55cd9951b"
         }
+    },
+    "friendsofphp/proxy-manager-lts": {
+        "version": "v1.0.3"
     },
     "jdorn/sql-formatter": {
         "version": "v1.2.17"
@@ -164,6 +170,9 @@
             "ref": "bbcffba11c937f47556c7b8db655c0333ac509f9"
         }
     },
+    "symfony/http-client-contracts": {
+        "version": "v1.1.10"
+    },
     "symfony/http-foundation": {
         "version": "v4.0.3"
     },
@@ -197,11 +206,17 @@
             "ref": "179470cb6492db92dffee208cfdb436f175c93b4"
         }
     },
+    "symfony/polyfill-intl-normalizer": {
+        "version": "v1.22.1"
+    },
     "symfony/polyfill-mbstring": {
         "version": "v1.6.0"
     },
     "symfony/polyfill-php72": {
         "version": "v1.7.0"
+    },
+    "symfony/polyfill-php80": {
+        "version": "v1.22.1"
     },
     "symfony/process": {
         "version": "v4.0.4"
