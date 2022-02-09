@@ -1,5 +1,8 @@
 /.idea/
-/public/.htaccess
+/node_modules/
+/public/index.html
+/public/main.js
+
 
 ###> symfony/framework-bundle ###
 .env
