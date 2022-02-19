@@ -13,7 +13,7 @@ export default {
         filename: '[name].js?[contenthash:8]',
         chunkFilename: '[name].js?[contenthash:8]',
         path: path.resolve(__dirname, 'public'),
-        publicPath: '/rslookup/', // TODO: Load from .env
+        // publicPath: '/rslookup/', TODO: Load from .env
     },
     module: {
         rules: [
