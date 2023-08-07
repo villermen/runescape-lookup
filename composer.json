@@ -17,7 +17,7 @@
         "symfony/monolog-bundle": "^3.1",
         "symfony/twig-bundle": "^4.0",
         "symfony/yaml": "^4.0",
-        "villermen/runescape-lookup-commons": "^5.1.2"
+        "villermen/runescape-lookup-commons": "^5.2.0"
     },
     "require-dev": {
         "symfony/debug-bundle": "^4.0.0",
@@ -34,7 +34,8 @@
             "php": "8.2"
         },
         "allow-plugins": {
-            "symfony/flex": true
+            "symfony/flex": true,
+            "composer/package-versions-deprecated": true
         }
     },
     "autoload": {
