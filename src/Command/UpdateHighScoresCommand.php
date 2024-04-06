@@ -48,7 +48,7 @@ class UpdateHighScoresCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $writeln = function (string $message) use ($output): void {
-            $output->writeln(sprintf('[%s] %s', date('H:i'), $message));
+            $output->writeln(sprintf('[%s] %s', date('H:i:s'), $message));
         };
 
         try {
