@@ -9,10 +9,9 @@ class TrackedPlayerRepository extends EntityRepository
 {
     public function findByName(string $name): ?TrackedPlayer
     {
-        $qb = $this->createQueryBuilder("player");
-
-        return $qb
-            ->andWhere($qb->expr()->eq("player.name", ":name"))
+        return $this
+            ->createQueryBuilder("player")
+            ->andWhere("REPLACE(player.name, '_', ' ') = REPLACE(:name, '_', ' ')")
             ->setParameter("name", $name)
             ->getQuery()
             ->getOneOrNullResult();
