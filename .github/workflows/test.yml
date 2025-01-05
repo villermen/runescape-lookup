@@ -1,0 +1,38 @@
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['8.2']
+    name: PHP ${{ matrix.php-version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.0
+      - name: Install PHP
+        uses: shivammathur/setup-php@2.32.0
+        with:
+          php-version: ${{ matrix.php-version }}
+      - name: Validate composer.json
+        run: composer validate --strict
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4.2.0
+        with:
+          path: vendor
+          key: php-${{ matrix.php-version }}-${{ hashFiles('**/composer.json') }}
+          restore-keys: |
+            php-${{ matrix.php-version }}-${{ hashFiles('**/composer.json') }}
+            php-${{ matrix.php-version }}
+            php
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+      - name: Static code analysis
+        run: composer run test:static
