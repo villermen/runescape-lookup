@@ -1,10 +1,6 @@
 twig:
-    paths: ['%kernel.project_dir%/templates']
-    debug: '%kernel.debug%'
-    strict_variables: '%kernel.debug%'
-    number_format:
-        decimals: 0
-        decimal_point: '.'
-        thousands_separator: ','
-    date:
-        format: 'j-n-Y'
+    file_name_pattern: '*.twig'
+
+when@test:
+    twig:
+        strict_variables: true

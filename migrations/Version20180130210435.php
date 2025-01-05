@@ -1,20 +1,21 @@
 <?php
 
-namespace DoctrineMigrations;
+namespace DoctrineMigration;
 
-use Doctrine\DBAL\Migrations\AbstractMigration;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
 
 class Version20180130210435 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return "Creates the legacy database structure.";
+        return 'Pre-Symfony database structure.';
     }
 
-    public function up(Schema $schema)
+    public function up(Schema $schema): void
     {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf(!($this->connection->getDatabasePlatform() instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
 
         $this->addSql('CREATE TABLE activity (
             id int(11) NOT NULL AUTO_INCREMENT,
@@ -60,7 +61,7 @@ class Version20180130210435 extends AbstractMigration
         $this->addSql('ALTER TABLE stats ADD FOREIGN KEY stats_ibfk_1 (player_id) REFERENCES player (id) ON DELETE CASCADE');
     }
 
-    public function down(Schema $schema)
+    public function down(Schema $schema): void
     {
         $this->throwIrreversibleMigrationException();
     }

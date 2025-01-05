@@ -1,33 +1,24 @@
 <?php
 
-namespace DoctrineMigrations;
+namespace DoctrineMigration;
 
-use Doctrine\DBAL\Migrations\AbstractMigration;
-use Doctrine\DBAL\Migrations\Version;
+use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
-use PDO;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
-use Villermen\RuneScape\HighScore\SkillHighScore;
-use Villermen\RuneScape\PlayerDataConverter;
+use Doctrine\DBAL\Types\IntegerType;
+use Doctrine\DBAL\Types\PhpIntegerMappingType;
+use Doctrine\Migrations\AbstractMigration;
 
-class Version20180130212055 extends AbstractMigration implements ContainerAwareInterface
+class Version20180130212055 extends AbstractMigration
 {
-    use ContainerAwareTrait;
-
-    public function __construct(Version $version)
+    public function getDescription(): string
     {
-        parent::__construct($version);
+        return 'First Symfony layout.';
     }
 
-    public function getDescription()
+    public function up(Schema $schema): void
     {
-        return "Migrates the legacy database structure to the new Symfony layout.";
-    }
-
-    public function up(Schema $schema)
-    {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf(!($this->connection->getDatabasePlatform() instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
 
         $this->addSql('ALTER TABLE daily_highscore DROP FOREIGN KEY daily_highscore_ibfk_1');
 
@@ -91,7 +82,7 @@ class Version20180130212055 extends AbstractMigration implements ContainerAwareI
         $this->addSql('ALTER TABLE personal_record ADD FOREIGN KEY FK_6FB8738699E6F5DF (player_id) REFERENCES player (id)');
     }
 
-    public function postUp(Schema $schema)
+    public function postUp(Schema $schema): void
     {
         $this->convertPlayerHighScoreToPersonalRecords();
         $this->convertHighScoreDataToSkillsArray();
@@ -101,77 +92,79 @@ class Version20180130212055 extends AbstractMigration implements ContainerAwareI
      * Converts JSON of player.highscore into entries for the newly created personal_record table.
      * Drops the highscore field after it is done.
      */
-    protected function convertPlayerHighScoreToPersonalRecords()
+    protected function convertPlayerHighScoreToPersonalRecords(): void
     {
-        $this->write("Converting player.highscore JSON to record table entries...");
+        $this->write('Converting player.highscore JSON to record table entries...');
 
-        $highScores = $this->connection->fetchAll("SELECT id, highscore FROM player WHERE highscore IS NOT NULL");
+        $highScores = $this->connection->fetchAllAssociative('SELECT id, highscore FROM player WHERE highscore IS NOT NULL');
 
         foreach($highScores as $highScore) {
-            $highScoreDecoded = json_decode($highScore["highscore"]);
+            $highScoreDecoded = json_decode($highScore['highscore'], associative: true);
 
-            foreach($highScoreDecoded as $skillId => $highScoreData) {
-                $this->connection->insert("personal_record", [
-                    "player_id" => $highScore["id"],
-                    "date" => $highScoreData->date,
-                    "skill" => $skillId,
-                    "xp_gain" => $highScoreData->xp,
-                    "old_school" => 0
+            foreach ($highScoreDecoded as $skillId => $highScoreData) {
+                $this->connection->insert('personal_record', [
+                    'player_id' => $highScore['id'],
+                    'date' => $highScoreData['date'],
+                    'skill' => $skillId,
+                    'xp_gain' => $highScoreData['xp'],
+                    'old_school' => 0,
                 ]);
             }
         }
 
-        $this->addSql('UPDATE personal_record SET date = DATE_SUB(date, INTERVAL 1 DAY)');
-        $this->connection->executeQuery("ALTER TABLE player DROP highscore");
+        $this->connection->executeStatement('UPDATE personal_record SET date = DATE_SUB(date, INTERVAL 1 DAY)');
+        $this->connection->executeStatement('ALTER TABLE player DROP highscore');
     }
 
     /**
      * Converts HighScore data into their new high_score_skills_array representation
      */
-    protected function convertHighScoreDataToSkillsArray()
+    protected function convertHighScoreDataToSkillsArray(): void
     {
-        $this->write("Converting stats.data to high_score.skills...");
+        $this->write('Converting stats.data to high_score.skills...');
 
-        $dataConverter = new PlayerDataConverter();
-        $convert = function(string $data) use ($dataConverter) {
-            /** @var SkillHighScore $highScore */
-            $highScore = $dataConverter->convertIndexLite($data)[PlayerDataConverter::KEY_SKILL_HIGH_SCORE];
+        $convert = function (string $data): string  {
+            $rows = explode("\n", $data);
 
             $serializedSkills = [];
-            foreach($highScore->getSkills() as $skill) {
+            foreach ($rows as $skillId => $row) {
+                $cols = explode(',', $row);
+                if (count($cols) < 3) {
+                    break;
+                }
+
                 $serializedSkills[] = implode(",", [
-                    $skill->getSkill()->getId(),
-                    $skill->getLevel(),
-                    $skill->getXp(),
-                    (int)$skill->getRank()
+                    $skillId,
+                    max(0, (int)$cols[1]), // Level
+                    max(0, (int)$cols[2]), // XP
+                    max(1, (int)$cols[0]), // Rank
                 ]);
             }
 
             return implode(";", $serializedSkills);
         };
 
-        $updateStatement = $this->connection->prepare("UPDATE high_score SET skills=:skills WHERE id=:id");
+        $updateStatement = $this->connection->prepare('UPDATE high_score SET skills=:skills WHERE id=:id');
 
         $offset = 0;
         do {
-            $highScores = $this->connection->fetchAll("SELECT id, skills FROM high_score LIMIT 100 OFFSET :offset", [
-                "offset" => $offset
+            $highScores = $this->connection->fetchAllAssociative('SELECT id, skills FROM high_score LIMIT 100 OFFSET :offset', [
+                'offset' => $offset
             ], [
-                "offset" => PDO::PARAM_INT
+                'offset' => ParameterType::INTEGER,
             ]);
 
             foreach ($highScores as $highScore) {
-                $updateStatement->execute([
-                    "id" => $highScore["id"],
-                    "skills" => $convert($highScore["skills"])
-                ]);
+                $updateStatement->bindValue('id', $highScore['id']);
+                $updateStatement->bindValue('skills', $convert($highScore['skills']));
+                $updateStatement->executeStatement();
             }
 
             $offset += count($highScores);
         } while (count($highScores));
     }
 
-    public function down(Schema $schema)
+    public function down(Schema $schema): void
     {
         $this->throwIrreversibleMigrationException();
     }

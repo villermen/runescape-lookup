@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -9,18 +10,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class TimeKeeper
 {
-    /** @var \DateTime */
-    protected $updateTime;
-
-    public function __construct(ContainerInterface $container)
-    {
-        $updateTime = new \DateTime($container->getParameter("update_time"));
-
-        if (new \DateTime() < $updateTime) {
-            $updateTime->modify("-1 day");
-        }
-
-        $this->updateTime = $updateTime;
+    public function __construct(
+        #[Autowire(param: 'update_time')] protected readonly string $updateTime
+    ) {
     }
 
     /**
@@ -28,8 +20,18 @@ class TimeKeeper
      *
      * @param int $offsetDays Returned time is offset by the given amount of days.
      */
-    public function getUpdateTime(int $offsetDays = 0): \DateTime
+    public function getUpdateTime(int $offsetDays = 0): \DateTimeImmutable
     {
-        return (clone $this->updateTime)->modify(sprintf("%d days", $offsetDays));
+        $updateTime = new \DateTimeImmutable($this->updateTime);
+
+        if (new \DateTimeImmutable('now') < $updateTime) {
+            $updateTime = $updateTime->modify('-1 day');
+        }
+
+        if ($offsetDays > 0) {
+            $updateTime = $updateTime->modify(sprintf('-%s days', $offsetDays));
+        }
+
+        return $updateTime;
     }
 }
