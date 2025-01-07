@@ -7,88 +7,93 @@ use App\Entity\PersonalRecord;
 use App\Entity\TrackedActivityFeedItem;
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
+use App\Repository\DailyRecordRepository;
+use App\Repository\TrackedPlayerRepository;
 use App\Service\TimeKeeper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Villermen\RuneScape\Activity;
 use Villermen\RuneScape\Exception\FetchFailedException;
-use Villermen\RuneScape\Exception\RuneScapeException;
 use Villermen\RuneScape\Player;
-use Villermen\RuneScape\PlayerDataFetcher;
 
 /**
- * @Route("/", name="lookup_")
+ * @phpstan-type LookupParameters array{player1: Player|null, player2: Player|null, oldschool: bool}
  */
 class LookupController extends AbstractController
 {
-    /**
-     * @Route("", name="index")
-     */
-    public function indexAction(Request $request): Response
-    {
-        // Forward to other actions based on parameters
-        $name1 = $request->query->get("player1");
-        $name2 = $request->query->get("player2");
-        $oldSchool = (bool)$request->query->get("oldschool");
-
-        // Remove standard parameters but pass on the others when forwarding
-        $query = array_filter($request->query->all(), function($parameter) {
-            return !in_array($parameter, ["player1", "player2", "oldSchool"]);
-        }, ARRAY_FILTER_USE_KEY);
-
-        if ($name1) {
-            if ($name2) {
-                return $this->forward(self::class . "::compareAction", [
-                    "name1" => $name1,
-                    "name2" => $name2,
-                    "oldSchool" => $oldSchool
-                ], $query);
-            }
-
-            return $this->forward(self::class . "::playerAction", [
-                "name" => $name1,
-                "oldSchool" => $oldSchool
-            ], $query);
-        }
-
-        return $this->forward(self::class . "::overviewAction", [
-            "name2" => $name2
-        ], $query);
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly TrackedPlayerRepository $trackedPlayerRepository,
+        private readonly DailyRecordRepository $dailyRecordRepository,
+        private readonly TimeKeeper $timeKeeper,
+    ) {
     }
 
-    public function overviewAction(
-        ?string $name2,
-        EntityManagerInterface $entityManager,
-        TimeKeeper $timeKeeper
-    ): Response {
-        // Fetch yesterday's records
-        $dailyRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), false);
-        $dailyOldSchoolRecords = $entityManager->getRepository(DailyRecord::class)->findByDate($timeKeeper->getUpdateTime(-1), true);
+    #[Route('/', 'lookup')]
+    public function lookupAction(Request $request): Response
+    {
+        $player1 = $request->query->getString('player1') ?: null;
+        $player1 = $player1 ? new Player($player1) : null;
+        $player2 = $request->query->getString('player2') ?: null;
+        $player2 = $player2 ? new Player($player2) : null;
 
-        $trackedPlayers = $entityManager->getRepository(TrackedPlayer::class)->findAll();
+        /** @var LookupParameters $lookupParameters */
+        $lookupParameters = [
+            'player1' => $player1,
+            'player2' => $player2,
+            'oldschool' => $request->query->getBoolean('oldschool'),
+        ];
 
-        return $this->render("lookup/overview.html.twig", [
-            "dailyRecords" => $dailyRecords,
-            "dailyOldSchoolRecords" => $dailyOldSchoolRecords,
-            "trackedPlayers" => $trackedPlayers,
-            "updateTime" => $timeKeeper->getUpdateTime(1)->format("G:i"),
-            "timeTillUpdate" => (new \DateTime())->diff($timeKeeper->getUpdateTime(1))->format("%h:%I"),
-            "name2" => $name2
+        if ($lookupParameters['player1'] && $lookupParameters['player2']) {
+            return $this->forward(implode('::', [self::class, 'compareAction']), [
+                'lookupParameters' => $lookupParameters,
+            ]);
+        }
+
+        if ($lookupParameters['player1']) {
+            return $this->forward(implode('::', [self::class, 'playerAction']), [
+                'lookupParameters' => $lookupParameters,
+            ]);
+        }
+
+        return $this->forward(implode('::', [self::class, 'overviewAction']), [
+            'lookupParameters' => $lookupParameters,
         ]);
     }
 
+    /**
+     * @param LookupParameters $lookupParameters
+     */
+    public function overviewAction(
+        array $lookupParameters,
+    ): Response {
+        // Fetch yesterday's records
+        $dailyRecords = $this->dailyRecordRepository->findByDate($this->timeKeeper->getUpdateTime(-1), oldSchool: false);
+        $dailyOldSchoolRecords = $this->dailyRecordRepository->findByDate($this->timeKeeper->getUpdateTime(-1), oldSchool: true);
+        $trackedPlayers = $this->trackedPlayerRepository->findAll();
+        $updateTime = $this->timeKeeper->getUpdateTime(1);
+        $timeTillUpdate = (new \DateTime())->diff($updateTime);
+
+        return $this->render('lookup/overview.html.twig', [
+            'dailyRecords' => $dailyRecords,
+            'dailyOldSchoolRecords' => $dailyOldSchoolRecords,
+            'trackedPlayers' => $trackedPlayers,
+            'updateTime' => $updateTime->format('G:i'),
+            'timeTillUpdate' => $timeTillUpdate->format('%h:%I'),
+            'lookupParameters' => $lookupParameters,
+        ]);
+    }
+
+    /**
+     * @param LookupParameters $lookupParameters
+     */
     public function playerAction(
-        string $name,
-        bool $oldSchool,
-        EntityManagerInterface $entityManager,
-        TimeKeeper $timeKeeper,
-        PlayerDataFetcher $dataFetcher,
+        array $lookupParameters,
         Request $request
     ): Response {
-        $error = "";
+        $error = '';
         $stats = false;
         $trainedToday = false;
         $trainedYesterday = false;
@@ -98,14 +103,7 @@ class LookupController extends AbstractController
         $runeScore = null;
 
         // Try to obtain a tracked player from the database
-        $player = $entityManager->getRepository(TrackedPlayer::class)->findByName($name);
-        if (!$player) {
-            if (Player::validateName($name)) {
-                $player = new Player($name, $dataFetcher);
-            } else {
-                $error = "Invalid player name requested.";
-            }
-        }
+        $player = $this->entityManager->getRepository(TrackedPlayer::class)->findByName($lookupParameters['player1']->getName());
 
         if ($player) {
             // Fetch live stats
@@ -125,37 +123,37 @@ class LookupController extends AbstractController
 
                 $player->fixNameIfCached();
             } catch (FetchFailedException $exception) {
-                $error = "Could not fetch player stats.";
+                $error = 'Could not fetch player stats.';
             }
 
             if ($stats) {
                 // Track or retrack player
-                if ($request->query->get("track")) {
+                if ($request->query->get('track')) {
                     if (!($player instanceof TrackedPlayer)) {
                         $player = new TrackedPlayer($player->getName());
-                        $entityManager->persist($player);
-                        $entityManager->flush();
+                        $this->entityManager->persist($player);
+                        $this->entityManager->flush();
 
-                        return $this->redirectToRoute("lookup_index", [
-                            "player1" => $player->getName(),
-                            "oldschool" => $oldSchool
+                        return $this->redirectToRoute('lookup_index', [
+                            'player1' => $player->getName(),
+                            'oldschool' => $oldSchool
                         ]);
                     } elseif (!$player->isActive()) {
                         $player->setActive(true);
-                        $entityManager->flush();
+                        $this->entityManager->flush();
 
-                        return $this->redirectToRoute("lookup_index", [
-                            "player1" => $player->getName(),
-                            "oldschool" => $oldSchool
+                        return $this->redirectToRoute('lookup_index', [
+                            'player1' => $player->getName(),
+                            'oldschool' => $oldSchool
                         ]);
                     } else {
-                        $error = "Player is already being tracked.";
+                        $error = 'Player is already being tracked.';
                     }
                 }
 
                 if ($player instanceof TrackedPlayer) {
                     // Fetch and compare tracked stats
-                    $trackedHighScoreRepository = $entityManager->getRepository(TrackedHighScore::class);
+                    $trackedHighScoreRepository = $this->entityManager->getRepository(TrackedHighScore::class);
 
                     $highScoreToday = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(0), $player, $oldSchool);
                     if ($highScoreToday) {
@@ -173,11 +171,11 @@ class LookupController extends AbstractController
                     }
 
                     // Get records
-                    $records = $entityManager->getRepository(PersonalRecord::class)->findHighestRecords($player, $oldSchool);
+                    $records = $this->entityManager->getRepository(PersonalRecord::class)->findHighestRecords($player, $oldSchool);
 
                     if (!$oldSchool) {
                         // Get tracked and live activity feed
-                        $activityFeed = $entityManager->getRepository(TrackedActivityFeedItem::class)->findByPlayer($player, true);
+                        $activityFeed = $this->entityManager->getRepository(TrackedActivityFeedItem::class)->findByPlayer($player, true);
                     }
                 } else {
                     // Only fetch live activity feed
@@ -191,31 +189,29 @@ class LookupController extends AbstractController
             }
         }
 
-        return $this->render("lookup/player.html.twig", [
-            "error" => $error,
-            "player" => $player,
-            "stats" => $stats,
-            "tracked" => $player instanceof TrackedPlayer,
-            "trainedToday" => $trainedToday,
-            "trainedYesterday" => $trainedYesterday,
-            "trainedWeek" => $trainedWeek,
-            "name1" => $name,
-            "records" => $records,
-            "activityFeed" => $activityFeed,
-            "oldSchool" => $oldSchool,
-            "runeScore" => $runeScore,
+        return $this->render('lookup/player.html.twig', [
+            'error' => $error,
+            'player' => $player,
+            'stats' => $stats,
+            'tracked' => $player instanceof TrackedPlayer,
+            'trainedToday' => $trainedToday,
+            'trainedYesterday' => $trainedYesterday,
+            'trainedWeek' => $trainedWeek,
+            'name1' => $name,
+            'records' => $records,
+            'activityFeed' => $activityFeed,
+            'oldSchool' => $oldSchool,
+            'runeScore' => $runeScore,
         ]);
     }
 
+    /**
+     * @param LookupParameters $lookupParameters
+     */
     public function compareAction(
-        string $name1,
-        string $name2,
-        bool $oldSchool,
-        EntityManagerInterface $entityManager,
-        PlayerDataFetcher $dataFetcher,
-        TimeKeeper $timeKeeper
+        array $lookupParameters,
     ): Response {
-        $error = "";
+        $error = '';
         $stats1 = false;
         $stats2 = false;
         $trained1 = false;
@@ -226,28 +222,28 @@ class LookupController extends AbstractController
         $runeScore2 = null;
 
         // Get player objects
-        $player1 = $entityManager->getRepository(TrackedPlayer::class)->findByName($name1);
+        $player1 = $this->entityManager->getRepository(TrackedPlayer::class)->findByName($name1);
         if (!$player1) {
             if (Player::validateName($name1)) {
                 $player1 = new Player($name1, $dataFetcher);
             } else {
-                $error = "Player 1's name is invalid.";
+                $error = 'Player 1\'s name is invalid.';
             }
         }
 
         if ($player1) {
-            $player2 = $entityManager->getRepository(TrackedPlayer::class)->findByName($name2);
+            $player2 = $this->entityManager->getRepository(TrackedPlayer::class)->findByName($name2);
             if (!$player2) {
                 if (Player::validateName($name2)) {
                     $player2 = new Player($name2, $dataFetcher);
                 } else {
-                    $error = "Player 2's name is invalid.";
+                    $error = 'Player 2\'s name is invalid.';
                 }
             }
         }
 
         if ($player1 && $player2) {
-            $trackedHighScoreRepository = $entityManager->getRepository(TrackedHighScore::class);
+            $trackedHighScoreRepository = $this->entityManager->getRepository(TrackedHighScore::class);
 
             // Fetch stats
             try {
@@ -274,7 +270,7 @@ class LookupController extends AbstractController
                     }
                 }
             } catch (FetchFailedException $exception) {
-                $error = "Could not fetch stats for player 1.";
+                $error = 'Could not fetch stats for player 1.';
             }
 
             if ($stats1) {
@@ -302,7 +298,7 @@ class LookupController extends AbstractController
                         }
                     }
                 } catch (FetchFailedException $exception) {
-                    $error = "Could not fetch stats for player 2.";
+                    $error = 'Could not fetch stats for player 2.';
                 }
             }
 
@@ -311,22 +307,22 @@ class LookupController extends AbstractController
             }
         }
 
-        return $this->render("lookup/compare.html.twig", [
-            "error" => $error,
-            "player1" => $player1,
-            "player2" => $player2,
-            "stats1" => $stats1,
-            "stats2" => $stats2,
-            "trained1" => $trained1,
-            "trained2" => $trained2,
-            "comparison" => $comparison,
-            "name1" => $name1,
-            "name2" => $name2,
-            "oldSchool" => $oldSchool,
-            "tracked1" => $player1 instanceof TrackedPlayer,
-            "tracked2" => $player2 instanceof TrackedPlayer,
-            "runeScore1" => $runeScore1,
-            "runeScore2" => $runeScore2,
+        return $this->render('lookup/compare.html.twig', [
+            'error' => $error,
+            'player1' => $player1,
+            'player2' => $player2,
+            'stats1' => $stats1,
+            'stats2' => $stats2,
+            'trained1' => $trained1,
+            'trained2' => $trained2,
+            'comparison' => $comparison,
+            'name1' => $name1,
+            'name2' => $name2,
+            'oldSchool' => $oldSchool,
+            'tracked1' => $player1 instanceof TrackedPlayer,
+            'tracked2' => $player2 instanceof TrackedPlayer,
+            'runeScore1' => $runeScore1,
+            'runeScore2' => $runeScore2,
         ]);
     }
 }

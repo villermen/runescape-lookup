@@ -2,14 +2,18 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\DailyRecordRepository;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\UniqueConstraint;
+use Villermen\RuneScape\HighScore\ActivityInterface;
+use Villermen\RuneScape\HighScore\SkillInterface;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\DailyRecordRepository")
- * @ORM\Table(uniqueConstraints={
- *     @ORM\UniqueConstraint(columns={"skill", "date", "old_school"})
- * })
+ * @template T of SkillInterface|ActivityInterface = SkillInterface|ActivityInterface
+ * @extends AbstractRecord<T>
  */
-class DailyRecord extends Record
+#[Entity(repositoryClass: DailyRecordRepository::class)]
+#[UniqueConstraint('unique_record', ['date', 'type_old_school', 'type_activity', 'type_id'])]
+class DailyRecord extends AbstractRecord
 {
 }

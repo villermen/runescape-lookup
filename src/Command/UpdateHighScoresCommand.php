@@ -41,8 +41,8 @@ class UpdateHighScoresCommand extends Command
 
     protected function configure(): void
     {
-        $this->setName("app:update-high-scores");
-        $this->setDescription("Adds current high scores for all tracked and active players to the database.");
+        $this->setName('app:update-high-scores');
+        $this->setDescription('Adds current high scores for all tracked and active players to the database.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -53,7 +53,7 @@ class UpdateHighScoresCommand extends Command
 
         try {
             if (!$this->lock()) {
-                $writeln("<error>Command is already running in another process.</error>");
+                $writeln('<error>Command is already running in another process.</error>');
                 return 1;
             }
 
@@ -61,9 +61,9 @@ class UpdateHighScoresCommand extends Command
             $players = $this->entityManager->getRepository(TrackedPlayer::class)->findActive();
 
             if ($this->entityManager->getRepository(TrackedHighScore::class)->findOneBy([
-                "date" => $this->timeKeeper->getUpdateTime(0)->modify("midnight")
+                'date' => $this->timeKeeper->getUpdateTime(0)->modify('midnight')
             ])) {
-                $writeln("<error>There already exist high scores for today.</error>");
+                $writeln('<error>There already exist high scores for today.</error>');
                 return 1;
             }
 
@@ -76,14 +76,14 @@ class UpdateHighScoresCommand extends Command
             foreach ($players as $player) {
                 try {
                     $this->updatePlayer($player, oldSchool: false);
-                    $writeln(sprintf("Updated high score for %s.", $player->getName()));
+                    $writeln(sprintf('Updated high score for %s.', $player->getName()));
                 } catch (FetchFailedException) {
                     $failedPlayers[] = $player;
                 }
 
                 try {
                     $this->updatePlayer($player, oldSchool: true);
-                    $writeln(sprintf("Updated old school high score for %s.", $player->getName()));
+                    $writeln(sprintf('Updated old school high score for %s.', $player->getName()));
                 } catch (FetchFailedException) {
                     $failedOldSchoolPlayers[] = $player;
                 }
@@ -96,7 +96,7 @@ class UpdateHighScoresCommand extends Command
                     try {
                         $this->updatePlayer($player, oldSchool: false);
                         unset($failedPlayers[$key]);
-                        $writeln(sprintf("Updated high score for %s after %d retries.", $player->getName(), $i + 1));
+                        $writeln(sprintf('Updated high score for %s after %d retries.', $player->getName(), $i + 1));
                     } catch (FetchFailedException) {
                     }
                 }
@@ -105,7 +105,7 @@ class UpdateHighScoresCommand extends Command
                     try {
                         $this->updatePlayer($player, oldSchool: true);
                         unset($failedOldSchoolPlayers[$key]);
-                        $writeln(sprintf("Updated old school high score for %s after %d retries.", $player->getName(), $i + 1));
+                        $writeln(sprintf('Updated old school high score for %s after %d retries.', $player->getName(), $i + 1));
                     } catch (FetchFailedException) {
                     }
                 }
@@ -117,11 +117,11 @@ class UpdateHighScoresCommand extends Command
                     if (in_array($player, $failedOldSchoolPlayers, true)) {
                         $player->setActive(false);
 
-                        $writeln(sprintf("<error>Failed to update any high score for %s, deactivating...</error>", $player->getName()));
+                        $writeln(sprintf('<error>Failed to update any high score for %s, deactivating...</error>', $player->getName()));
                     }
                 }
             } else {
-                $writeln("<error>Failed to update high scores for every tracked player!</error>");
+                $writeln('<error>Failed to update high scores for every tracked player!</error>');
 
                 return 1;
             }
@@ -138,7 +138,7 @@ class UpdateHighScoresCommand extends Command
 
             $this->entityManager->flush();
 
-            $writeln("<info>Successfully updated high scores.</info>");
+            $writeln('<info>Successfully updated high scores.</info>');
 
             return 0;
         } catch (\Throwable $exception) {

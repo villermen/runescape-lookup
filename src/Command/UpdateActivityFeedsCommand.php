@@ -35,28 +35,28 @@ class UpdateActivityFeedsCommand extends Command
 
     protected function configure(): void
     {
-        $this->setName("app:update-activity-feeds");
-        $this->setDescription("Add new activities for all tracked and active players to the database.");
-        $this->addOption("player", null, InputOption::VALUE_REQUIRED, "Update only a single player with the given name.");
+        $this->setName('app:update-activity-feeds');
+        $this->setDescription('Add new activities for all tracked and active players to the database.');
+        $this->addOption('player', null, InputOption::VALUE_REQUIRED, 'Update only a single player with the given name.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$this->lock()) {
-            $output->writeln("<error>Command is already running in another process.</error>");
+            $output->writeln('<error>Command is already running in another process.</error>');
 
             return 1;
         }
 
         $playerRepository = $this->entityManager->getRepository(TrackedPlayer::class);
 
-        if (!$input->getOption("player")) {
+        if (!$input->getOption('player')) {
             $players = $playerRepository->findActive();
         } else {
-            $player = $playerRepository->findByName($input->getOption("player"));
+            $player = $playerRepository->findByName($input->getOption('player'));
 
             if (!$player) {
-                throw new Exception("Player is not being tracked.");
+                throw new Exception('Player is not being tracked.');
             }
 
             $players = [$player];
@@ -89,14 +89,14 @@ class UpdateActivityFeedsCommand extends Command
                 $this->entityManager->flush();
                 $this->entityManager->clear(TrackedActivityFeedItem::class);
 
-                $output->writeln(sprintf("Updated activity feed for %s with %d new items.", $player->getName(), count($newActivities)));
+                $output->writeln(sprintf('Updated activity feed for %s with %d new items.', $player->getName(), count($newActivities)));
             } catch (FetchFailedException $exception) {
                 // Don't handle failed as this update should happen quite frequently and is easily correctable
-                $output->writeln(sprintf("<error>Could not update activity feed for %s: %s</error>", $player->getName(), $exception->getMessage()));
+                $output->writeln(sprintf('<error>Could not update activity feed for %s: %s</error>', $player->getName(), $exception->getMessage()));
             }
         }
 
-        $output->writeln("<info>Successfully updated activity feeds.</info>");
+        $output->writeln('<info>Successfully updated activity feeds.</info>');
 
         return 0;
     }

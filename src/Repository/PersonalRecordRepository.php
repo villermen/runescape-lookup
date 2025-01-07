@@ -4,10 +4,19 @@ namespace App\Repository;
 
 use App\Entity\PersonalRecord;
 use App\Entity\TrackedPlayer;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 
-class PersonalRecordRepository extends EntityRepository
+/**
+ * @extends ServiceEntityRepository<PersonalRecord>
+ */
+class PersonalRecordRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, PersonalRecord::class);
+    }
+
     /**
      * Returns the most recent/highest record for each skill of the given player. Records are indexed by skill id for
      * convenience.
@@ -16,26 +25,17 @@ class PersonalRecordRepository extends EntityRepository
      */
     public function findHighestRecords(TrackedPlayer $player, bool $oldSchool): array
     {
-        $qb = $this->createQueryBuilder("record");
+        $qb = $this->createQueryBuilder('record');
 
-        /** @var PersonalRecord[] $records */
-        $records = $qb
-            ->andWhere($qb->expr()->eq("record.player", ":player"))
-            ->andWhere($qb->expr()->eq("record.oldSchool", ":oldSchool"))
-            ->setParameter("player", $player)
-            ->setParameter("oldSchool", $oldSchool)
-            ->addGroupBy("record.skill")
-            ->addGroupBy("record.id")
-            ->andHaving($qb->expr()->eq("record.xpGain", "MAX(record.xpGain)"))
+        return $qb
+            ->andWhere($qb->expr()->eq('record.player', ':player'))
+            ->setParameter('player', $player)
+            ->andWhere($qb->expr()->eq('record.type.oldSchool', ':oldSchool'))
+            ->setParameter('oldSchool', $oldSchool)
+            ->addGroupBy('record.skill')
+            ->addGroupBy('record.id')
+            ->andHaving($qb->expr()->eq('record.score', 'MAX(record.score)'))
             ->getQuery()
             ->getResult();
-
-        // Index by skill id
-        $indexedRecords = [];
-        foreach($records as $record) {
-            $indexedRecords[$record->getSkill()->getId()] = $record;
-        }
-
-        return $indexedRecords;
     }
 }

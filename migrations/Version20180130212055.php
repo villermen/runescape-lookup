@@ -133,7 +133,7 @@ class Version20180130212055 extends AbstractMigration
                     break;
                 }
 
-                $serializedSkills[] = implode(",", [
+                $serializedSkills[] = implode(',', [
                     $skillId,
                     max(0, (int)$cols[1]), // Level
                     max(0, (int)$cols[2]), // XP
@@ -141,7 +141,7 @@ class Version20180130212055 extends AbstractMigration
                 ]);
             }
 
-            return implode(";", $serializedSkills);
+            return implode(';', $serializedSkills);
         };
 
         $updateStatement = $this->connection->prepare('UPDATE high_score SET skills=:skills WHERE id=:id');

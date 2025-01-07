@@ -25,32 +25,32 @@ class ExportCommand extends Command
 
     protected function configure(): void
     {
-        $this->setName("app:export");
-        $this->addArgument("player", InputArgument::REQUIRED, "Name of the player to export");
-        $this->setDescription("Exports a player's historic stats in CSV format.");
+        $this->setName('app:export');
+        $this->addArgument('player', InputArgument::REQUIRED, 'Name of the player to export');
+        $this->setDescription('Exports a player\'s historic stats in CSV format.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $name = $input->getArgument("player");
+        $name = $input->getArgument('player');
 
         $player = $this->entityManager->getRepository(TrackedPlayer::class)->findByName($name);
         if (!$player) {
-            $output->writeln(sprintf("<error>Player %s is not being tracked!</error>", $name));
+            $output->writeln(sprintf('<error>Player %s is not being tracked!</error>', $name));
             return 1;
         }
 
         $highScores = $this->entityManager->getRepository(TrackedHighScore::class)->findBy([
-            "player" => $player,
-            "oldSchool" => false,
+            'player' => $player,
+            'oldSchool' => false,
         ], [
-            "date" => "ASC",
+            'date' => 'ASC',
         ]);
 
-        $output = fopen("php://output", "a");
+        $output = fopen('php://output', 'a');
 
         $headers = [
-            "Date",
+            'Date',
         ];
 
         foreach (Skill::getSkills() as $skill) {
@@ -61,11 +61,11 @@ class ExportCommand extends Command
 
         foreach ($highScores as $highScore) {
             $line = [
-                $highScore->getDate()->format("Y-m-d"),
+                $highScore->getDate()->format('Y-m-d'),
             ];
             foreach (Skill::getSkills() as $skill) {
                 $highScoreSkill = $highScore->getSkill($skill->getId());
-                $line[] = ($highScoreSkill ? $highScoreSkill->getXp() : "0");
+                $line[] = ($highScoreSkill ? $highScoreSkill->getXp() : '0');
             }
 
             fputcsv($output, $line);

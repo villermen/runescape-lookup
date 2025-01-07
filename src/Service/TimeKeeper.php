@@ -3,7 +3,6 @@
 namespace App\Service;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Keeps the time. More interestingly, it thinks it is still yesterday when the update time hasn't been reached yet.
