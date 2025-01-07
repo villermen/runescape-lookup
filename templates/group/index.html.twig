@@ -1,0 +1,44 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                {% for player in players %}
+                    <th>{{ player.name }}</th>
+                {%  endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for skill in skills %}
+                <tr>
+                    <td>{{ skill.getName() }}</td>
+                    {% for player in players %}
+                        <td
+                            {% if player.highScore.skill(skill).level < highestLevels[skill.id] %}
+                                style="color: rgb(0, 191, 0);"
+                            {% endif %}
+                        >
+                            {{ player.highScore.skill(skill).level }}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            {% for activity in activities %}
+                <tr>
+                    <td>{{ activity.getName() }}</td>
+                    {% for player in players %}
+                        <td
+                            {% if player.highScore.activity(activity).score < highestScores[activity.id] %}
+                                style="color: rgb(0, 191, 0);"
+                            {% endif %}
+                        >
+                            {{ player.highScore.activity(activity).score }}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
