@@ -1,44 +1,42 @@
 {% extends "base.html.twig" %}
 
 {% block body %}
-    <table>
-        <thead>
-            <tr>
-                <th></th>
-                {% for player in players %}
-                    <th>{{ player.name }}</th>
-                {%  endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for skill in skills %}
+    <div class="horizontal-scroller">
+        <table class="center dataTable row-select">
+            <thead>
                 <tr>
-                    <td>{{ skill.getName() }}</td>
+                    <th></th>
                     {% for player in players %}
-                        <td
-                            {% if player.highScore.skill(skill).level < highestLevels[skill.id] %}
-                                style="color: rgb(0, 191, 0);"
-                            {% endif %}
-                        >
-                            {{ player.highScore.skill(skill).level }}
-                        </td>
-                    {% endfor %}
+                        <th>{{ player.name }}</th>
+                    {%  endfor %}
                 </tr>
-            {% endfor %}
-            {% for activity in activities %}
-                <tr>
-                    <td>{{ activity.getName() }}</td>
-                    {% for player in players %}
-                        <td
-                            {% if player.highScore.activity(activity).score < highestScores[activity.id] %}
-                                style="color: rgb(0, 191, 0);"
-                            {% endif %}
-                        >
-                            {{ player.highScore.activity(activity).score }}
-                        </td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for skill in skills %}
+                    <tr>
+                        <td>{{ skill.getName() }}</td>
+                        {% for player in players %}
+                            <td
+                                style="color: {{ player.highScore.skill(skill).level|red_to_green(1, 99) }}; {{ player.highScore.skill(skill).level == highestLevels[skill.id] ? 'text-decoration: underline;' : '' }}"
+                            >
+                                {{ player.highScore.skill(skill).level }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                {% for activity in activities %}
+                    <tr style="{{ loop.first ? 'border-top: 1px solid #505050;' : ''}}">
+                        <td>{{ activity.getName() }}</td>
+                        {% for player in players %}
+                            <td
+                                style="{{ player.highScore.activity(activity).score == highestScores[activity.id] ? 'text-decoration: underline;' : '' }}"
+                            >
+                                {{ player.highScore.activity(activity).score }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
