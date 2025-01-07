@@ -17,7 +17,7 @@ class TimeKeeper
     /**
      * Returns today's update time (always in the past).
      *
-     * @param int $offsetDays Returned time is offset by the given amount of days.
+     * @param int $offsetDays Returned time is offset by the given amount of days (may be negative).
      */
     public function getUpdateTime(int $offsetDays = 0): \DateTimeImmutable
     {
@@ -27,8 +27,8 @@ class TimeKeeper
             $updateTime = $updateTime->modify('-1 day');
         }
 
-        if ($offsetDays > 0) {
-            $updateTime = $updateTime->modify(sprintf('-%s days', $offsetDays));
+        if ($offsetDays !== 0) {
+            $updateTime = $updateTime->modify(sprintf('%+d days', $offsetDays));
         }
 
         return $updateTime;

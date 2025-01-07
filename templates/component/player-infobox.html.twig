@@ -8,9 +8,9 @@
         <h1 class="infobox-title">{{ player.name }}</h1>
         <div class="infobox-line">
             {% if mode == "lookup" %}
-                <a href="{{ path("lookup_index", {"player1": player.name, "oldschool": not oldSchool}) }}">{{ oldSchool ? "RS3" : "OSRS" }}</a>
+                <a href="{{ path('lookup', {player1: player.name, oldschool: not oldSchool}) }}">{{ oldSchool ? 'RS3' : 'OSRS' }}</a>
             {% else %}
-                <a href="{{ path("lookup_index", {"player1": player.name, "oldschool": oldSchool}) }}">Details</a>
+                <a href="{{ path('lookup', {player1: player.name, oldschool: oldSchool}) }}">Details</a>
             {% endif %}
 
             {% if not oldSchool %}
@@ -18,7 +18,7 @@
             {% endif %}
 
             {% if not tracked or not player.active %}
-                | <a href="{{ path("lookup_index", {"player1": player.name, "track": true, "oldschool": oldSchool}) }}">Track</a>
+                | <a href="{{ path('lookup', {player1: player.name, track: true, oldschool: oldSchool}) }}">Track</a>
             {% endif %}
         </div>
         <div class="infobox-line">

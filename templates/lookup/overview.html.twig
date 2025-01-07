@@ -5,26 +5,20 @@
     <p>
         Press enter in the first box to do a single player lookup, and in the second for a comparison.
     </p>
-
     {{ include("component/lookup-form.html.twig") }}
-
     <h2>Yesterday's nolifers</h2>
-
     <p>
         Stats update daily at {{ updateTime }} server time (that's in {{ timeTillUpdate }}).
     </p>
-
     <div class="nolifer-table-container nolifer-table-container--rs3">
         <h3>RS3</h3>
-
         <table class="nolifer-table nolifer-table--rs3 dataTable">
             <thead>
                 <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
             </thead>
-
             <tbody>
                 {% for record in dailyRecords %}
-                    <tr data-href="{{ path("lookup_index", {"player1": record.player.name}) }}">
+                    <tr data-href="{{ path('lookup', {player1: record.player.name}) }}">
                         <td>{{ record.skill.name }}</td>
                         <td>{{ record.player.name }}</td>
                         <td>{{ record.xpGain|number_format }}</td>
@@ -33,18 +27,15 @@
             </tbody>
         </table>
     </div>
-
     <div class="nolifer-table-container nolifer-table-container--osrs">
         <h3>OSRS</h3>
-
         <table class="nolifer-table nolifer-table--osrs dataTable">
             <thead>
                 <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
             </thead>
-
             <tbody>
                 {% for record in dailyOldSchoolRecords %}
-                    <tr data-href="{{ path("lookup_index", {"player1": record.player.name, "oldschool": true}) }}">
+                    <tr data-href="{{ path('lookup', {player1: record.player.name, oldschool: true}) }}">
                         <td>{{ record.skill.name }}</td>
                         <td>{{ record.player.name }}</td>
                         <td>{{ record.xpGain|number_format }}</td>
@@ -53,13 +44,14 @@
             </tbody>
         </table>
     </div>
-
     {% if trackedPlayers is not empty %}
         <h2>Tracked players</h2>
-
         <div class="tracked-players">
             {%- for player in trackedPlayers -%}
-                <a href="{{ path("lookup_index", {"player1": player.name}) }}" class="tracked-player {% if player.active %}tracked-player--active{% else %}tracked-player--inactive{% endif %}">
+                <a
+                    href="{{ path('lookup', {player1: player.name}) }}"
+                    class="tracked-player {% if player.active %}tracked-player--active{% else %}tracked-player--inactive{% endif %}"
+                >
                     {{ player.name }}
                 </a>
             {%- endfor -%}

@@ -134,7 +134,7 @@ class LookupController extends AbstractController
                         $this->entityManager->persist($player);
                         $this->entityManager->flush();
 
-                        return $this->redirectToRoute('lookup_index', [
+                        return $this->redirectToRoute('lookup', [
                             'player1' => $player->getName(),
                             'oldschool' => $oldSchool
                         ]);
@@ -142,7 +142,7 @@ class LookupController extends AbstractController
                         $player->setActive(true);
                         $this->entityManager->flush();
 
-                        return $this->redirectToRoute('lookup_index', [
+                        return $this->redirectToRoute('lookup', [
                             'player1' => $player->getName(),
                             'oldschool' => $oldSchool
                         ]);
