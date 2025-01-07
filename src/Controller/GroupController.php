@@ -31,7 +31,6 @@ class GroupController extends AbstractController
         // TODO: Order by total level > xp
         // TODO: Abstract the service into LookupService with HighScore|TrackedHighScore?
         // TODO: Some static typing would be nice...
-        // TODO: Guardians of the Rift: Rifts Closed is too long, just Guardians of the Rift suffices.
         // [player, highscore, trackedHighscore?, trained?]
         /** @var array<array{highScore: OsrsHighScore}> $players */
         $players = [];
