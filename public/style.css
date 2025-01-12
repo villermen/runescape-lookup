@@ -113,7 +113,6 @@ tr:nth-child(odd) td {
     background-color: #2e2e2e;
 }
 tr:hover td,
-.active,
 tr.selected td {
     background-color: #707070;
 }
@@ -166,8 +165,8 @@ th>a {
     display: inline-block;
     vertical-align: top;
 }
-.nolifer-table-container--rs3 {
-    margin-right: 30px;
+.nolifer-table-container + .nolifer-table-container {
+    margin-left: 30px;
 }
 .index-infotable {
     margin: 50px 50px 0 0;
@@ -205,36 +204,23 @@ th {
     content: " ▼";
 }
 
-/* fixed first column */
-.lookup-table {
+table {
+    margin-bottom: 1em;
+}
+
+.sticky-first-column {
     border-left-width: 0;
 }
-.lookup-table td:first-child,
-.lookup-table th:first-child {
+.sticky-first-column td:first-child,
+.sticky-first-column th:first-child {
     position: absolute;
     width: 160px;
     border-right: 1px solid #505050;
     border-left: 1px solid #505050;
 }
-.lookup-table td:nth-child(2),
-.lookup-table th:nth-child(2) {
+.sticky-first-column td:nth-child(2),
+.sticky-first-column th:nth-child(2) {
     padding-left: 179px;
-}
-
-.table {
-    display: table;
-}
-.table-header {
-    display: table-header-group;
-}
-.table-body {
-    display: table-row-group;
-}
-.table-row {
-    display: table-row;
-}
-.table-cell {
-    display: table-column;
 }
 
 @media (max-width: 360px) {

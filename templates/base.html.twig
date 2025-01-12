@@ -20,17 +20,20 @@
             <script>
                 // Make elements with "data-href" attribute act as anchors
                 document.querySelectorAll('[data-href]').forEach((element) => {
-                    element.addEventListener('click', () => {
+                    element.addEventListener('click', (event) => {
+                        event.stopImmediatePropagation();
                         window.location.href = element.dataset.href;
                     });
                 });
 
                 // Clicking on tables with "row-select" class causes toggling of a "selected" class
                 document.querySelectorAll('table.row-select tr').forEach((element) => {
-                    const wasSelected = element.classList.contains('selected');
-                    // Clear selected for this table
-                    element.closest('table').querySelector('tr.selected')?.classList.remove('selected');
-                    element.classList.toggle('selected', !wasSelected);
+                    element.addEventListener('click', () => {
+                        const wasSelected = element.classList.contains('selected');
+                        // Clear selected for this table
+                        element.closest('table').querySelector('tr.selected')?.classList.remove('selected');
+                        element.classList.toggle('selected', !wasSelected);
+                    });
                 });
 
                 document.querySelectorAll('.datatable').forEach((element) => {

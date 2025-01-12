@@ -39,10 +39,16 @@ class TrackedPlayer
         return $this->active;
     }
 
-    public function setActive(bool $active): TrackedPlayer
+    public function setActive(bool $active): void
     {
         $this->active = $active;
+    }
 
-        return $this;
+    /**
+     * @return PersonalRecord[]
+     */
+    public function getRecords(): array
+    {
+        return $this->records->getValues();
     }
 }

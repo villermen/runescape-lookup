@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
+use App\Model\RecordCollection;
 use App\Repository\DailyRecordRepository;
 use App\Repository\PersonalRecordRepository;
 use App\Repository\TrackedHighScoreRepository;
@@ -13,13 +14,14 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Villermen\RuneScape\ActivityFeed\ActivityFeed;
 use Villermen\RuneScape\Exception\FetchFailedException;
 use Villermen\RuneScape\HighScore\HighScore;
 use Villermen\RuneScape\HighScore\OsrsActivity;
 use Villermen\RuneScape\HighScore\OsrsHighScore;
 use Villermen\RuneScape\HighScore\OsrsSkill;
+use Villermen\RuneScape\HighScore\SkillInterface;
 use Villermen\RuneScape\Player;
 use Villermen\RuneScape\PlayerData\RuneMetricsData;
 use Villermen\RuneScape\Service\PlayerDataFetcher;
@@ -37,66 +39,63 @@ class LookupController extends AbstractController
     ) {
     }
 
-    #[Route('/', 'overview')]
-    public function overviewAction(Request $request): Response
+    #[Route('/', 'lookup')]
+    public function indexAction(Request $request): Response
     {
         // Poor man's form handling.
         $errors = [];
-        $player1 = $request->query->getString('player1') ?: null;
-        if ($player1 && !Player::validateName($player1)) {
+        $name1 = $request->query->getString('player1') ?: null;
+        if ($name1 && !Player::validateName($name1)) {
             $errors[] = 'Name of player 1 is invalid!';
         }
-        $player2 = $request->query->getString('player2') ?: null;
-        if ($player2 && !Player::validateName($player2)) {
+        $name2 = $request->query->getString('player2') ?: null;
+        if ($name2 && !Player::validateName($name2)) {
             $errors[] = 'Name of player 2 is invalid!';
         }
-        $oldschool = $request->query->getBoolean('oldschool');
-        $game = $oldschool ? 'osrs' : 'rs3';
+        $oldSchool = $request->query->getBoolean('oldschool');
+        $game = $oldSchool ? 'osrs' : 'rs3';
 
-        if (!$errors && $player1 && $player2) {
-            return $this->redirectToRoute('compare', [
+        if (!$errors && $name1 && $name2) {
+            return $this->redirectToRoute('lookup_compare', [
                 'game' => $game,
-                'name1' => $player1,
-                'name2' => $player2,
+                'name1' => $name1,
+                'name2' => $name2,
             ]);
         }
 
-        if (!$errors && $player1) {
-            return $this->redirectToRoute('player', [
+        if (!$errors && $name1) {
+            return $this->redirectToRoute('lookup_player', [
                 'game' => $game,
-                'name' => $player1,
+                'name' => $name1,
             ]);
         }
-
-        // TODO: Group lookup would be nice too.
 
         // Fetch yesterday's records
-        $dailyRecords = $this->dailyRecordRepository->findByDate($this->timeKeeper->getUpdateTime(-1), oldSchool: false);
-        $dailyOldSchoolRecords = $this->dailyRecordRepository->findByDate($this->timeKeeper->getUpdateTime(-1), oldSchool: true);
-        $trackedPlayers = $this->trackedPlayerRepository->findAll();
+        $dailyRecords = $this->dailyRecordRepository->findRecords(oldSchool: false);
+        $dailyOldSchoolRecords = $this->dailyRecordRepository->findRecords(oldSchool: true);
         $updateTime = $this->timeKeeper->getUpdateTime(1);
         $timeTillUpdate = (new \DateTime())->diff($updateTime);
+
+        // TODO: errors as flash messages
 
         return $this->render('lookup/overview.html.twig', [
             'dailyRecords' => $dailyRecords,
             'dailyOldSchoolRecords' => $dailyOldSchoolRecords,
-            'trackedPlayers' => $trackedPlayers,
             'updateTime' => $updateTime->format('G:i'),
             'timeTillUpdate' => $timeTillUpdate->format('%h:%I'),
-            'form' => [
-                'errors' => $errors,
-                'player1' => $player1,
-                'player2' => $player2,
-                'oldschool' => $oldschool,
+            'formValues' => [
+                'oldSchool' => $oldSchool,
+                'name1' => $name1,
+                'name2' => $name2,
             ],
         ]);
     }
 
-    #[Route('/{game<rs3|osrs>}/player/{name}', 'player')]
+    #[Route('/{game<rs3|osrs>}/player/{name}', 'lookup_player')]
     public function playerAction(Request $request, string $game, string $name): Response
     {
         if (!Player::validateName($name)) {
-            return $this->redirectToRoute('overview', [
+            return $this->redirectToRoute('lookup', [
                 'game' => $game,
                 'player1' => $name,
             ]);
@@ -129,7 +128,7 @@ class LookupController extends AbstractController
 
         if (!$highScore) {
             $this->addFlash('error', sprintf('Could not fetch %s highscores for player "%s".', strtoupper($game), $name));
-            return $this->redirectToRoute('overview', [
+            return $this->redirectToRoute('lookup', [
                 'game' => $game,
                 'player1' => $name,
             ]);
@@ -137,7 +136,7 @@ class LookupController extends AbstractController
 
         $trackedPlayer = $this->trackedPlayerRepository->findByName($name);
 
-        // Track or retrack player
+        // Track or retrack player.
         if (!$trackedPlayer?->isActive() && $request->query->getBoolean('track')) {
             if ($trackedPlayer) {
                 $trackedPlayer->setActive(true);
@@ -146,9 +145,14 @@ class LookupController extends AbstractController
                 $this->entityManager->persist($trackedPlayer);
             }
 
+            // TODO: Could use LookupService to tackle both game versions.
+            // Store current highscore at last update to start tracking progress immediately.
+            $trackedHighScore = new TrackedHighScore($trackedPlayer, $this->timeKeeper->getUpdateTime(), $oldSchool, $highScore);
+            $this->entityManager->persist($trackedHighScore);
+
             $this->entityManager->flush();
 
-            return $this->redirectToRoute('player', [
+            return $this->redirectToRoute('lookup_player', [
                 'game' => $game,
                 'name' => $name,
             ]);
@@ -162,8 +166,8 @@ class LookupController extends AbstractController
             $trainedToday = $highScoreToday ? $highScore->compareTo($highScoreToday) : null;
             $trainedYesterday = $highScoreYesterday ? $highScoreToday?->compareTo($highScoreYesterday) : null;
             $trainedWeek = $highScoreWeek ? $highScoreToday?->compareTo($highScoreWeek) : null;
-            // TODO: Could return
-            $records = $this->personalRecordRepository->findHighestRecords($player, $oldSchool);
+
+            $records = $this->personalRecordRepository->findRecords($trackedPlayer, $oldSchool);
 
             // TODO: Get tracked and live activity feed
             // $activityFeed = $this->entityManager->getRepository(TrackedActivityFeedItem::class)->findByPlayer($player, true);
@@ -171,7 +175,14 @@ class LookupController extends AbstractController
             $trainedToday = null;
             $trainedYesterday = null;
             $trainedWeek = null;
-            $records = [];
+            $records = new RecordCollection([]);
+        }
+
+        $listedActivities = [];
+        foreach ($highScore->getActivities() as $activity) {
+            if ($activity->score !== null) {
+                $listedActivities[] = $activity;
+            }
         }
 
         return $this->render('lookup/player.html.twig', [
@@ -184,10 +195,11 @@ class LookupController extends AbstractController
             'records' => $records,
             'oldSchool' => $oldSchool,
             'tracked' => $trackedPlayer?->isActive() ?? false,
+            'listedActivities' => $listedActivities,
         ]);
     }
 
-    #[Route('/{game<rs3|osrs>}/compare/{name}', 'compare')]
+    #[Route('/{game<rs3|osrs>}/compare/{name}', 'lookup_compare')]
     public function compareAction(): Response
     {
         $error = '';
@@ -305,21 +317,22 @@ class LookupController extends AbstractController
         ]);
     }
 
-    // TODO: Check both regular and hardcore?
-    #[Route('{game<rs3|osrs>}/group/{name}', 'group')]
-    public function groupAction(string $name): Response
+    #[Route('{game<rs3|osrs>}/group/{name}', 'lookup_group')]
+    public function groupAction(string $game, string $name): Response
     {
+        $oldSchool = $game === 'osrs';
+
         try {
+            // TODO: oldschool argument
             $group = $this->playerDataFetcher->fetchGroupIronman($name);
         } catch (FetchFailedException) {
             $this->addFlash('error', 'Ironman group "%s" does not exist.');
-            return $this->redirectToRoute('overview');
+            return $this->redirectToRoute('lookup');
         }
 
         // TODO: Order by total level > xp
         // TODO: Abstract the service into LookupService with HighScore|TrackedHighScore?
-        // TODO: Some static typing would be nice...
-        // [player, highscore, trackedHighscore?, trained?]
+        // TODO: HC ironman (fallback) and RS3 group lookups.
         /** @var array<array{name: string, highScore: OsrsHighScore}> $players */
         $players = [];
         foreach ($group->players as $player) {
@@ -366,10 +379,11 @@ class LookupController extends AbstractController
         return $this->render('lookup/group.html.twig', [
             'group' => $group,
             'players' => $players,
-            'skills' =>  $skills,
+            'skills' => $skills,
             'highestXps' => $highestXps,
             'activities' => $activities,
             'highestScores' => $highestScores,
+            'oldSchool' => $oldSchool,
         ]);
     }
 }

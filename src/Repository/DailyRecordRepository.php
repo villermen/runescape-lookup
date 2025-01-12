@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\DailyRecord;
+use App\Model\RecordCollection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -17,20 +18,14 @@ class DailyRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return DailyRecord[]
+     * @return RecordCollection<DailyRecord>
      */
-    public function findByDate(\DateTimeInterface $date, bool $oldSchool): array
+    public function findRecords(bool $oldSchool): RecordCollection
     {
-
-        $qb = $this->createQueryBuilder('record');
-
-        return $qb
-            ->andWhere($qb->expr()->eq('record.date', ':date'))
-            ->setParameter('date', $date)
-            ->andWhere($qb->expr()->eq('record.type.oldSchool', ':oldSchool'))
-            ->setParameter('oldSchool', $oldSchool)
-            ->addOrderBy($qb->expr()->desc('record.score'))
-            ->getQuery()
-            ->getResult();
+        return new RecordCollection($this->findBy([
+            'type.oldSchool' => $oldSchool,
+        ], [
+            'score' => 'DESC'
+        ]));
     }
 }

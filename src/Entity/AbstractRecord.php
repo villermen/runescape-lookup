@@ -24,9 +24,6 @@ abstract class AbstractRecord
     #[GeneratedValue(strategy: 'AUTO')]
     protected ?int $id = null;
 
-    #[Column(type: 'date_immutable')]
-    protected \DateTimeImmutable $date;
-
     #[ManyToOne]
     #[JoinColumn(nullable: false)]
     protected TrackedPlayer $player;
@@ -41,9 +38,8 @@ abstract class AbstractRecord
     /**
      * @param T $type
      */
-    public function __construct(\DateTimeImmutable $date, TrackedPlayer $player, SkillInterface|ActivityInterface $type, int $score)
+    public function __construct(TrackedPlayer $player, SkillInterface|ActivityInterface $type, int $score)
     {
-        $this->date = $date;
         $this->player = $player;
         $this->type = new RecordType($type);
         $this->score = $score;
@@ -52,11 +48,6 @@ abstract class AbstractRecord
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getDate(): \DateTimeImmutable
-    {
-        return $this->date;
     }
 
     public function getPlayer(): TrackedPlayer

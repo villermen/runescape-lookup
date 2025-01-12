@@ -42,10 +42,10 @@ class TrackedHighScore
     /**
      * @param T $highScore
      */
-    public function __construct(TrackedPlayer $player, bool $oldSchool, HighScore $highScore)
+    public function __construct(TrackedPlayer $player, \DateTimeImmutable $date, bool $oldSchool, HighScore $highScore)
     {
         $this->player = $player;
-        $this->date = new \DateTimeImmutable();
+        $this->date = $date;
         $this->highScore = new HighScoreType($oldSchool, $highScore);
     }
 

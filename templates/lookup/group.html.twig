@@ -1,5 +1,11 @@
+{# @var group Villermen\RuneScape\PlayerData\GroupIronmanData #}
+{# @var players array<array{name: string, highScore: HighScore}> #}
+{# @var skills Villermen\RuneScape\HighScore\SkillInterface[] #}
+{# @var highestXps array<int, int> #}
+{# @var activities Villermen\RuneScape\HighScore\ActivityInterface[] #}
+{# @var highestScores array<int, int> #}
+{# @var oldSchool bool #}
 {% extends "base.html.twig" %}
-
 {% block body %}
     <div class="horizontal-scroller">
         <table class="center datatable row-select">
@@ -7,7 +13,12 @@
                 <tr>
                     <th></th>
                     {% for player in players %}
-                        <th>{{ player.name }}</th>
+                        <th
+                            data-href="{{ path('lookup_player', {
+                                game: oldSchool ? 'osrs' : 'rs3',
+                                name: player.name,
+                            }) }}"
+                        >{{ player.name }}</th>
                     {%  endfor %}
                 </tr>
             </thead>

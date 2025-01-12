@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\PersonalRecord;
 use App\Entity\TrackedPlayer;
+use App\Model\RecordCollection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -18,24 +19,13 @@ class PersonalRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Returns the most recent/highest record for each skill of the given player. Records are indexed by skill id for
-     * convenience.
-     *
-     * @return PersonalRecord[]
+     * @return RecordCollection<PersonalRecord>
      */
-    public function findHighestRecords(TrackedPlayer $player, bool $oldSchool): array
+    public function findRecords(TrackedPlayer $player, bool $oldSchool): RecordCollection
     {
-        $qb = $this->createQueryBuilder('record');
-
-        return $qb
-            ->andWhere($qb->expr()->eq('record.player', ':player'))
-            ->setParameter('player', $player)
-            ->andWhere($qb->expr()->eq('record.type.oldSchool', ':oldSchool'))
-            ->setParameter('oldSchool', $oldSchool)
-            ->addGroupBy('record.skill')
-            ->addGroupBy('record.id')
-            ->andHaving($qb->expr()->eq('record.score', 'MAX(record.score)'))
-            ->getQuery()
-            ->getResult();
+        return new RecordCollection($this->findBy([
+            'player' => $player,
+            'type.oldSchool' => $oldSchool,
+        ]));
     }
 }

@@ -12,11 +12,11 @@
         <h1 class="infobox-title">{{ player.name }}</h1>
         <div class="infobox-line">
             {% if mode == 'lookup' %}
-                <a href="{{ path('player', { game: oldSchool ? 'rs3' : 'osrs', name: player.name }) }}">
+                <a href="{{ path('lookup_player', { game: oldSchool ? 'rs3' : 'osrs', name: player.name }) }}">
                     {{ oldSchool ? 'RS3' : 'OSRS' }}
                 </a>
             {% else %}
-                <a href="{{ path('player', { game: oldSchool ? 'osrs' : 'rs3', name: player.name }) }}">
+                <a href="{{ path('lookup_player', { game: oldSchool ? 'osrs' : 'rs3', name: player.name }) }}">
                     Details
                 </a>
             {% endif %}
@@ -28,7 +28,7 @@
             {% endif %}
             {% if not tracked %}
                 |
-                <a href="{{ path('player', { game: oldSchool ? 'osrs' : 'rs3', name: player.name, track: true }) }}">
+                <a href="{{ path('lookup_player', { game: oldSchool ? 'osrs' : 'rs3', name: player.name, track: true }) }}">
                     Track
                 </a>
             {% endif %}
