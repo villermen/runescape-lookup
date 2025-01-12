@@ -8,7 +8,6 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
-use Villermen\RuneScape\Player;
 
 #[Entity(repositoryClass: TrackedPlayerRepository::class)]
 #[Table(name: 'player')]
@@ -25,9 +24,9 @@ class TrackedPlayer
     #[Column]
     protected bool $active = true;
 
-    public function __construct(Player $player)
+    public function __construct(string $name)
     {
-        $this->name = $player->getName();
+        $this->name = $name;
     }
 
     public function getId(): ?int

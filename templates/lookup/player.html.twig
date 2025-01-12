@@ -1,120 +1,126 @@
+{# @var player Villermen\RuneScape\Player #}
+{# @var highScore Villermen\Runescape\HighScore\HighScore #}
+{# @var trainedToday Villermen\RuneScape\HighScore\HighScoreComparison|null #}
+{# @var trainedYesterday Villermen\RuneScape\HighScore\HighScoreComparison|null #}
+{# @var trainedWeek Villermen\RuneScape\HighScore\HighScoreComparison|null #}
+{# @var activityFeed Villermen\RuneScape\ActivityFeed\ActivityFeed|null #}
+{# @var records App\Entity\PersonalRecord[] #}
+{# @var oldSchool bool #}
+{# @var tracked bool #}
 {% extends "base.html.twig" %}
-
 {% block body %}
-    {{ include("component/lookup-form.html.twig") }}
-
-    {% if not error %}
-        <div class="infobox-container">
-            {{ include("component/player-infobox.html.twig", {"player": player, "mode": "lookup", "tracked": tracked, "oldSchool": oldSchool, "runeScore": runeScore}) }}
-        </div>
-
-        <div class="horizontal-scroller">
-            <table class="center dataTable row-select lookup-table">
-                <thead>
+    {{ include('component/lookup-form.html.twig', {
+        oldSchool,
+        name1: player.name,
+    }) }}
+    <div class="infobox-container">
+        {{ include('component/player-infobox.html.twig', {
+            mode: 'lookup',
+            oldSchool,
+            player: player,
+            highScore,
+            tracked,
+        }) }}
+    </div>
+    <div class="horizontal-scroller">
+        <table class="center row-select lookup-table datatable">
+            <thead>
+                <tr>
+                    <th>Skill</th>
+                    <th>Level</th>
+                    <th>XP</th>
+                    <th>Rank</th>
+                    <th>XP to next</th>
+                    <th>Progress</th>
+                    {% if trainedToday %}
+                        <th>Trained today</th>
+                    {% endif %}
+                    {% if trainedYesterday %}
+                        <th>Trained yesterday</th>
+                        <th>Ranked yesterday</th>
+                    {% endif %}
+                    {% if trainedWeek %}
+                        <th>Trained last week</th>
+                        <th>Ranked last week</th>
+                    {% endif %}
+                    {% if records %}
+                        <th>Record</th>
+                        <th>Record date</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for skill in highScore.skills %}
+                    {% set trainedTodayXp = trainedToday ? trainedToday.xpDifference(skill.skill) : null %}
+                    {% set trainedYesterdayXp = trainedYesterday ? trainedYesterday.xpDifference(skill.skill) : null %}
+                    {% set trainedWeekXp = trainedWeek ? trainedWeek.xpDifference(skill.skill) : null %}
+                    {% set record = records[skill.skill.id] ?? null %}
+                    {% set levelColor = skill.level|red_to_green(1, 99) %}
+                    {% set progressColor = skill.progressToNextLevel|red_to_green %}
                     <tr>
-                        <th>Skill</th>
-                        <th>Level</th>
-                        <th>XP</th>
-                        <th>Rank</th>
-                        <th>XP to next</th>
-                        <th>Progress</th>
+                        <td style="color:{{ levelColor }}">
+                            {{ skill.name }}
+                        </td>
+                        <td style="color:{{ levelColor }}">
+                            {{ skill.virtualLevel }}
+                        </td>
+                        <td style="color:{{ levelColor }}">
+                            {{ skill.xp is not null ? skill.xp|number_format : '' }}
+                        </td>
+                        <td style="color:{{ skill.rank|red_to_green(2000000, 1) }}" data-order="{{ skill.rank ?? 2000000 }}">
+                            {{ skill.rank ? skill.rank|number_format : '' }}
+                        </td>
+                        <td style="color:{{ progressColor }}" data-order="{{ skill.xpToNextLevel ?? 100000000 }}">
+                            {{ skill.xpToNextLevel ? skill.xpToNextLevel|number_format : '' }}
+                        </td>
+                        <td style="color:{{ progressColor }}" data-order="{{ skill.progressToNextLevel }}">
+                            {{ skill.xpToNextLevel ? (skill.progressToNextLevel * 100)|number_format(2) ~ '%' : '' }}
+                        </td>
                         {% if trainedToday %}
-                            <th>Trained today</th>
+                            <td style="color:{{ trainedTodayXp|red_to_green(-1, 1) }}" data-order="{{ trainedTodayXp }}">
+                                {{ trainedTodayXp|format_difference }}
+                            </td>
                         {% endif %}
                         {% if trainedYesterday %}
-                            <th>Trained yesterday</th>
-                            <th>Ranked yesterday</th>
+                            <td style="color:{{ trainedYesterdaySkill.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedYesterdaySkill.xpDifference }}">
+                                {{ trainedYesterdaySkill.xpDifference|format_difference }}
+                            </td>
+                            <td style="color:{{ trainedYesterdaySkill.rankDifference|red_to_green(-1, 1) }}" data-order="{{ trainedYesterdaySkill.rankDifference }}">
+                                {{ trainedYesterdaySkill.rankDifference|format_difference }}
+                            </td>
                         {% endif %}
                         {% if trainedWeek %}
-                            <th>Trained last week</th>
-                            <th>Ranked last week</th>
+                            <td style="color:{{ trainedWeekSkill.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedWeekSkill.xpDifference }}">
+                                {{ trainedWeekSkill.xpDifference|format_difference }}
+                            </td>
+                            <td style="color:{{ trainedWeekSkill.rankDifference|red_to_green(-1, 1) }}" data-order="{{ trainedWeekSkill.rankDifference }}">
+                                {{ trainedWeekSkill.rankDifference|format_difference }}
+                            </td>
                         {% endif %}
-                        {% if records is not empty %}
-                            <th>Record</th>
-                            <th>Record date</th>
+                        {% if record %}
+                            <td data-order="{{ record.xpGain }}">
+                                {{ record.xpGain|format_difference }}
+                            </td>
+                            <td data-order="{{ record.date.timestamp }}">
+                                {{ record.date|date }}
+                            </td>
+                        {% elseif records %}
+                            <td></td>
+                            <td></td>
                         {% endif %}
                     </tr>
-                </thead>
-                <tbody>
-                    {% for skill in stats.skills %}
-                        {% set trainedTodaySkill = trainedToday ? trainedToday.getSkill(skill.skill.id) : false %}
-                        {% set trainedYesterdaySkill = trainedYesterday and trainedYesterday.hasSkill(skill.skill.id) ? trainedYesterday.getSkill(skill.skill.id) : false %}
-                        {% set trainedWeekSkill = trainedWeek and trainedWeek.hasSkill(skill.skill.id) ? trainedWeek.getSkill(skill.skill.id) : false %}
-                        {% set record = records[skill.skill.id] is defined ? records[skill.skill.id] : false %}
-
-                        {% set levelColor = skill.level|red_to_green(0, 69) %}
-                        {% set progressColor = skill.progressToNextLevel|red_to_green %}
-
-                        <tr>
-                            <td style="color:{{ levelColor }}">
-                                {{ skill.name }}
-                            </td>
-                            <td style="color:{{ levelColor }}">
-                                {{ skill.virtualLevel }}
-                            </td>
-                            <td style="color:{{ levelColor }}">
-                                {{ skill.xp|number_format }}
-                            </td>
-                            <td style="color:{{ skill.rank|red_to_green(1000000, 1) }}" data-order="{{ skill.rank ? skill.rank : 10000000 }}">
-                                {{ skill.rank ? skill.rank|number_format : "" }}
-                            </td>
-                            <td style="color:{{ progressColor }}" data-order="{{ skill.xpToNextLevel ?: 100000000 }}">
-                                {% if skill.xpToNextLevel %}
-                                    {{ skill.xpToNextLevel|number_format }}
-                                {% endif %}
-                            </td>
-                            <td style="color:{{ progressColor }}" data-order="{{ skill.progressToNextLevel }}">
-                                {% if skill.xpToNextLevel %}
-                                    {{ (skill.progressToNextLevel * 100)|number_format(2) }}%
-                                {% endif %}
-                            </td>
-                            {% if trainedToday %}
-                                <td style="color:{{ trainedTodaySkill.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedTodaySkill.xpDifference }}">
-                                    {{ trainedTodaySkill.xpDifference|format_difference }}
-                                </td>
-                            {% endif %}
-                            {% if trainedYesterday %}
-                                <td style="color:{{ trainedYesterdaySkill.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedYesterdaySkill.xpDifference }}">
-                                    {{ trainedYesterdaySkill.xpDifference|format_difference }}
-                                </td>
-                                <td style="color:{{ trainedYesterdaySkill.rankDifference|red_to_green(-1, 1) }}" data-order="{{ trainedYesterdaySkill.rankDifference }}">
-                                    {{ trainedYesterdaySkill.rankDifference|format_difference }}
-                                </td>
-                            {% endif %}
-                            {% if trainedWeek %}
-                                <td style="color:{{ trainedWeekSkill.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedWeekSkill.xpDifference }}">
-                                    {{ trainedWeekSkill.xpDifference|format_difference }}
-                                </td>
-                                <td style="color:{{ trainedWeekSkill.rankDifference|red_to_green(-1, 1) }}" data-order="{{ trainedWeekSkill.rankDifference }}">
-                                    {{ trainedWeekSkill.rankDifference|format_difference }}
-                                </td>
-                            {% endif %}
-                            {% if record %}
-                                <td data-order="{{ record.xpGain }}">
-                                    {{ record.xpGain|format_difference }}
-                                </td>
-                                <td data-order="{{ record.date.timestamp }}">
-                                    {{ record.date|date }}
-                                </td>
-                            {% elseif records is not empty %}
-                                <td></td>
-                                <td></td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        {% if not oldSchool and activityFeed and activityFeed.items is not empty %}
-            <h2>Activity feed</h2>
-            {% for activityFeedItem in activityFeed.items %}
-                <div class="activity">
-                    <div class="activity-title">{{ activityFeedItem.title }}</div>
-                    <div class="activity-time">{{ activityFeedItem.time|date }}</div>
-                    <div class="activity-description">{{ activityFeedItem.description }}</div>
-                </div>
-            {% endfor %}
-        {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if not oldSchool and activityFeed and activityFeed.items is not empty %}
+        <h2>Activity feed</h2>
+        {% for activityFeedItem in activityFeed.items %}
+            <div class="activity">
+                <div class="activity-title">{{ activityFeedItem.title }}</div>
+                <div class="activity-time">{{ activityFeedItem.time|date }}</div>
+                <div class="activity-description">{{ activityFeedItem.description }}</div>
+            </div>
+        {% endfor %}
     {% endif %}
 {% endblock %}

@@ -21,7 +21,7 @@ class Formatter extends AbstractExtension
     /**
      * Converts a value into a hex color scaled by the bounds supplied by $redValue and $greenValue.
      */
-    public function redToGreen(?float $value, float $redBound = 0, float $greenBound = 1): string
+    public function redToGreen(?float $value, float $redBound = 0.0, float $greenBound = 1.0): string
     {
         $fraction = (($value ?? 0.0) - $redBound) / ($greenBound - $redBound);
         $fraction = max(0, min(1, $fraction));

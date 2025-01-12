@@ -1,41 +1,53 @@
-{# Arguments: Player player, bool tracked, bool oldSchool, int runeScore #}
+{# @var mode 'lookup'|'compare' #}
+{# @var oldSchool bool #}
+{# @var player Villermen\RuneScape\Player #}
+{# @var highScore Villermen\RuneScape\HighScore\HighScore #}
+{# @var tracked bool #}
+{% set runeScore = oldSchool ? null : highScore.activity(enum('Villermen\\RuneScape\\HighScore\\Rs3Activity').RUNESCORE) %}
 <div class="infobox infobox--{{ mode }}">
     {% if not oldSchool %}
-        <img class="infobox-avatar infobox-avatar--head" src="{{ player.chatHeadUrl }}" />
+        <img class="infobox-avatar infobox-avatar--head" src="{{ player.chatHeadUrl }}" alt="Forum chat head" />
     {% endif %}
-
     <div class="infobox-text">
         <h1 class="infobox-title">{{ player.name }}</h1>
         <div class="infobox-line">
-            {% if mode == "lookup" %}
-                <a href="{{ path('lookup', {player1: player.name, oldschool: not oldSchool}) }}">{{ oldSchool ? 'RS3' : 'OSRS' }}</a>
+            {% if mode == 'lookup' %}
+                <a href="{{ path('player', { game: oldSchool ? 'rs3' : 'osrs', name: player.name }) }}">
+                    {{ oldSchool ? 'RS3' : 'OSRS' }}
+                </a>
             {% else %}
-                <a href="{{ path('lookup', {player1: player.name, oldschool: oldSchool}) }}">Details</a>
+                <a href="{{ path('player', { game: oldSchool ? 'osrs' : 'rs3', name: player.name }) }}">
+                    Details
+                </a>
             {% endif %}
-
             {% if not oldSchool %}
-                | <a href="{{ player.runeMetricsUrl }}">RuneMetrics</a>
+                |
+                <a href="{{ player.runeMetricsUrl }}">
+                    RuneMetrics
+                </a>
             {% endif %}
-
-            {% if not tracked or not player.active %}
-                | <a href="{{ path('lookup', {player1: player.name, track: true, oldschool: oldSchool}) }}">Track</a>
+            {% if not tracked %}
+                |
+                <a href="{{ path('player', { game: oldSchool ? 'osrs' : 'rs3', name: player.name, track: true }) }}">
+                    Track
+                </a>
             {% endif %}
         </div>
         <div class="infobox-line">
             Combat level
             {% if oldSchool %}
-                {{ player.oldSchoolSkillHighScore.getCombatLevel(true) }}
+                {{ highScore.combatLevel // 1 }}
             {% else %}
-                {{ player.skillHighScore.getCombatLevel(true) }} ({{ player.skillHighScore.getCombatLevel(false) }}+{{ player.skillHighScore.getCombatLevel(true) - player.skillHighScore.getCombatLevel(false) }})
+                {{ highScore.combatLevel // 1 }} ({{ highScore.combatLevel(false) // 1 }}+{{ highScore.combatLevel // 1 - highScore.combatLevel(false) // 1 }})
             {% endif %}
         </div>
-        {% if runeScore %}
+        {% if runeScore and runeScore.score > 0 %}
             <div class="infobox-line" title="Rank {{ runeScore.rank|number_format }}">
                 {{ runeScore.score|number_format }} RuneScore
             </div>
         {% endif %}
     </div>
     {% if not oldSchool %}
-        <img class="infobox-avatar infobox-avatar--body" src="{{ player.fullBodyUrl }}" />
+        <img class="infobox-avatar infobox-avatar--body" src="{{ player.fullBodyUrl }}" alt="Forum full body" />
     {% endif %}
 </div>

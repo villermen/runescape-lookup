@@ -2,7 +2,7 @@
 
 {% block body %}
     <div class="horizontal-scroller">
-        <table class="center dataTable row-select">
+        <table class="center datatable row-select">
             <thead>
                 <tr>
                     <th></th>
@@ -17,7 +17,7 @@
                         <td>{{ skill.getName() }}</td>
                         {% for player in players %}
                             <td
-                                style="color: {{ player.highScore.skill(skill).level|red_to_green(1, 99) }}; {{ player.highScore.skill(skill).level == highestLevels[skill.id] ? 'text-decoration: underline;' : '' }}"
+                                style="color: {{ player.highScore.skill(skill).level|red_to_green(1, 99) }}; {{ player.highScore.skill(skill).xp == highestXps[skill.id] ? 'text-decoration: underline;' : '' }}"
                             >
                                 {{ player.highScore.skill(skill).level }}
                             </td>

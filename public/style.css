@@ -13,15 +13,19 @@ body {
 h1 {
     margin-bottom: 5px;
 }
-input {
-    width: 12em;
-    height: 2em;
+input, button {
     font: bold 12pt Verdana;
     text-align: center;
     background-color: black;
     border: 1px solid #505050;
     color: #B0B0B0;
-    line-height: 27px;
+    padding: 10px;
+}
+button {
+    cursor: pointer;
+}
+input:hover, button:hover {
+    background-color: #212121;
 }
 [data-href] {
     cursor: pointer;
@@ -29,17 +33,13 @@ input {
 .content {
     overflow-x: hidden;
 }
-.forms {
+.lookup-form {
+    display: inline-block;
     margin-bottom: 20px;
     margin-top: 20px;
 }
-.lookup-form,
-.compare-form {
-    display: inline-block;
-}
-.swapicon {
-    vertical-align: middle;
-    height: 27px;
+.back {
+    margin-top: 0;
 }
 .infobox-container {
     position: relative;
@@ -149,9 +149,6 @@ th>a {
 }
 .activity-description {
 }
-.dataTable th {
-    cursor: pointer;
-}
 .spacer-cell {
     padding: 0;
     position: relative;
@@ -171,9 +168,6 @@ th>a {
 }
 .nolifer-table-container--rs3 {
     margin-right: 30px;
-}
-.dataTables_wrapper {
-    display: inline;
 }
 .index-infotable {
     margin: 50px 50px 0 0;
@@ -198,15 +192,16 @@ th>a {
     overflow-x: auto;
     margin-bottom: 1rem;
 }
-.sorting,
-.sorting_asc,
-.sorting_desc {
+th {
     white-space: nowrap;
 }
-.sorting_asc::after {
+.dt-orderable-asc, dt-orderable-desc {
+    cursor: pointer;
+}
+.dt-ordering-asc::after {
     content: " ▲";
 }
-.sorting_desc::after {
+.dt-ordering-desc::after {
     content: " ▼";
 }
 
@@ -243,7 +238,7 @@ th>a {
 }
 
 @media (max-width: 360px) {
-    .lookup-form, .compare-form {
+    .lookup-form {
         display: block;
         margin-top: 10px;
         margin-bottom: 10px;
