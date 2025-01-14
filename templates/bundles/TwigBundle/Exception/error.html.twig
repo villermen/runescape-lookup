@@ -1,0 +1,10 @@
+{# @var status_code int #}
+{# @var status_text string #}
+{# @var exception Symfony\Component\ErrorHandler\Exception\FlattenException #}
+{% extends "base.html.twig" %}
+{% set message = status_code >= 400 and status_code < 500 ? exception.message : 'An unknown error occurred.' %}
+{% block body %}
+    <h1>Viller's RuneScape Lookup</h1>
+    <p class="error">{{ message }}</p>
+    {{ include('component/lookup-form.html.twig') }}
+{% endblock %}

@@ -12,8 +12,10 @@ use App\Repository\TrackedPlayerRepository;
 use App\Service\TimeKeeper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Villermen\RuneScape\ActivityFeed\ActivityFeed;
 use Villermen\RuneScape\Exception\FetchFailedException;
@@ -42,20 +44,13 @@ class LookupController extends AbstractController
     #[Route('/', 'lookup')]
     public function indexAction(Request $request): Response
     {
-        // Poor man's form handling.
-        $errors = [];
+        // Backward-compatible form handling.
         $name1 = $request->query->getString('player1') ?: null;
-        if ($name1 && !Player::validateName($name1)) {
-            $errors[] = 'Name of player 1 is invalid!';
-        }
         $name2 = $request->query->getString('player2') ?: null;
-        if ($name2 && !Player::validateName($name2)) {
-            $errors[] = 'Name of player 2 is invalid!';
-        }
         $oldSchool = $request->query->getBoolean('oldschool');
         $game = $oldSchool ? 'osrs' : 'rs3';
 
-        if (!$errors && $name1 && $name2) {
+        if ($name1 && $name2) {
             return $this->redirectToRoute('lookup_compare', [
                 'game' => $game,
                 'name1' => $name1,
@@ -63,7 +58,7 @@ class LookupController extends AbstractController
             ]);
         }
 
-        if (!$errors && $name1) {
+        if ($name1) {
             return $this->redirectToRoute('lookup_player', [
                 'game' => $game,
                 'name' => $name1,
@@ -75,8 +70,6 @@ class LookupController extends AbstractController
         $dailyOldSchoolRecords = $this->dailyRecordRepository->findRecords(oldSchool: true);
         $updateTime = $this->timeKeeper->getUpdateTime(1);
         $timeTillUpdate = (new \DateTime())->diff($updateTime);
-
-        // TODO: errors as flash messages
 
         return $this->render('lookup/overview.html.twig', [
             'dailyRecords' => $dailyRecords,
@@ -95,10 +88,7 @@ class LookupController extends AbstractController
     public function playerAction(Request $request, string $game, string $name): Response
     {
         if (!Player::validateName($name)) {
-            return $this->redirectToRoute('lookup', [
-                'game' => $game,
-                'player1' => $name,
-            ]);
+            throw new BadRequestException(sprintf('Invalid name "%s".', $name));
         }
 
         $player = new Player($name);
@@ -127,11 +117,7 @@ class LookupController extends AbstractController
         }
 
         if (!$highScore) {
-            $this->addFlash('error', sprintf('Could not fetch %s highscores for player "%s".', strtoupper($game), $name));
-            return $this->redirectToRoute('lookup', [
-                'game' => $game,
-                'player1' => $name,
-            ]);
+            throw new NotFoundHttpException(sprintf('%s player "%s" could not be found.', strtoupper($game), $name));
         }
 
         $trackedPlayer = $this->trackedPlayerRepository->findByName($name);
@@ -199,9 +185,17 @@ class LookupController extends AbstractController
         ]);
     }
 
-    #[Route('/{game<rs3|osrs>}/compare/{name}', 'lookup_compare')]
-    public function compareAction(): Response
+    #[Route('/{game<rs3|osrs>}/compare/{name1}/{name2}', 'lookup_compare')]
+    public function compareAction(string $game, string $name1, string $name2): Response
     {
+        if (!Player::validateName($name1)) {
+            throw new BadRequestException(sprintf('Invalid name "%s".', $name1));
+        }
+
+        if (!Player::validateName($name2)) {
+            throw new BadRequestException(sprintf('Invalid name "%s".', $name2));
+        }
+
         $error = '';
         $stats1 = false;
         $stats2 = false;
@@ -212,13 +206,15 @@ class LookupController extends AbstractController
         $runeScore1 = null;
         $runeScore2 = null;
 
+        if (!$player2)
+
         // Get player objects
         $player1 = $this->entityManager->getRepository(TrackedPlayer::class)->findByName($name1);
         if (!$player1) {
             if (Player::validateName($name1)) {
                 $player1 = new Player($name1, $dataFetcher);
             } else {
-                $error = 'Player 1\'s name is invalid.';
+                $error = 'Player 1\'s name "%s" is invalid.';
             }
         }
 
@@ -325,9 +321,8 @@ class LookupController extends AbstractController
         try {
             // TODO: oldschool argument
             $group = $this->playerDataFetcher->fetchGroupIronman($name);
-        } catch (FetchFailedException) {
-            $this->addFlash('error', 'Ironman group "%s" does not exist.');
-            return $this->redirectToRoute('lookup');
+        } catch (FetchFailedException $exception) {
+            throw new NotFoundHttpException(sprintf('%s ironman group "%s" could not be found.', strtoupper($game), $name), $exception);
         }
 
         // TODO: Order by total level > xp

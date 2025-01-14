@@ -2,17 +2,13 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <title>{% block title %}{% endblock %}{% if block('title') %} | {% endif %}Viller's RuneScape lookup tools</title>
+        <title>{% block title %}{% endblock %}{% if block('title') %} - {% endif %}Viller's RuneScape Lookup</title>
         <link rel="stylesheet" href="{{ asset('style.css') }}" />
+        <link rel="icon" type="image/png" href="{{ asset('icon.png') }}" />
+        <link rel="apple-touch-icon" type="image/png" href="{{ asset('icon.png') }}" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     </head>
     <body>
-        {% if error is defined and error is not empty %}
-            <p class="error">{{ error }}</p>
-        {% endif %}
-        {% if notice is defined and notice is not empty %}
-            <p class="notice">{{ notice }}</p>
-        {% endif %}
         {% block body %}{% endblock %}
         {% block javascripts %}
             <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>

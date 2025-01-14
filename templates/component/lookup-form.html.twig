@@ -5,7 +5,7 @@
 {% set name1 = name1|default('') %}
 {% set name2 = name2|default('') %}
 <form method="get" class="lookup-form" action="{{ path('lookup') }}">
-    <input type="text" name="player1" maxlength="12" placeholder="New user" value="{{ name1 }}" style="width: 12em;" />
+    <input type="text" name="player1" maxlength="12" placeholder="New player" value="{{ name1 }}" style="width: 12em;" />
     {% if name1 %}
         <input type="text" name="player2" maxlength="12" placeholder="Compare with" value="{{ name2 }}" style="width: 12em;" />
         <input type="hidden" name="oldschool" value="{{ oldSchool }}" />

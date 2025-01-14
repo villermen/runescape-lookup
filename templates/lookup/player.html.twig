@@ -9,6 +9,7 @@
 {# @var tracked bool #}
 {# @var listedActivities Villermen\RuneScape\HighScore\HighScoreActivity[] #}
 {% extends "base.html.twig" %}
+{% block title %}{{ player.name }}{% endblock %}
 {% block body %}
     {{ include('component/lookup-form.html.twig', {
         oldSchool,

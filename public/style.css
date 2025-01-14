@@ -34,7 +34,6 @@ input:hover, button:hover {
     overflow-x: hidden;
 }
 .lookup-form {
-    display: inline-block;
     margin-bottom: 20px;
     margin-top: 20px;
 }
@@ -159,8 +158,6 @@ th>a {
 .error {
     color: red;
 }
-.notice {
-}
 .nolifer-table-container {
     display: inline-block;
     vertical-align: top;
@@ -225,7 +222,6 @@ table {
 
 @media (max-width: 360px) {
     .lookup-form {
-        display: block;
         margin-top: 10px;
         margin-bottom: 10px;
     }
