@@ -1,48 +1,55 @@
 {# @var group Villermen\RuneScape\PlayerData\GroupIronmanData #}
-{# @var players array<array{name: string, highScore: HighScore}> #}
-{# @var skills Villermen\RuneScape\HighScore\SkillInterface[] #}
-{# @var highestXps array<int, int> #}
-{# @var activities Villermen\RuneScape\HighScore\ActivityInterface[] #}
-{# @var highestScores array<int, int> #}
-{# @var oldSchool bool #}
+{# @var lookups App\Model\LookupResult[] #}
+{# @var skills array<array{skill: Villermen\RuneScape\HighScore\SkillInterface, highestXp: int}> #}
+{# @var activities array<array{activity: Villermen\RuneScape\HighScore\ActivityInterface, highestScore: int}> #}
 {% extends "base.html.twig" %}
+{% block title %}{{ group.displayName }}{% endblock %}
 {% block body %}
+    {{ include('component/lookup-form.html.twig', {
+        oldSchool: lookups|first.oldSchool,
+        group: group.displayName,
+    }) }}
+    <h1>{{ group.displayName }}</h1>
     <div class="horizontal-scroller">
         <table class="center datatable row-select">
             <thead>
                 <tr>
                     <th></th>
-                    {% for player in players %}
+                    {% for lookup in lookups %}
                         <th
                             data-href="{{ path('lookup_player', {
-                                game: oldSchool ? 'osrs' : 'rs3',
-                                name: player.name,
+                                game: lookup.game,
+                                name: lookup.player.name,
                             }) }}"
-                        >{{ player.name }}</th>
-                    {%  endfor %}
+                        >{{ lookup.player.name }}</th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody>
                 {% for skill in skills %}
+                    {% set highestXp = skill.highestXp %}
+                    {% set skill = skill.skill %}
                     <tr>
                         <td>{{ skill.getName() }}</td>
-                        {% for player in players %}
+                        {% for lookup in lookups %}
                             <td
-                                style="color: {{ player.highScore.skill(skill).level|red_to_green(1, 99) }}; {{ player.highScore.skill(skill).xp == highestXps[skill.id] ? 'text-decoration: underline;' : '' }}"
+                                style="color: {{ lookup.highScore.skill(skill).level|red_to_green(1, 99) }}; {{ lookup.highScore.skill(skill).xp == highestXp ? 'text-decoration: underline;' : '' }}"
                             >
-                                {{ player.highScore.skill(skill).level }}
+                                {{ lookup.highScore.skill(skill).level }}
                             </td>
                         {% endfor %}
                     </tr>
                 {% endfor %}
                 {% for activity in activities %}
+                    {% set highestScore = activity.highestScore %}
+                    {% set activity = activity.activity %}
                     <tr style="{{ loop.first ? 'border-top: 1px solid #505050;' : ''}}">
                         <td>{{ activity.getName() }}</td>
-                        {% for player in players %}
+                        {% for lookup in lookups %}
                             <td
-                                style="{{ player.highScore.activity(activity).score == highestScores[activity.id] ? 'text-decoration: underline;' : '' }}"
+                                style="{{ lookup.highScore.activity(activity).score == highestScore ? 'text-decoration: underline;' : '' }}"
                             >
-                                {{ player.highScore.activity(activity).score }}
+                                {{ lookup.highScore.activity(activity).score }}
                             </td>
                         {% endfor %}
                     </tr>

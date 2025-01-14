@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\DailyRecord;
-use App\Model\RecordCollection;
+use App\Model\Records;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -18,11 +18,11 @@ class DailyRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return RecordCollection<DailyRecord>
+     * @return Records<DailyRecord>
      */
-    public function findRecords(bool $oldSchool): RecordCollection
+    public function findRecords(bool $oldSchool): Records
     {
-        return new RecordCollection($this->findBy([
+        return new Records($this->findBy([
             'type.oldSchool' => $oldSchool,
         ], [
             'score' => 'DESC'

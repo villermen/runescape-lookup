@@ -4,11 +4,10 @@ namespace App\Controller;
 
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
-use App\Model\RecordCollection;
+use App\Model\LookupResult;
 use App\Repository\DailyRecordRepository;
-use App\Repository\PersonalRecordRepository;
-use App\Repository\TrackedHighScoreRepository;
 use App\Repository\TrackedPlayerRepository;
+use App\Service\LookupService;
 use App\Service\TimeKeeper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,15 +16,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Villermen\RuneScape\ActivityFeed\ActivityFeed;
 use Villermen\RuneScape\Exception\FetchFailedException;
-use Villermen\RuneScape\HighScore\HighScore;
-use Villermen\RuneScape\HighScore\OsrsActivity;
-use Villermen\RuneScape\HighScore\OsrsHighScore;
 use Villermen\RuneScape\HighScore\OsrsSkill;
-use Villermen\RuneScape\HighScore\SkillInterface;
 use Villermen\RuneScape\Player;
-use Villermen\RuneScape\PlayerData\RuneMetricsData;
 use Villermen\RuneScape\Service\PlayerDataFetcher;
 
 class LookupController extends AbstractController
@@ -36,8 +29,7 @@ class LookupController extends AbstractController
         private readonly DailyRecordRepository $dailyRecordRepository,
         private readonly TimeKeeper $timeKeeper,
         private readonly PlayerDataFetcher $playerDataFetcher,
-        private readonly TrackedHighScoreRepository $trackedHighScoreRepository,
-        private readonly PersonalRecordRepository $personalRecordRepository,
+        private readonly LookupService $lookupService,
     ) {
     }
 
@@ -48,7 +40,15 @@ class LookupController extends AbstractController
         $name1 = $request->query->getString('player1') ?: null;
         $name2 = $request->query->getString('player2') ?: null;
         $oldSchool = $request->query->getBoolean('oldschool');
+        $group = $request->query->getString('group') ?: null;
         $game = $oldSchool ? 'osrs' : 'rs3';
+
+        if ($group) {
+            return $this->redirectToRoute('lookup_group', [
+                'game' => $game,
+                'name' => $group,
+            ]);
+        }
 
         if ($name1 && $name2) {
             return $this->redirectToRoute('lookup_compare', [
@@ -94,49 +94,16 @@ class LookupController extends AbstractController
         $player = new Player($name);
         $oldSchool = $game === 'osrs';
 
-        /** @var HighScore|null $highScore */
-        $highScore = null;
-        /** @var RuneMetricsData|null $runeMetrics */
-        $runeMetrics = null;
-        /** @var ActivityFeed|null $activityFeed */
-        $activityFeed = null;
-
-        try {
-            $highScore = $this->playerDataFetcher->fetchIndexLite($player, oldSchool: $oldSchool);
-        } catch (FetchFailedException) {
-        }
-
-        if (!$oldSchool) {
-            try {
-                $runeMetrics = $this->playerDataFetcher->fetchRuneMetrics($player);
-                // Use RuneMetrics as fallback (index_lite includes activities).
-                $highScore = $highScore ?? $runeMetrics->highScore;
-                $activityFeed = $runeMetrics->activityFeed;
-            } catch (FetchFailedException) {
-            }
-        }
-
-        if (!$highScore) {
+        $lookupResult = $this->lookupService->lookUpPlayer($player, $oldSchool);
+        if (!$lookupResult) {
             throw new NotFoundHttpException(sprintf('%s player "%s" could not be found.', strtoupper($game), $name));
         }
 
-        $trackedPlayer = $this->trackedPlayerRepository->findByName($name);
+        if (!$lookupResult->isTracked() && $request->query->getBoolean('track')) {
+            $trackedPlayer = $this->lookupService->trackPlayer($player);
 
-        // Track or retrack player.
-        if (!$trackedPlayer?->isActive() && $request->query->getBoolean('track')) {
-            if ($trackedPlayer) {
-                $trackedPlayer->setActive(true);
-            } else {
-                $trackedPlayer = new TrackedPlayer($runeMetrics->displayName ?? $player->getName());
-                $this->entityManager->persist($trackedPlayer);
-            }
-
-            // TODO: Could use LookupService to tackle both game versions.
-            // Store current highscore at last update to start tracking progress immediately.
-            $trackedHighScore = new TrackedHighScore($trackedPlayer, $this->timeKeeper->getUpdateTime(), $oldSchool, $highScore);
-            $this->entityManager->persist($trackedHighScore);
-
-            $this->entityManager->flush();
+            // Immediately update tracked high scores to start tracking progress immediately.
+            $this->lookupService->updateTrackedHighScores($trackedPlayer);
 
             return $this->redirectToRoute('lookup_player', [
                 'game' => $game,
@@ -144,44 +111,8 @@ class LookupController extends AbstractController
             ]);
         }
 
-        if ($trackedPlayer) {
-            $highScoreToday = $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(), $trackedPlayer, $oldSchool)?->getHighScore();
-            $highScoreYesterday = $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(-1), $trackedPlayer, $oldSchool)?->getHighScore();
-            $highScoreWeek = $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(-7), $trackedPlayer, $oldSchool)?->getHighScore();
-
-            $trainedToday = $highScoreToday ? $highScore->compareTo($highScoreToday) : null;
-            $trainedYesterday = $highScoreYesterday ? $highScoreToday?->compareTo($highScoreYesterday) : null;
-            $trainedWeek = $highScoreWeek ? $highScoreToday?->compareTo($highScoreWeek) : null;
-
-            $records = $this->personalRecordRepository->findRecords($trackedPlayer, $oldSchool);
-
-            // TODO: Get tracked and live activity feed
-            // $activityFeed = $this->entityManager->getRepository(TrackedActivityFeedItem::class)->findByPlayer($player, true);
-        } else {
-            $trainedToday = null;
-            $trainedYesterday = null;
-            $trainedWeek = null;
-            $records = new RecordCollection([]);
-        }
-
-        $listedActivities = [];
-        foreach ($highScore->getActivities() as $activity) {
-            if ($activity->score !== null) {
-                $listedActivities[] = $activity;
-            }
-        }
-
         return $this->render('lookup/player.html.twig', [
-            'player' => $player,
-            'highScore' => $highScore,
-            'trainedToday' => $trainedToday,
-            'trainedYesterday' => $trainedYesterday,
-            'trainedWeek' => $trainedWeek,
-            'activityFeed' => $activityFeed,
-            'records' => $records,
-            'oldSchool' => $oldSchool,
-            'tracked' => $trackedPlayer?->isActive() ?? false,
-            'listedActivities' => $listedActivities,
+            'lookup' => $lookupResult,
         ]);
     }
 
@@ -196,6 +127,12 @@ class LookupController extends AbstractController
             throw new BadRequestException(sprintf('Invalid name "%s".', $name2));
         }
 
+        $player1 = new Player($name1);
+        $player2 = new Player($name2);
+
+        $trackedPlayer1 = $this->trackedPlayerRepository->findByName($player1->getName());
+        $trackedPlayer2 = $this->trackedPlayerRepository->findByName($player2->getName());
+
         $error = '';
         $stats1 = false;
         $stats2 = false;
@@ -206,30 +143,7 @@ class LookupController extends AbstractController
         $runeScore1 = null;
         $runeScore2 = null;
 
-        if (!$player2)
-
-        // Get player objects
-        $player1 = $this->entityManager->getRepository(TrackedPlayer::class)->findByName($name1);
-        if (!$player1) {
-            if (Player::validateName($name1)) {
-                $player1 = new Player($name1, $dataFetcher);
-            } else {
-                $error = 'Player 1\'s name "%s" is invalid.';
-            }
-        }
-
-        if ($player1) {
-            $player2 = $this->entityManager->getRepository(TrackedPlayer::class)->findByName($name2);
-            if (!$player2) {
-                if (Player::validateName($name2)) {
-                    $player2 = new Player($name2, $dataFetcher);
-                } else {
-                    $error = 'Player 2\'s name is invalid.';
-                }
-            }
-        }
-
-        if ($player1 && $player2) {
+        if ($trackedPlayer1 && $trackedPlayer2) {
             $trackedHighScoreRepository = $this->entityManager->getRepository(TrackedHighScore::class);
 
             // Fetch stats
@@ -295,7 +209,6 @@ class LookupController extends AbstractController
         }
 
         return $this->render('lookup/compare.html.twig', [
-            'error' => $error,
             'player1' => $player1,
             'player2' => $player2,
             'stats1' => $stats1,
@@ -319,66 +232,68 @@ class LookupController extends AbstractController
         $oldSchool = $game === 'osrs';
 
         try {
-            // TODO: oldschool argument
-            $group = $this->playerDataFetcher->fetchGroupIronman($name);
+            $group = $this->playerDataFetcher->fetchGroupIronman($name, $oldSchool);
         } catch (FetchFailedException $exception) {
             throw new NotFoundHttpException(sprintf('%s ironman group "%s" could not be found.', strtoupper($game), $name), $exception);
         }
 
-        // TODO: Order by total level > xp
-        // TODO: Abstract the service into LookupService with HighScore|TrackedHighScore?
-        // TODO: HC ironman (fallback) and RS3 group lookups.
-        /** @var array<array{name: string, highScore: OsrsHighScore}> $players */
-        $players = [];
+        /** @var LookupResult[] $lookups */
+        $lookups = [];
         foreach ($group->players as $player) {
-            $players[] = [
-                'name' => $player->getName(),
-                'highScore' => $this->playerDataFetcher->fetchIndexLite($player, oldSchool: true),
-            ];
+            $lookup = $this->lookupService->lookUpPlayer($player, $oldSchool);
+            if (!$lookup) {
+                throw new NotFoundHttpException(sprintf('%s player "%s" could not be found.', strtoupper($game), $player->getName()));
+            }
+
+            $lookups[] = $lookup;
         }
 
-        usort($players, function (array $player1, array $player2): int {
-            $total1 = $player1['highScore']->getSkill(OsrsSkill::TOTAL);
-            $total2 = $player2['highScore']->getSkill(OsrsSkill::TOTAL);
+        // Order by total level > XP.
+        usort($lookups, function (LookupResult $lookup1, LookupResult $lookup2): int {
+            $total1 = $lookup1->highScore->getSkill(OsrsSkill::TOTAL);
+            $total2 = $lookup2->highScore->getSkill(OsrsSkill::TOTAL);
             return $total1->level !== $total2->level
                 ? $total2->level <=> $total1->level
                 : $total2->xp <=> $total1->xp;
         });
 
-        $skills = OsrsSkill::cases();
-        $highestXps = [];
-        foreach ($skills as $skill) {
-            foreach ($players as ['highScore' => $highScore]) {
-                $highestXps[$skill->getId()] = max($highestXps[$skill->getId()] ?? 0, $highScore->getSkill($skill)->xp);
+        $skills = [];
+        foreach (reset($lookups)->highScore->getSkills() as $highScoreSkill) {
+            $skill = $highScoreSkill->skill;
+            $highestXp = 0;
+            foreach ($lookups as $lookup) {
+                $highestXp = max($highestXp, $lookup->highScore->getSkill($skill)->xp ?? 0);
+            }
+
+            $skills[] = [
+                'skill' => $skill,
+                'highestXp' => $highestXp,
+            ];
+        }
+
+        $activities = [];
+        foreach (reset($lookups)->highScore->getActivities() as $highScoreActivity) {
+            $activity = $highScoreActivity->activity;
+            $highestScore = 0;
+            foreach ($lookups as $lookup) {
+                $highestScore = max($highestScore, $lookup->highScore->getActivity($activity)->score ?? 0);
+            }
+
+            // Only includes activities for which one of the group members is ranked.
+            if ($highestScore > 0) {
+                $activities[] = [
+                    'activity' => $activity,
+                    'highestScore' => $highestScore,
+                ];
             }
         }
 
-        // Only include activities for which one of the group members is ranked.
-        $activities = array_filter(OsrsActivity::cases(), function (OsrsActivity $activity) use ($players): bool {
-            foreach ($players as ['highScore' => $highScore]) {
-                $highScoreActivity = $highScore->getActivity($activity);
-                if ($highScoreActivity->score) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-        $highestScores = [];
-        foreach ($activities as $activity) {
-            foreach ($players as ['highScore' => $highScore]) {
-                $highestScores[$activity->getId()] = max($highestScores[$activity->getId()] ?? 0, $highScore->getActivity($activity)->score);
-            }
-        }
 
         return $this->render('lookup/group.html.twig', [
             'group' => $group,
-            'players' => $players,
+            'lookups' => $lookups,
             'skills' => $skills,
-            'highestXps' => $highestXps,
             'activities' => $activities,
-            'highestScores' => $highestScores,
-            'oldSchool' => $oldSchool,
         ]);
     }
 }

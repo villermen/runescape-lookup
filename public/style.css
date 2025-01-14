@@ -24,6 +24,10 @@ input, button {
 button {
     cursor: pointer;
 }
+button[disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
 input:hover, button:hover {
     background-color: #212121;
 }

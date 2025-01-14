@@ -1,27 +1,15 @@
-{# @var player Villermen\RuneScape\Player #}
-{# @var highScore Villermen\Runescape\HighScore\HighScore #}
-{# @var trainedToday Villermen\RuneScape\HighScore\HighScoreComparison|null #}
-{# @var trainedYesterday Villermen\RuneScape\HighScore\HighScoreComparison|null #}
-{# @var trainedWeek Villermen\RuneScape\HighScore\HighScoreComparison|null #}
-{# @var activityFeed Villermen\RuneScape\ActivityFeed\ActivityFeed|null #}
-{# @var records App\Model\RecordCollection<PersonalRecord> #}
-{# @var oldSchool bool #}
-{# @var tracked bool #}
-{# @var listedActivities Villermen\RuneScape\HighScore\HighScoreActivity[] #}
+{# @var lookup App\Model\LookupResult #}
 {% extends "base.html.twig" %}
-{% block title %}{{ player.name }}{% endblock %}
+{% block title %}{{ lookup.player.name }}{% endblock %}
 {% block body %}
     {{ include('component/lookup-form.html.twig', {
-        oldSchool,
-        name1: player.name,
+        oldSchool: lookup.oldSchool,
+        name1: lookup.player.name,
     }) }}
     <div class="infobox-container">
         {{ include('component/player-infobox.html.twig', {
             mode: 'lookup',
-            oldSchool,
-            player: player,
-            highScore,
-            tracked,
+            lookup,
         }) }}
     </div>
     <div class="horizontal-scroller">
@@ -34,26 +22,26 @@
                     <th>Rank</th>
                     <th>XP to next</th>
                     <th>Progress</th>
-                    {% if trainedToday %}
+                    {% if lookup.trainedToday %}
                         <th>Trained today</th>
                     {% endif %}
-                    {% if trainedYesterday %}
+                    {% if lookup.trainedYesterday %}
                         <th>Trained yesterday</th>
                         <th>Ranked yesterday</th>
                     {% endif %}
-                    {% if trainedWeek %}
+                    {% if lookup.trainedWeek %}
                         <th>Trained last week</th>
                         <th>Ranked last week</th>
                     {% endif %}
-                    {% if records is not empty %}
+                    {% if lookup.records is not empty %}
                         <th>Record</th>
                         <th>Record date</th>
                     {% endif %}
                 </tr>
             </thead>
             <tbody>
-                {% for skill in highScore.skills %}
-                    {% set record = records.get(skill.skill) %}
+                {% for skill in lookup.highScore.skills %}
+                    {% set record = lookup.records.get(skill.skill) %}
                     {% set levelColor = skill.level|red_to_green(1, 99) %}
                     {% set progressColor = skill.progressToNextLevel|red_to_green %}
                     <tr>
@@ -75,25 +63,40 @@
                         <td style="color:{{ progressColor }}" data-order="{{ skill.progressToNextLevel }}">
                             {{ skill.xpToNextLevel ? (skill.progressToNextLevel * 100)|number_format(2) ~ '%' : '' }}
                         </td>
-                        {% if trainedToday %}
-                            <td style="color:{{ trainedToday.xpDifference(skill.skill)|red_to_green(-1, 1) }}" data-order="{{ trainedToday.xpDifference(skill.skill) }}">
-                                {{ trainedToday.xpDifference(skill.skill)|format_difference }}
+                        {% if lookup.trainedToday %}
+                            <td
+                                data-order="{{ lookup.trainedToday.xpDifference(skill.skill) }}"
+                                style="color:{{ lookup.trainedToday.xpDifference(skill.skill)|red_to_green(-1, 1) }}"
+                            >
+                                {{ lookup.trainedToday.xpDifference(skill.skill)|format_difference }}
                             </td>
                         {% endif %}
-                        {% if trainedYesterday %}
-                            <td style="color:{{ trainedYesterday.xpDifference(skill.skill)|red_to_green(-1, 1) }}" data-order="{{ trainedYesterday.xpDifference(skill.skill) }}">
-                                {{ trainedYesterday.xpDifference(skill.skill)|format_difference }}
+                        {% if lookup.trainedYesterday %}
+                            <td
+                                data-order="{{ lookup.trainedYesterday.xpDifference(skill.skill) }}"
+                                style="color:{{ lookup.trainedYesterday.xpDifference(skill.skill)|red_to_green(-1, 1) }}"
+                            >
+                                {{ lookup.trainedYesterday.xpDifference(skill.skill)|format_difference }}
                             </td>
-                            <td style="color:{{ trainedYesterday.rankDifference(skill.skill)|red_to_green(-1, 1) }}" data-order="{{ trainedYesterday.rankDifference(skill.skill) }}">
-                                {{ trainedYesterday.rankDifference(skill.skill)|format_difference }}
+                            <td
+                                data-order="{{ lookup.trainedYesterday.rankDifference(skill.skill) }}"
+                                style="color:{{ lookup.trainedYesterday.rankDifference(skill.skill)|red_to_green(-1, 1) }}"
+                            >
+                                {{ lookup.trainedYesterday.rankDifference(skill.skill)|format_difference }}
                             </td>
                         {% endif %}
-                        {% if trainedWeek %}
-                            <td style="color:{{ trainedWeek.xpDifference(skill.skill)|red_to_green(-1, 1) }}" data-order="{{ trainedWeek.xpDifference(skill.skill) }}">
-                                {{ trainedWeek.xpDifference(skill.skill)|format_difference }}
+                        {% if lookup.trainedWeek %}
+                            <td
+                                data-order="{{ lookup.trainedWeek.xpDifference(skill.skill) }}"
+                                style="color:{{ lookup.trainedWeek.xpDifference(skill.skill)|red_to_green(-1, 1) }}"
+                            >
+                                {{ lookup.trainedWeek.xpDifference(skill.skill)|format_difference }}
                             </td>
-                            <td style="color:{{ trainedWeek.rankDifference(skill.skill)|red_to_green(-1, 1) }}" data-order="{{ trainedWeek.rankDifference(skill.skill) }}">
-                                {{ trainedWeek.rankDifference(skill.skill)|format_difference }}
+                            <td
+                                data-order="{{ lookup.trainedWeek.rankDifference(skill.skill) }}"
+                                style="color:{{ lookup.trainedWeek.rankDifference(skill.skill)|red_to_green(-1, 1) }}"
+                            >
+                                {{ lookup.trainedWeek.rankDifference(skill.skill)|format_difference }}
                             </td>
                         {% endif %}
                         {% if record %}
@@ -103,7 +106,7 @@
                             <td data-order="{{ record.date.timestamp }}">
                                 {{ record.date|date }}
                             </td>
-                        {% elseif records is not empty %}
+                        {% elseif lookup.records is not empty %}
                             <td></td>
                             <td></td>
                         {% endif %}
@@ -111,63 +114,76 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% if listedActivities %}
+        {% if lookup.activitiesWithScore %}
             <table class="center row-select datatable">
                 <thead>
                 <tr>
                     <th>Activity</th>
                     <th>Score</th>
                     <th>Rank</th>
-                    {% if trainedToday %}
+                    {% if lookup.trainedToday %}
                         <th>Scored today</th>
                     {% endif %}
-                    {% if trainedYesterday %}
+                    {% if lookup.trainedYesterday %}
                         <th>Scored yesterday</th>
                         <th>Ranked yesterday</th>
                     {% endif %}
-                    {% if trainedWeek %}
+                    {% if lookup.trainedWeek %}
                         <th>Scored last week</th>
                         <th>Ranked last week</th>
                     {% endif %}
-                    {% if records is not empty %}
+                    {% if lookup.records is not empty %}
                         <th>Record</th>
                         <th>Record date</th>
                     {% endif %}
                 </tr>
                 </thead>
                 <tbody>
-                    {% for activity in listedActivities %}
-                        {% set trainedTodayScore = trainedToday ? trainedToday.scoreDifference(activity.activity) : null %}
-                        {% set trainedYesterdayScore = trainedYesterday ? trainedYesterday.scoreDifference(activity.activity) : null %}
-                        {% set trainedWeekScore = trainedWeek ? trainedWeek.scoreDifference(activity.activity) : null %}
-                        {% set record = records.get(activity.activity) %}
+                    {% for activity in lookup.activitiesWithScore %}
+                        {% set record = lookup.records.get(activity.activity) %}
                         <tr>
                             <td>{{ activity.name }}</td>
-                            <td>
-                                {{ activity.score is not null ? activity.score|number_format : '' }}
-                            </td>
-                            <td style="color:{{ activity.rank|red_to_green(2000000, 1) }}" data-order="{{ activity.rank ?? 2000000 }}">
+                            <td>{{ activity.score|number_format }}</td>
+                            <td
+                                data-order="{{ activity.rank ?? 2000000 }}"
+                                style="color:{{ activity.rank|red_to_green(2000000, 1) }}"
+                            >
                                 {{ activity.rank ? activity.rank|number_format : '' }}
                             </td>
-                            {% if trainedToday %}
-                                <td style="color:{{ trainedToday.scoreDifference(activity.activity)|red_to_green(-1, 1) }}" data-order="{{ trainedToday.scoreDifference(activity.activity) }}">
-                                    {{ trainedToday.scoreDifference(activity.activity)|format_difference }}
+                            {% if lookup.trainedToday %}
+                                <td
+                                    data-order="{{ lookup.trainedToday.scoreDifference(activity.activity) }}"
+                                    style="color:{{ lookup.trainedToday.scoreDifference(activity.activity)|red_to_green(-1, 1) }}"
+                                >
+                                    {{ lookup.trainedToday.scoreDifference(activity.activity)|format_difference }}
                                 </td>
                             {% endif %}
-                            {% if trainedYesterday %}
-                                <td style="color:{{ trainedYesterday.scoreDifference(activity.activity)|red_to_green(-1, 1) }}" data-order="{{ trainedYesterday.scoreDifference(activity.activity) }}">
-                                    {{ trainedYesterday.scoreDifference(activity.activity)|format_difference }}
+                            {% if lookup.trainedYesterday %}
+                                <td
+                                    data-order="{{ lookup.trainedYesterday.scoreDifference(activity.activity) }}"
+                                    style="color:{{ lookup.trainedYesterday.scoreDifference(activity.activity)|red_to_green(-1, 1) }}"
+                                >
+                                    {{ lookup.trainedYesterday.scoreDifference(activity.activity)|format_difference }}
                                 </td>
-                                <td style="color:{{ trainedYesterday.rankDifference(activity.activity)|red_to_green(-1, 1) }}" data-order="{{ trainedYesterday.rankDifference(activity.activity) }}">
-                                    {{ trainedYesterday.rankDifference(activity.activity)|format_difference }}
+                                <td
+                                    data-order="{{ lookup.trainedYesterday.rankDifference(activity.activity) }}"
+                                    style="color:{{ lookup.trainedYesterday.rankDifference(activity.activity)|red_to_green(-1, 1) }}"
+                                >
+                                    {{ lookup.trainedYesterday.rankDifference(activity.activity)|format_difference }}
                                 </td>
                             {% endif %}
-                            {% if trainedWeek %}
-                                <td style="color:{{ trainedWeek.scoreDifference(activity.activity)|red_to_green(-1, 1) }}" data-order="{{ trainedWeek.scoreDifference(activity.activity) }}">
-                                    {{ trainedWeek.scoreDifference(activity.activity)|format_difference }}
+                            {% if lookup.trainedWeek %}
+                                <td
+                                    data-order="{{ lookup.trainedWeek.scoreDifference(activity.activity) }}"
+                                    style="color:{{ lookup.trainedWeek.scoreDifference(activity.activity)|red_to_green(-1, 1) }}"
+                                >
+                                    {{ lookup.trainedWeek.scoreDifference(activity.activity)|format_difference }}
                                 </td>
-                                <td style="color:{{ trainedWeek.rankDifference(activity.activity)|red_to_green(-1, 1) }}" data-order="{{ trainedWeek.rankDifference(activity.activity) }}">
-                                    {{ trainedWeek.rankDifference(activity.activity)|format_difference }}
+                                <td
+                                    data-order="{{ lookup.trainedWeek.rankDifference(activity.activity) }}"
+                                    style="color:{{ lookup.trainedWeek.rankDifference(activity.activity)|red_to_green(-1, 1) }}"
+                                >
+                                    {{ lookup.trainedWeek.rankDifference(activity.activity)|format_difference }}
                                 </td>
                             {% endif %}
                             {% if record %}
@@ -177,7 +193,7 @@
                                 <td data-order="{{ record.date.timestamp }}">
                                     {{ record.date|date }}
                                 </td>
-                            {% elseif records is not empty %}
+                            {% elseif lookup.records is not empty %}
                                 <td></td>
                                 <td></td>
                             {% endif %}
@@ -187,9 +203,9 @@
             </table>
         {% endif %}
     </div>
-    {% if not oldSchool and activityFeed and activityFeed.items is not empty %}
+    {% if not lookup.oldSchool and lookup.activityFeed and lookup.activityFeed.items is not empty %}
         <h2>Activity feed</h2>
-        {% for activityFeedItem in activityFeed.items %}
+        {% for activityFeedItem in lookup.activityFeed.items %}
             <div class="activity">
                 <div class="activity-title">{{ activityFeedItem.title }}</div>
                 <div class="activity-time">{{ activityFeedItem.time|date }}</div>

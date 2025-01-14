@@ -4,7 +4,7 @@ namespace App\Repository;
 
 use App\Entity\PersonalRecord;
 use App\Entity\TrackedPlayer;
-use App\Model\RecordCollection;
+use App\Model\Records;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,11 +19,11 @@ class PersonalRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return RecordCollection<PersonalRecord>
+     * @return Records<PersonalRecord>
      */
-    public function findRecords(TrackedPlayer $player, bool $oldSchool): RecordCollection
+    public function findRecords(TrackedPlayer $player, bool $oldSchool): Records
     {
-        return new RecordCollection($this->findBy([
+        return new Records($this->findBy([
             'player' => $player,
             'type.oldSchool' => $oldSchool,
         ]));

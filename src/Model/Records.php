@@ -10,7 +10,7 @@ use Villermen\RuneScape\HighScore\SkillInterface;
  * @template T of AbstractRecord = AbstractRecord
  * @implements \IteratorAggregate<array-key, T>
  */
-class RecordCollection implements \IteratorAggregate
+class Records implements \IteratorAggregate
 {
     /**
      * @param array<array-key, T> $records

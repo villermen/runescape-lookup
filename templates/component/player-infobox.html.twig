@@ -1,44 +1,41 @@
 {# @var mode 'lookup'|'compare' #}
-{# @var oldSchool bool #}
-{# @var player Villermen\RuneScape\Player #}
-{# @var highScore Villermen\RuneScape\HighScore\HighScore #}
-{# @var tracked bool #}
-{% set runeScore = oldSchool ? null : highScore.activity(enum('Villermen\\RuneScape\\HighScore\\Rs3Activity').RUNESCORE) %}
+{# @var lookup App\Model\LookupResult #}
+{% set runeScore = lookup.oldSchool ? null : lookup.highScore.activity(enum('Villermen\\RuneScape\\HighScore\\Rs3Activity').RUNESCORE) %}
 <div class="infobox infobox--{{ mode }}">
-    {% if not oldSchool %}
-        <img class="infobox-avatar infobox-avatar--head" src="{{ player.chatHeadUrl }}" alt="Forum chat head" />
+    {% if not lookup.oldSchool %}
+        <img class="infobox-avatar infobox-avatar--head" src="{{ lookup.player.chatHeadUrl }}" alt="Forum chat head" />
     {% endif %}
     <div class="infobox-text">
-        <h1 class="infobox-title">{{ player.name }}</h1>
+        <h1 class="infobox-title">{{ lookup.player.name }}</h1>
         <div class="infobox-line">
             {% if mode == 'lookup' %}
-                <a href="{{ path('lookup_player', { game: oldSchool ? 'rs3' : 'osrs', name: player.name }) }}">
-                    {{ oldSchool ? 'RS3' : 'OSRS' }}
+                <a href="{{ path('lookup_player', { game: lookup.game, name: lookup.player.name }) }}">
+                    {{ lookup.oldSchool ? 'RS3' : 'OSRS' }}
                 </a>
             {% else %}
-                <a href="{{ path('lookup_player', { game: oldSchool ? 'osrs' : 'rs3', name: player.name }) }}">
+                <a href="{{ path('lookup_player', { game: lookup.game, name: lookup.player.name }) }}">
                     Details
                 </a>
             {% endif %}
-            {% if not oldSchool %}
+            {% if not lookup.oldSchool %}
                 |
                 <a href="{{ player.runeMetricsUrl }}">
                     RuneMetrics
                 </a>
             {% endif %}
-            {% if not tracked %}
+            {% if not lookup.tracked %}
                 |
-                <a href="{{ path('lookup_player', { game: oldSchool ? 'osrs' : 'rs3', name: player.name, track: true }) }}">
+                <a href="{{ path('lookup_player', { game: lookup.game, name: lookup.player.name, track: true }) }}">
                     Track
                 </a>
             {% endif %}
         </div>
         <div class="infobox-line">
             Combat level
-            {% if oldSchool %}
-                {{ highScore.combatLevel // 1 }}
+            {% if lookup.oldSchool %}
+                {{ lookup.highScore.combatLevel // 1 }}
             {% else %}
-                {{ highScore.combatLevel // 1 }} ({{ highScore.combatLevel(false) // 1 }}+{{ highScore.combatLevel // 1 - highScore.combatLevel(false) // 1 }})
+                {{ lookup.highScore.combatLevel // 1 }} ({{ lookup.highScore.combatLevel(false) // 1 }}+{{ lookup.highScore.combatLevel // 1 - lookup.highScore.combatLevel(false) // 1 }})
             {% endif %}
         </div>
         {% if runeScore and runeScore.score > 0 %}
@@ -47,7 +44,7 @@
             </div>
         {% endif %}
     </div>
-    {% if not oldSchool %}
-        <img class="infobox-avatar infobox-avatar--body" src="{{ player.fullBodyUrl }}" alt="Forum full body" />
+    {% if not lookup.oldSchool %}
+        <img class="infobox-avatar infobox-avatar--body" src="{{ lookup.player.fullBodyUrl }}" alt="Forum full body" />
     {% endif %}
 </div>

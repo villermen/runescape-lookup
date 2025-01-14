@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 class TimeKeeper
 {
     public function __construct(
-        #[Autowire(param: 'update_time')] protected readonly string $updateTime
+        #[Autowire(param: 'update_time')] private readonly string $updateTime
     ) {
     }
 
