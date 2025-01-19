@@ -59,7 +59,7 @@ input:hover, button:hover {
     width: auto;
 }
 .infobox--compare ~ .infobox--compare {
-    margin-left: 100px;
+    margin-left: 40px;
 }
 .infobox-text {
     display: inline-block;
@@ -78,11 +78,13 @@ input:hover, button:hover {
     height: 100px;
 }
 .infobox-avatar--head {
+    float: left;
 }
 .infobox-avatar--body {
+    float: right;
     width: 60px;
     /* Same total width (100px) as .infobox-avatar--head to center .infobox-text */
-    margin-right: 40px;
+    margin-left: 40px;
 }
 a {
     color: #00FF7F;
