@@ -26,8 +26,11 @@
                 document.querySelectorAll('table.row-select tr').forEach((element) => {
                     element.addEventListener('click', () => {
                         const wasSelected = element.classList.contains('selected');
-                        // Clear selected for this table
-                        element.closest('table').querySelector('tr.selected')?.classList.remove('selected');
+                        // Clear selected (globally).
+                        document.querySelectorAll('tr.selected').forEach((selectedElement) =>
+                            selectedElement.classList.remove('selected')
+                        );
+
                         element.classList.toggle('selected', !wasSelected);
                     });
                 });
