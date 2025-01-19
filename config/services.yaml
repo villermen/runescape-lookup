@@ -6,7 +6,7 @@
 parameters:
     app.default_update_time: 3:00
     app.update_time: '%env(default:app.default_update_time:UPDATE_TIME)%'
-    app.readonly: '%env(not:defined:DATABASE_URL)%'
+    app.readonly: '%env(bool:APP_READONLY)%'
 
 services:
     # default configuration for services in *this* file
