@@ -4,8 +4,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    default_update_time: 3:00
-    update_time: '%env(default:default_update_time:UPDATE_TIME)%'
+    app.default_update_time: 3:00
+    app.update_time: '%env(default:app.default_update_time:UPDATE_TIME)%'
+    app.readonly: '%env(not:defined:DATABASE_URL)%'
 
 services:
     # default configuration for services in *this* file

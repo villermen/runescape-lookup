@@ -4,7 +4,6 @@ namespace App\Model;
 
 use App\Entity\TrackedPlayer;
 use Villermen\RuneScape\ActivityFeed\ActivityFeed;
-use Villermen\RuneScape\HighScore\ActivityInterface;
 use Villermen\RuneScape\HighScore\HighScore;
 use Villermen\RuneScape\HighScore\HighScoreActivity;
 use Villermen\RuneScape\HighScore\HighScoreComparison;
@@ -27,7 +26,7 @@ class LookupResult
 
     public function isTracked(): bool
     {
-        return !$this->trackedPlayer?->isActive();
+        return $this->trackedPlayer?->isActive() ?? false;
     }
 
     /**

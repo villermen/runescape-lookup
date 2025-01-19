@@ -10,6 +10,7 @@ use App\Repository\PersonalRecordRepository;
 use App\Repository\TrackedHighScoreRepository;
 use App\Repository\TrackedPlayerRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Villermen\RuneScape\Exception\FetchFailedException;
 use Villermen\RuneScape\Player;
 use Villermen\RuneScape\Service\PlayerDataFetcher;
@@ -23,6 +24,8 @@ class LookupService
         private readonly TimeKeeper $timeKeeper,
         private readonly TrackedPlayerRepository $trackedPlayerRepository,
         private readonly EntityManagerInterface $entityManager,
+        #[Autowire(param: 'app.readonly')]
+        private readonly bool $readonly,
     ) {
     }
 
@@ -51,14 +54,21 @@ class LookupService
             return null;
         }
 
-        $trackedPlayer = $this->trackedPlayerRepository->findByName($player->getName());
-        $highScoreToday = $trackedPlayer ? $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(), $trackedPlayer, $oldSchool)?->getHighScore() : null;
-        $highScoreYesterday = $trackedPlayer ? $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(-1), $trackedPlayer, $oldSchool)?->getHighScore() : null;
-        $highScoreWeek = $trackedPlayer ? $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(-7), $trackedPlayer, $oldSchool)?->getHighScore() : null;
-        $trainedToday = $highScoreToday ? $highScore->compareTo($highScoreToday) : null;
-        $trainedYesterday = $highScoreYesterday ? $highScoreToday?->compareTo($highScoreYesterday) : null;
-        $trainedWeek = $highScoreWeek ? $highScoreToday?->compareTo($highScoreWeek) : null;
-        $records = $trackedPlayer ? $this->personalRecordRepository->findRecords($trackedPlayer, $oldSchool) : new Records([]);
+        $trainedToday = null;
+        $trainedYesterday = null;
+        $trainedWeek = null;
+        $records = new Records([]);
+
+        $trackedPlayer = $this->isReadonly() ? null : $this->trackedPlayerRepository->findByName($player->getName());
+        if ($trackedPlayer) {
+            $highScoreToday = $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(), $trackedPlayer, $oldSchool)?->getHighScore();
+            $highScoreYesterday = $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(-1), $trackedPlayer, $oldSchool)?->getHighScore();
+            $highScoreWeek = $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(-7), $trackedPlayer, $oldSchool)?->getHighScore();
+            $trainedToday = $highScoreToday ? $highScore->compareTo($highScoreToday) : null;
+            $trainedYesterday = $highScoreYesterday ? $highScoreToday?->compareTo($highScoreYesterday) : null;
+            $trainedWeek = $highScoreWeek ? $highScoreToday?->compareTo($highScoreWeek) : null;
+            $records = $this->personalRecordRepository->findRecords($trackedPlayer, $oldSchool);
+        }
 
         // TODO: Get tracked activity feed and merge with live
         // $activityFeed = $this->entityManager->getRepository(TrackedActivityFeedItem::class)->findByPlayer($player, true);
@@ -78,6 +88,10 @@ class LookupService
 
     public function trackPlayer(Player $player): TrackedPlayer
     {
+        if ($this->isReadonly()) {
+            throw new \LogicException('Players can\'t be tracked in readonly mode.');
+        }
+
         $trackedPlayer = $this->trackedPlayerRepository->findByName($player->getName());
         if ($trackedPlayer?->isActive()) {
             throw new \InvalidArgumentException(sprintf('Player "%s" is already being tracked.', $player->getName()));
@@ -99,13 +113,17 @@ class LookupService
      */
     public function updateTrackedHighScores(TrackedPlayer $trackedPlayer, int $maxTries = 3): void
     {
+        if ($this->isReadonly()) {
+            throw new \LogicException('Tracked high score can\'t be updated in readonly mode.');
+        }
+
         $updateTime = $this->timeKeeper->getUpdateTime();
         $player = new Player($trackedPlayer->getName());
 
         $rs3HighScore = null;
         for ($i = 0; !$rs3HighScore && $i < $maxTries; $i++) {
             try {
-                $rs3HighScore = $this->playerDataFetcher->fetchIndexLite($player);
+                $rs3HighScore = $this->playerDataFetcher->fetchIndexLite($player, oldSchool: false);
             } catch (FetchFailedException) {
             }
         }
@@ -155,6 +173,15 @@ class LookupService
 
     public function updateTrackedActivityFeed(TrackedPlayer $trackedPlayer): void
     {
+        if ($this->isReadonly()) {
+            throw new \LogicException('Tracked activity feed can\'t be updated in readonly mode.');
+        }
+
         // TODO
+    }
+
+    public function isReadonly(): bool
+    {
+        return $this->readonly;
     }
 }

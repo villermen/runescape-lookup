@@ -24,7 +24,7 @@
                     RuneMetrics
                 </a>
             {% endif %}
-            {% if not lookup.tracked %}
+            {% if not lookup.tracked and not app_readonly %}
                 |
                 <a href="{{ path('lookup_player', { game: lookup.game, name: lookup.player.name, track: true }) }}">
                     Track

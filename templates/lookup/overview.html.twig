@@ -1,3 +1,4 @@
+{# @var readonly bool #}
 {# @var dailyRecords App\Model\RecordCollection #}
 {# @var dailyOldSchoolRecords App\Model\RecordCollection #}
 {# @var updateTime string #}
@@ -10,42 +11,46 @@
         RS3 and OSRS player lookup and tracking in a distinctly lime theme.
     </p>
     {{ include('component/lookup-form.html.twig', formValues) }}
-    <h2>Yesterday's nolifers</h2>
-    <p>
-        Stats update daily at {{ updateTime }} server time (that's in {{ timeTillUpdate }}).
-    </p>
-    <div class="nolifer-table-container">
-        <h3>RS3</h3>
-        <table class="nolifer-table datatable">
-            <thead>
-                <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
-            </thead>
-            <tbody>
-                {% for record in dailyRecords %}
-                    <tr data-href="{{ path('lookup', {player1: record.player.name}) }}">
-                        <td>{{ record.skill.name }}</td>
-                        <td>{{ record.player.name }}</td>
-                        <td>{{ record.xpGain|number_format }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div class="nolifer-table-container">
-        <h3>OSRS</h3>
-        <table class="nolifer-table datatable">
-            <thead>
-                <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
-            </thead>
-            <tbody>
-                {% for record in dailyOldSchoolRecords %}
-                    <tr data-href="{{ path('lookup', {player1: record.player.name, oldschool: true}) }}">
-                        <td>{{ record.skill.name }}</td>
-                        <td>{{ record.player.name }}</td>
-                        <td>{{ record.xpGain|number_format }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    {% if app_readonly %}
+        <p class="info">Lookup is running in read-only mode. Player tracking is unavailable.</p>
+    {% else %}
+        <h2>Yesterday's nolifers</h2>
+        <p>
+            Stats update daily at {{ updateTime }} server time (that's in {{ timeTillUpdate }}).
+        </p>
+        <div class="nolifer-table-container">
+            <h3>RS3</h3>
+            <table class="nolifer-table datatable">
+                <thead>
+                    <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
+                </thead>
+                <tbody>
+                    {% for record in dailyRecords %}
+                        <tr data-href="{{ path('lookup', {player1: record.player.name}) }}">
+                            <td>{{ record.skill.name }}</td>
+                            <td>{{ record.player.name }}</td>
+                            <td>{{ record.xpGain|number_format }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="nolifer-table-container">
+            <h3>OSRS</h3>
+            <table class="nolifer-table datatable">
+                <thead>
+                    <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
+                </thead>
+                <tbody>
+                    {% for record in dailyOldSchoolRecords %}
+                        <tr data-href="{{ path('lookup', {player1: record.player.name, oldschool: true}) }}">
+                            <td>{{ record.skill.name }}</td>
+                            <td>{{ record.player.name }}</td>
+                            <td>{{ record.xpGain|number_format }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
 {% endblock %}

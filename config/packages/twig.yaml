@@ -1,5 +1,7 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        app_readonly: '%app.readonly%'
 
 when@test:
     twig:

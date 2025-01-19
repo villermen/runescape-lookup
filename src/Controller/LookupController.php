@@ -27,8 +27,6 @@ use Villermen\RuneScape\Service\PlayerDataFetcher;
 class LookupController extends AbstractController
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly TrackedPlayerRepository $trackedPlayerRepository,
         private readonly DailyRecordRepository $dailyRecordRepository,
         private readonly TimeKeeper $timeKeeper,
         private readonly PlayerDataFetcher $playerDataFetcher,
@@ -69,8 +67,9 @@ class LookupController extends AbstractController
         }
 
         // Fetch yesterday's records
-        $dailyRecords = $this->dailyRecordRepository->findRecords(oldSchool: false);
-        $dailyOldSchoolRecords = $this->dailyRecordRepository->findRecords(oldSchool: true);
+        $readonly = $this->lookupService->isReadonly();
+        $dailyRecords = $readonly ? [] : $this->dailyRecordRepository->findRecords(oldSchool: false);
+        $dailyOldSchoolRecords = $readonly ? [] : $this->dailyRecordRepository->findRecords(oldSchool: true);
         $updateTime = $this->timeKeeper->getUpdateTime(1);
         $timeTillUpdate = (new \DateTime())->diff($updateTime);
 
@@ -104,7 +103,11 @@ class LookupController extends AbstractController
             throw new NotFoundHttpException(sprintf('%s player "%s" could not be found.', strtoupper($game), $name));
         }
 
-        if (!$lookupResult->isTracked() && $request->query->getBoolean('track')) {
+        if (
+            !$lookupResult->isTracked() &&
+            !$this->lookupService->isReadonly() &&
+            $request->query->getBoolean('track')
+        ) {
             $trackedPlayer = $this->lookupService->trackPlayer($player);
 
             // Immediately update tracked high scores to start tracking progress immediately.

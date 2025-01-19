@@ -32,7 +32,22 @@
                     <tr>
                         <td>{{ skill.getName() }}</td>
                         {% for lookup in lookups %}
+                            {% set tooltip = [
+                                lookup.player.name ~ ' - ' ~ skill.getName(),
+                                'Level: ' ~ (lookup.highScore.skill(skill).level ?? 0)|number_format,
+                                'XP: ' ~ (lookup.highScore.skill(skill).xp ?? 0)|number_format,
+                            ] %}
+                            {% if lookup.trainedToday %}
+                                {% set tooltip = tooltip|merge(['Trained today: ' ~ (lookup.trainedToday.xpDifference(skill) ?? 0)|number_format]) %}
+                            {% endif %}
+                            {% if lookup.trainedYesterday %}
+                                {% set tooltip = tooltip|merge(['Trained yesterday: ' ~ (lookup.trainedYesterday.xpDifference(skill) ?? 0)|number_format]) %}
+                            {% endif %}
+                            {% if lookup.records.get(skill) %}
+                                {% set tooltip = tooltip|merge(['Record: ' ~ lookup.records.get(skill).score|number_format]) %}
+                            {% endif %}
                             <td
+                                title="{{ tooltip|join("\n") }}"
                                 style="color: {{ lookup.highScore.skill(skill).level|red_to_green(1, 99) }}; {{ lookup.highScore.skill(skill).xp == highestXp ? 'text-decoration: underline;' : '' }}"
                             >
                                 {{ lookup.highScore.skill(skill).level }}
@@ -46,7 +61,21 @@
                     <tr style="{{ loop.first ? 'border-top: 1px solid #505050;' : ''}}">
                         <td>{{ activity.getName() }}</td>
                         {% for lookup in lookups %}
+                            {% set tooltip = [
+                                lookup.player.name ~ ' - ' ~ activity.getName(),
+                                'Score: ' ~ (lookup.highScore.activity(activity).score ?? 0)|number_format,
+                            ] %}
+                            {% if lookup.trainedToday %}
+                                {% set tooltip = tooltip|merge(['Scored today: ' ~ (lookup.trainedToday.scoreDifference(activity) ?? 0)|number_format]) %}
+                            {% endif %}
+                            {% if lookup.trainedYesterday %}
+                                {% set tooltip = tooltip|merge(['Scored yesterday: ' ~ (lookup.trainedYesterday.scoreDifference(activity) ?? 0)|number_format]) %}
+                            {% endif %}
+                            {% if lookup.records.get(activity) %}
+                                {% set tooltip = tooltip|merge(['Record: ' ~ lookup.records.get(activity).score|number_format]) %}
+                            {% endif %}
                             <td
+                                title="{{ tooltip|join("\n") }}"
                                 style="{{ lookup.highScore.activity(activity).score == highestScore ? 'text-decoration: underline;' : '' }}"
                             >
                                 {{ lookup.highScore.activity(activity).score }}

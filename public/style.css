@@ -147,6 +147,9 @@ th>a {
 .error {
     color: red;
 }
+.info {
+    color: green;
+}
 .nolifer-table-container {
     display: inline-block;
     vertical-align: top;
