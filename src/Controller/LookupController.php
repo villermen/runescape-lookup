@@ -17,6 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Villermen\RuneScape\Exception\FetchFailedException;
+use Villermen\RuneScape\Exception\InvalidNameException;
+use Villermen\RuneScape\HighScore\ActivityInterface;
+use Villermen\RuneScape\HighScore\HighScoreActivity;
 use Villermen\RuneScape\HighScore\OsrsSkill;
 use Villermen\RuneScape\Player;
 use Villermen\RuneScape\Service\PlayerDataFetcher;
@@ -87,12 +90,14 @@ class LookupController extends AbstractController
     #[Route('/{game<rs3|osrs>}/player/{name}', 'lookup_player')]
     public function playerAction(Request $request, string $game, string $name): Response
     {
-        if (!Player::validateName($name)) {
-            throw new BadRequestException(sprintf('Invalid name "%s".', $name));
+        $oldSchool = $game === 'osrs';
+
+        try {
+            $player = new Player($name);
+        } catch (InvalidNameException $exception) {
+            throw new BadRequestException(sprintf('Invalid name "%s".', $exception->name), previous: $exception);
         }
 
-        $player = new Player($name);
-        $oldSchool = $game === 'osrs';
 
         $lookupResult = $this->lookupService->lookUpPlayer($player, $oldSchool);
         if (!$lookupResult) {
@@ -119,110 +124,44 @@ class LookupController extends AbstractController
     #[Route('/{game<rs3|osrs>}/compare/{name1}/{name2}', 'lookup_compare')]
     public function compareAction(string $game, string $name1, string $name2): Response
     {
-        if (!Player::validateName($name1)) {
-            throw new BadRequestException(sprintf('Invalid name "%s".', $name1));
+        $oldSchool = $game === 'osrs';
+
+        try {
+            $player1 = new Player($name1);
+            $player2 = new Player($name2);
+        } catch (InvalidNameException $exception) {
+            throw new BadRequestException(sprintf('Invalid name "%s".', $exception->name), previous: $exception);
         }
 
-        if (!Player::validateName($name2)) {
-            throw new BadRequestException(sprintf('Invalid name "%s".', $name2));
+        $lookup1 = $this->lookupService->lookUpPlayer($player1, $oldSchool);
+        if (!$lookup1) {
+            throw new NotFoundHttpException(sprintf('%s player "%s" could not be found.', strtoupper($game), $name1));
+        }
+        $lookup2 = $this->lookupService->lookUpPlayer($player2, $oldSchool);
+        if (!$lookup2) {
+            throw new NotFoundHttpException(sprintf('%s player "%s" could not be found.', strtoupper($game), $name2));
         }
 
-        $player1 = new Player($name1);
-        $player2 = new Player($name2);
+        $comparison = $lookup1->highScore->compareTo($lookup2->highScore);
 
-        $trackedPlayer1 = $this->trackedPlayerRepository->findByName($player1->getName());
-        $trackedPlayer2 = $this->trackedPlayerRepository->findByName($player2->getName());
-
-        $error = '';
-        $stats1 = false;
-        $stats2 = false;
-        $trained1 = false;
-        $trained2 = false;
-        $player2 = false;
-        $comparison = false;
-        $runeScore1 = null;
-        $runeScore2 = null;
-
-        if ($trackedPlayer1 && $trackedPlayer2) {
-            $trackedHighScoreRepository = $this->entityManager->getRepository(TrackedHighScore::class);
-
-            // Fetch stats
-            try {
-                $stats1 = $oldSchool ? $player1->getOldSchoolSkillHighScore() : $player1->getSkillHighScore();
-                $player1->fixNameIfCached();
-
-                if (!$oldSchool) {
-                    try {
-                        $runeScore1 = $player1->getActivityHighScore()->getActivity(Activity::ACTIVITY_RUNESCORE);
-                    } catch (FetchFailedException $exception) {
-                    }
-                }
-
-                // Calculate trained1
-                if ($player1 instanceof TrackedPlayer) {
-                    $highScoreToday1 = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(0), $player1, $oldSchool);
-
-                    if ($highScoreToday1) {
-                        $highScoreYesterday1 = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(-1), $player1, $oldSchool);
-
-                        if ($highScoreYesterday1) {
-                            $trained1 = $highScoreToday1->compareTo($highScoreYesterday1);
-                        }
-                    }
-                }
-            } catch (FetchFailedException $exception) {
-                $error = 'Could not fetch stats for player 1.';
+        // array_unique does not support enums =S
+        $activities = array_map(
+            fn (HighScoreActivity $activity): ActivityInterface => $activity->activity,
+            $lookup1->getActivitiesWithScore(),
+        );
+        foreach ($lookup2->getActivitiesWithScore() as $activity2) {
+            if (in_array($activity2->activity, $activities)) {
+                continue;
             }
 
-            if ($stats1) {
-                try {
-                    $stats2 = $oldSchool ? $player2->getOldSchoolSkillHighScore() : $player2->getSkillHighScore();
-                    $player2->fixNameIfCached();
-
-                    if (!$oldSchool) {
-                        try {
-                            $runeScore2 = $player2->getActivityHighScore()->getActivity(Activity::ACTIVITY_RUNESCORE);
-                        } catch (FetchFailedException $exception) {
-                        }
-                    }
-
-                    // Calculate trained2
-                    if ($player2 instanceof TrackedPlayer) {
-                        $highScoreToday2 = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(0), $player2, $oldSchool);
-
-                        if ($highScoreToday2) {
-                            $highScoreYesterday2 = $trackedHighScoreRepository->findByDate($timeKeeper->getUpdateTime(-1), $player2, $oldSchool);
-
-                            if ($highScoreYesterday2) {
-                                $trained2 = $highScoreToday2->compareTo($highScoreYesterday2);
-                            }
-                        }
-                    }
-                } catch (FetchFailedException $exception) {
-                    $error = 'Could not fetch stats for player 2.';
-                }
-            }
-
-            if ($stats1 && $stats2) {
-                $comparison = $stats1->compareTo($stats2);
-            }
+            $activities[] = $activity2->activity;
         }
 
         return $this->render('lookup/compare.html.twig', [
-            'player1' => $player1,
-            'player2' => $player2,
-            'stats1' => $stats1,
-            'stats2' => $stats2,
-            'trained1' => $trained1,
-            'trained2' => $trained2,
+            'lookup1' => $lookup1,
+            'lookup2' => $lookup2,
             'comparison' => $comparison,
-            'name1' => $name1,
-            'name2' => $name2,
-            'oldSchool' => $oldSchool,
-            'tracked1' => $player1 instanceof TrackedPlayer,
-            'tracked2' => $player2 instanceof TrackedPlayer,
-            'runeScore1' => $runeScore1,
-            'runeScore2' => $runeScore2,
+            'activities' => $activities,
         ]);
     }
 

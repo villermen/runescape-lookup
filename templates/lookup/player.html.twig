@@ -6,115 +6,116 @@
         oldSchool: lookup.oldSchool,
         name1: lookup.player.name,
     }) }}
-    <div class="infobox-container">
-        {{ include('component/player-infobox.html.twig', {
-            mode: 'lookup',
-            lookup,
-        }) }}
-    </div>
     <div class="horizontal-scroller">
-        <table class="center row-select sticky-first-column datatable">
-            <thead>
-                <tr>
-                    <th>Skill</th>
-                    <th>Level</th>
-                    <th>XP</th>
-                    <th>Rank</th>
-                    <th>XP to next</th>
-                    <th>Progress</th>
-                    {% if lookup.trainedToday %}
-                        <th>Trained today</th>
-                    {% endif %}
-                    {% if lookup.trainedYesterday %}
-                        <th>Trained yesterday</th>
-                        <th>Ranked yesterday</th>
-                    {% endif %}
-                    {% if lookup.trainedWeek %}
-                        <th>Trained last week</th>
-                        <th>Ranked last week</th>
-                    {% endif %}
-                    {% if lookup.records is not empty %}
-                        <th>Record</th>
-                        <th>Record date</th>
-                    {% endif %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for skill in lookup.highScore.skills %}
-                    {% set record = lookup.records.get(skill.skill) %}
-                    {% set levelColor = skill.level|red_to_green(1, 99) %}
-                    {% set progressColor = skill.progressToNextLevel|red_to_green %}
+        <div class="infobox-container">
+            {{ include('component/player-infobox.html.twig', {
+                lookup,
+            }) }}
+            <table class="center row-select sticky-first-column datatable">
+                <thead>
                     <tr>
-                        <td style="color:{{ levelColor }}">
-                            {{ skill.name }}
-                        </td>
-                        <td style="color:{{ levelColor }}">
-                            {{ skill.virtualLevel }}
-                        </td>
-                        <td style="color:{{ levelColor }}">
-                            {{ skill.xp is not null ? skill.xp|number_format : '' }}
-                        </td>
-                        <td style="color:{{ skill.rank|red_to_green(2000000, 1) }}" data-order="{{ skill.rank ?? 2000000 }}">
-                            {{ skill.rank ? skill.rank|number_format : '' }}
-                        </td>
-                        <td style="color:{{ progressColor }}" data-order="{{ skill.xpToNextLevel ?? 100000000 }}">
-                            {{ skill.xpToNextLevel ? skill.xpToNextLevel|number_format : '' }}
-                        </td>
-                        <td style="color:{{ progressColor }}" data-order="{{ skill.progressToNextLevel }}">
-                            {{ skill.xpToNextLevel ? (skill.progressToNextLevel * 100)|number_format(2) ~ '%' : '' }}
-                        </td>
+                        <th>Skill</th>
+                        <th>Level</th>
+                        <th>XP</th>
+                        <th>Rank</th>
+                        <th>XP to next</th>
+                        <th>Progress</th>
                         {% if lookup.trainedToday %}
-                            <td
-                                data-order="{{ lookup.trainedToday.xpDifference(skill.skill) }}"
-                                style="color:{{ lookup.trainedToday.xpDifference(skill.skill)|red_to_green(-1, 1) }}"
-                            >
-                                {{ lookup.trainedToday.xpDifference(skill.skill)|format_difference }}
-                            </td>
+                            <th>Trained today</th>
                         {% endif %}
                         {% if lookup.trainedYesterday %}
-                            <td
-                                data-order="{{ lookup.trainedYesterday.xpDifference(skill.skill) }}"
-                                style="color:{{ lookup.trainedYesterday.xpDifference(skill.skill)|red_to_green(-1, 1) }}"
-                            >
-                                {{ lookup.trainedYesterday.xpDifference(skill.skill)|format_difference }}
-                            </td>
-                            <td
-                                data-order="{{ lookup.trainedYesterday.rankDifference(skill.skill) }}"
-                                style="color:{{ lookup.trainedYesterday.rankDifference(skill.skill)|red_to_green(-1, 1) }}"
-                            >
-                                {{ lookup.trainedYesterday.rankDifference(skill.skill)|format_difference }}
-                            </td>
+                            <th>Trained yesterday</th>
+                            <th>Ranked yesterday</th>
                         {% endif %}
                         {% if lookup.trainedWeek %}
-                            <td
-                                data-order="{{ lookup.trainedWeek.xpDifference(skill.skill) }}"
-                                style="color:{{ lookup.trainedWeek.xpDifference(skill.skill)|red_to_green(-1, 1) }}"
-                            >
-                                {{ lookup.trainedWeek.xpDifference(skill.skill)|format_difference }}
-                            </td>
-                            <td
-                                data-order="{{ lookup.trainedWeek.rankDifference(skill.skill) }}"
-                                style="color:{{ lookup.trainedWeek.rankDifference(skill.skill)|red_to_green(-1, 1) }}"
-                            >
-                                {{ lookup.trainedWeek.rankDifference(skill.skill)|format_difference }}
-                            </td>
+                            <th>Trained last week</th>
+                            <th>Ranked last week</th>
                         {% endif %}
-                        {% if record %}
-                            <td data-order="{{ record.score }}">
-                                {{ record.score|format_difference }}
-                            </td>
-                            <td data-order="{{ record.date.timestamp }}">
-                                {{ record.date|date }}
-                            </td>
-                        {% elseif lookup.records is not empty %}
-                            <td></td>
-                            <td></td>
+                        {% if lookup.records is not empty %}
+                            <th>Record</th>
+                            <th>Record date</th>
                         {% endif %}
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% if lookup.activitiesWithScore %}
+                </thead>
+                <tbody>
+                    {% for skill in lookup.highScore.skills %}
+                        {% set record = lookup.records.get(skill.skill) %}
+                        {% set levelColor = skill.level|red_to_green(1, 99) %}
+                        {% set progressColor = skill.progressToNextLevel|red_to_green %}
+                        <tr>
+                            <td style="color:{{ levelColor }}">
+                                {{ skill.name }}
+                            </td>
+                            <td style="color:{{ levelColor }}">
+                                {{ skill.virtualLevel }}
+                            </td>
+                            <td style="color:{{ levelColor }}">
+                                {{ skill.xp is not null ? skill.xp|number_format : '' }}
+                            </td>
+                            <td style="color:{{ skill.rank|red_to_green(2000000, 1) }}" data-order="{{ skill.rank ?? 2000000 }}">
+                                {{ skill.rank ? skill.rank|number_format : '' }}
+                            </td>
+                            <td style="color:{{ progressColor }}" data-order="{{ skill.xpToNextLevel ?? 100000000 }}">
+                                {{ skill.xpToNextLevel ? skill.xpToNextLevel|number_format : '' }}
+                            </td>
+                            <td style="color:{{ progressColor }}" data-order="{{ skill.progressToNextLevel }}">
+                                {{ skill.xpToNextLevel ? (skill.progressToNextLevel * 100)|number_format(2) ~ '%' : '' }}
+                            </td>
+                            {% if lookup.trainedToday %}
+                                <td
+                                    data-order="{{ lookup.trainedToday.xpDifference(skill.skill) }}"
+                                    style="color:{{ lookup.trainedToday.xpDifference(skill.skill)|red_to_green(-1, 1) }}"
+                                >
+                                    {{ lookup.trainedToday.xpDifference(skill.skill)|format_difference }}
+                                </td>
+                            {% endif %}
+                            {% if lookup.trainedYesterday %}
+                                <td
+                                    data-order="{{ lookup.trainedYesterday.xpDifference(skill.skill) }}"
+                                    style="color:{{ lookup.trainedYesterday.xpDifference(skill.skill)|red_to_green(-1, 1) }}"
+                                >
+                                    {{ lookup.trainedYesterday.xpDifference(skill.skill)|format_difference }}
+                                </td>
+                                <td
+                                    data-order="{{ lookup.trainedYesterday.rankDifference(skill.skill) }}"
+                                    style="color:{{ lookup.trainedYesterday.rankDifference(skill.skill)|red_to_green(-1, 1) }}"
+                                >
+                                    {{ lookup.trainedYesterday.rankDifference(skill.skill)|format_difference }}
+                                </td>
+                            {% endif %}
+                            {% if lookup.trainedWeek %}
+                                <td
+                                    data-order="{{ lookup.trainedWeek.xpDifference(skill.skill) }}"
+                                    style="color:{{ lookup.trainedWeek.xpDifference(skill.skill)|red_to_green(-1, 1) }}"
+                                >
+                                    {{ lookup.trainedWeek.xpDifference(skill.skill)|format_difference }}
+                                </td>
+                                <td
+                                    data-order="{{ lookup.trainedWeek.rankDifference(skill.skill) }}"
+                                    style="color:{{ lookup.trainedWeek.rankDifference(skill.skill)|red_to_green(-1, 1) }}"
+                                >
+                                    {{ lookup.trainedWeek.rankDifference(skill.skill)|format_difference }}
+                                </td>
+                            {% endif %}
+                            {% if record %}
+                                <td data-order="{{ record.score }}">
+                                    {{ record.score|format_difference }}
+                                </td>
+                                <td data-order="{{ record.date.timestamp }}">
+                                    {{ record.date|date }}
+                                </td>
+                            {% elseif lookup.records is not empty %}
+                                <td></td>
+                                <td></td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if lookup.activitiesWithScore %}
+        <div class="horizontal-scroller">
             <table class="center row-select datatable">
                 <thead>
                 <tr>
@@ -201,8 +202,8 @@
                     {% endfor %}
                 </tbody>
             </table>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
     {% if not lookup.oldSchool and lookup.activityFeed and lookup.activityFeed.items is not empty %}
         <h2>Activity feed</h2>
         {% for activityFeedItem in lookup.activityFeed.items %}
