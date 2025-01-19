@@ -7,7 +7,7 @@ use App\Entity\TrackedPlayer;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Villermen\RuneScape\ActivityFeed\ActivityFeed;
-use Villermen\RuneScape\Exception\FetchFailedException;
+use Villermen\RuneScape\ActivityFeed\ActivityFeedItem;
 
 /**
  * @extends ServiceEntityRepository<TrackedActivityFeedItem>
@@ -33,33 +33,29 @@ class TrackedActivityFeedItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * Returns all tracked activity feed items from latest to earliest.
-     *
-     * @param bool $mergeLive Fetch live activity feed and prepend.
+     * Returns all tracked activity feed items from latest to earliest as a feed.
      */
-    public function findByPlayer(TrackedPlayer $player, $mergeLive = false): ActivityFeed
+    public function findFeed(TrackedPlayer $player): ActivityFeed
     {
-        $qb = $this->createQueryBuilder('activity');
+        return $this->createFeedFromTrackedItems($this->findBy([
+            'player' => $player,
+        ], [
+            'time' => 'DESC',
+        ]));
+    }
 
-        /** @var TrackedActivityFeedItem[] $trackedActivityFeedItems */
-        $trackedActivityFeedItems = $qb
-            ->andWhere($qb->expr()->eq('activity.player', ':player'))
-            ->setParameter('player', $player)
-            ->addOrderBy($qb->expr()->desc('activity.time'))
-            ->getQuery()
-            ->getResult();
-
-        $activityFeed = new ActivityFeed($trackedActivityFeedItems);
-
-        if ($mergeLive) {
-            try {
-                $liveActivityFeed = $player->getActivityFeed();
-
-                $activityFeed = $activityFeed->merge($liveActivityFeed);
-            } catch (FetchFailedException $exception) {
-            }
-        }
-
-        return $activityFeed;
+    /**
+     * @param TrackedActivityFeedItem[] $trackedItems
+     */
+    private function createFeedFromTrackedItems(array $trackedItems): ActivityFeed
+    {
+        return new ActivityFeed(array_map(
+            fn (TrackedActivityFeedItem $trackedItem): ActivityFeedItem => new ActivityFeedItem(
+                $trackedItem->getTime(),
+                $trackedItem->getTitle(),
+                $trackedItem->getDescription(),
+            ),
+            $trackedItems
+        ));
     }
 }

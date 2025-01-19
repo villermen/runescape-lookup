@@ -7,6 +7,7 @@ use App\Entity\TrackedPlayer;
 use App\Model\LookupResult;
 use App\Model\Records;
 use App\Repository\PersonalRecordRepository;
+use App\Repository\TrackedActivityFeedItemRepository;
 use App\Repository\TrackedHighScoreRepository;
 use App\Repository\TrackedPlayerRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,6 +25,7 @@ class LookupService
         private readonly TimeKeeper $timeKeeper,
         private readonly TrackedPlayerRepository $trackedPlayerRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly TrackedActivityFeedItemRepository $trackedActivityFeedItemRepository,
         #[Autowire(param: 'app.readonly')]
         private readonly bool $readonly,
     ) {
@@ -68,10 +70,12 @@ class LookupService
             $trainedYesterday = $highScoreYesterday ? $highScoreToday?->compareTo($highScoreYesterday) : null;
             $trainedWeek = $highScoreWeek ? $highScoreToday?->compareTo($highScoreWeek) : null;
             $records = $this->personalRecordRepository->findRecords($trackedPlayer, $oldSchool);
-        }
 
-        // TODO: Get tracked activity feed and merge with live
-        // $activityFeed = $this->entityManager->getRepository(TrackedActivityFeedItem::class)->findByPlayer($player, true);
+            if (!$oldSchool) {
+                $trackedActivityFeed = $this->trackedActivityFeedItemRepository->findFeed($trackedPlayer);
+                $activityFeed = $activityFeed ? $trackedActivityFeed->merge($activityFeed) : $trackedActivityFeed;
+            }
+        }
 
         return new LookupResult(
             $player,
