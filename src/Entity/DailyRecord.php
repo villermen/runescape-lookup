@@ -13,7 +13,7 @@ use Villermen\RuneScape\HighScore\SkillInterface;
  * @extends AbstractRecord<T>
  */
 #[Entity(repositoryClass: DailyRecordRepository::class)]
-#[UniqueConstraint('unique_record', ['type_old_school', 'type_activity', 'type_id'])]
+#[UniqueConstraint('unique_record', ['old_school', 'activity', 'type_id'])]
 class DailyRecord extends AbstractRecord
 {
 }

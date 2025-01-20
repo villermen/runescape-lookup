@@ -29,7 +29,7 @@ abstract class AbstractRecord
     protected TrackedPlayer $player;
 
     /** @var RecordType<T> */
-    #[Embedded]
+    #[Embedded(columnPrefix: false)]
     protected RecordType $type;
 
     #[Column]

@@ -20,7 +20,7 @@ use Villermen\RuneScape\HighScore\HighScore;
  */
 #[Entity(repositoryClass: TrackedHighScoreRepository::class)]
 #[Table(name: 'high_score')]
-#[UniqueConstraint('unique_high_score', ['player_id', 'high_score_old_school', 'date'])]
+#[UniqueConstraint('unique_high_score', ['player_id', 'old_school', 'date'])]
 class TrackedHighScore
 {
     #[Id]
@@ -36,7 +36,7 @@ class TrackedHighScore
     protected \DateTimeImmutable $date;
 
     /** @var HighScoreType<T> */
-    #[Embedded]
+    #[Embedded(columnPrefix: false)]
     protected HighScoreType $highScore;
 
     /**

@@ -40,7 +40,7 @@ class TrackedActivityFeedItemRepository extends ServiceEntityRepository
         return $this->createFeedFromTrackedItems($this->findBy([
             'player' => $player,
         ], [
-            'time' => 'DESC',
+            'sequenceNumber' => 'DESC',
         ]));
     }
 

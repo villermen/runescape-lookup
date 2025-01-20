@@ -14,7 +14,7 @@ use Villermen\RuneScape\HighScore\SkillInterface;
  * @extends AbstractRecord<T>
  */
 #[Entity(repositoryClass: PersonalRecordRepository::class)]
-#[UniqueConstraint('unique_record', ['player_id', 'type_old_school', 'type_activity', 'type_id'])]
+#[UniqueConstraint('unique_record', ['player_id', 'old_school', 'activity', 'type_id'])]
 class PersonalRecord extends AbstractRecord
 {
     #[Column(type: 'date_immutable')]

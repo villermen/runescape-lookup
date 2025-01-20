@@ -3,17 +3,18 @@
 namespace App\Entity;
 
 use App\Repository\TrackedActivityFeedItemRepository;
-use DateTime;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use Villermen\RuneScape\ActivityFeed\ActivityFeedItem;
 
 #[Entity(repositoryClass: TrackedActivityFeedItemRepository::class)]
+#[Table(name: 'activity_feed_item')]
 #[UniqueConstraint('unique_sequence', ['player_id', 'sequence_number'])]
 class TrackedActivityFeedItem
 {

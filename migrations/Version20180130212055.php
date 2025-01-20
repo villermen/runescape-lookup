@@ -5,8 +5,6 @@ namespace DoctrineMigration;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\DBAL\Types\IntegerType;
-use Doctrine\DBAL\Types\PhpIntegerMappingType;
 use Doctrine\Migrations\AbstractMigration;
 
 class Version20180130212055 extends AbstractMigration
@@ -18,7 +16,7 @@ class Version20180130212055 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->abortIf(!($this->connection->getDatabasePlatform() instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
+        $this->abortIf(!($this->platform instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
 
         $this->addSql('ALTER TABLE daily_highscore DROP FOREIGN KEY daily_highscore_ibfk_1');
 

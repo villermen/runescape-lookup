@@ -24,7 +24,7 @@ class RecordType
     protected bool $activity;
 
     #[Column]
-    protected int $id;
+    protected int $typeId;
 
     /**
      * @param T $type
@@ -33,7 +33,7 @@ class RecordType
     {
         $this->oldSchool = $type instanceof OsrsSkill || $type instanceof OsrsActivity;
         $this->activity = $type instanceof ActivityInterface;
-        $this->id = $type->getId();
+        $this->typeId = $type->getId();
     }
 
     /**
@@ -42,9 +42,9 @@ class RecordType
     public function getType(): SkillInterface|ActivityInterface
     {
         if ($this->oldSchool) {
-            return $this->activity ? OsrsActivity::from($this->id) : OsrsSkill::from($this->id);
+            return $this->activity ? OsrsActivity::from($this->typeId) : OsrsSkill::from($this->typeId);
         }
 
-        return $this->activity ? Rs3Activity::from($this->id) : Rs3Skill::from($this->id);
+        return $this->activity ? Rs3Activity::from($this->typeId) : Rs3Skill::from($this->typeId);
     }
 }

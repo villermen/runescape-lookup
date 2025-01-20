@@ -15,7 +15,7 @@ class Version20180206185557 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->abortIf(!($this->connection->getDatabasePlatform() instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
+        $this->abortIf(!($this->platform instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
 
         $this->addSql('DROP INDEX UNIQ_1A0AA83DBF396750AA9E377A99E6F5DF ON daily_record');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1A0AA83D5E3DE477AA9E377AB051093C ON daily_record (skill, date, old_school)');
@@ -25,7 +25,7 @@ class Version20180206185557 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        $this->abortIf(!($this->connection->getDatabasePlatform() instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
+        $this->abortIf(!($this->platform instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
 
         $this->addSql('DROP INDEX UNIQ_1A0AA83D5E3DE477AA9E377AB051093C ON daily_record');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1A0AA83DBF396750AA9E377A99E6F5DF ON daily_record (id, date, player_id)');

@@ -15,7 +15,7 @@ class Version20180130210435 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->abortIf(!($this->connection->getDatabasePlatform() instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
+        $this->abortIf(!($this->platform instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
 
         $this->addSql('CREATE TABLE activity (
             id int(11) NOT NULL AUTO_INCREMENT,
