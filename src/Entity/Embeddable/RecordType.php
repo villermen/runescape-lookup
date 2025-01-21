@@ -42,9 +42,11 @@ class RecordType
     public function getType(): SkillInterface|ActivityInterface
     {
         if ($this->oldSchool) {
+            // @phpstan-ignore return.type (Inverse of ctor.)
             return $this->activity ? OsrsActivity::from($this->typeId) : OsrsSkill::from($this->typeId);
         }
 
+        // @phpstan-ignore return.type
         return $this->activity ? Rs3Activity::from($this->typeId) : Rs3Skill::from($this->typeId);
     }
 }

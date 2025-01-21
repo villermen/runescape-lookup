@@ -41,8 +41,9 @@ class HighScoreType
             return $this->highScore;
         }
 
-        // @phpstan-ignore argument.type
+        // @phpstan-ignore argument.type, assign.propertyType (Inverse of ctor.)
         $this->highScore = HighScore::fromArray($this->data, $this->oldSchool);
+        // @phpstan-ignore return.type
         return $this->highScore;
     }
 }
