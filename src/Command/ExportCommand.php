@@ -3,69 +3,74 @@
 namespace App\Command;
 
 use App\Entity\TrackedHighScore;
-use App\Entity\TrackedPlayer;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\TrackedHighScoreRepository;
+use App\Repository\TrackedPlayerRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Villermen\RuneScape\Skill;
+use Villermen\RuneScape\HighScore\OsrsSkill;
+use Villermen\RuneScape\HighScore\Rs3Skill;
 
 class ExportCommand extends Command
 {
-    /** @var EntityManagerInterface */
-    protected $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private readonly TrackedPlayerRepository $trackedPlayerRepository,
+        private readonly TrackedHighScoreRepository $trackedHighScoreRepository,
+    ) {
         parent::__construct();
-
-        $this->entityManager = $entityManager;
     }
 
     protected function configure(): void
     {
-        $this->setName("app:export");
-        $this->addArgument("player", InputArgument::REQUIRED, "Name of the player to export");
-        $this->setDescription("Exports a player's historic stats in CSV format.");
+        $this->setName('app:export');
+        $this->addArgument('player', InputArgument::REQUIRED, 'Name of the player to export');
+        $this->addOption('oldschool', /*mode: InputOption::VALUE_NONE*/);
+        $this->setDescription('Exports a player\'s historic stats in CSV format.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $name = $input->getArgument("player");
+        $name = $input->getArgument('player');
+        $oldSchool = $input->getOption('oldschool');
 
-        $player = $this->entityManager->getRepository(TrackedPlayer::class)->findByName($name);
+        $player = $this->trackedPlayerRepository->findByName($name);
         if (!$player) {
-            $output->writeln(sprintf("<error>Player %s is not being tracked!</error>", $name));
+            $output->writeln(sprintf('<error>Player %s is not being tracked!</error>', $name));
             return 1;
         }
 
-        $highScores = $this->entityManager->getRepository(TrackedHighScore::class)->findBy([
-            "player" => $player,
-            "oldSchool" => false,
+        /** @var TrackedHighScore[] $trackedHighScores */
+        $trackedHighScores = $this->trackedHighScoreRepository->findBy([
+            'player' => $player,
+            'highScore.oldSchool' => $oldSchool,
         ], [
-            "date" => "ASC",
+            'date' => 'ASC',
         ]);
 
-        $output = fopen("php://output", "a");
+        $output = fopen('php://output', 'a');
+        if (!$output) {
+            throw new \RuntimeException('Failed to open output stream!');
+        }
 
         $headers = [
-            "Date",
+            'Date',
         ];
 
-        foreach (Skill::getSkills() as $skill) {
+        $skills = $oldSchool ? OsrsSkill::cases() : Rs3Skill::cases();
+        foreach ($skills as $skill) {
             $headers[] = $skill->getName();
         }
 
         fputcsv($output, $headers);
 
-        foreach ($highScores as $highScore) {
+        foreach ($trackedHighScores as $trackedHighScore) {
             $line = [
-                $highScore->getDate()->format("Y-m-d"),
+                $trackedHighScore->getDate()->format('Y-m-d'),
             ];
-            foreach (Skill::getSkills() as $skill) {
-                $highScoreSkill = $highScore->getSkill($skill->getId());
-                $line[] = ($highScoreSkill ? $highScoreSkill->getXp() : "0");
+
+            foreach ($skills as $skill) {
+                $line[] = $trackedHighScore->getHighScore()->getSkill($skill)->xp ?? 0;
             }
 
             fputcsv($output, $line);

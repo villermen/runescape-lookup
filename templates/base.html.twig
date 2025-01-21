@@ -1,54 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <title>{% block title %}{% endblock %}{% if block("title") %} | {% endif %}Viller's RuneScape lookup tools</title>
-        <link rel="stylesheet" href="{{ asset("style.css") }}" />
+        <title>{% block title %}{% endblock %}{% if block('title') %} - {% endif %}Viller's RuneScape Lookup</title>
+        <link rel="stylesheet" href="{{ asset('style.css') }}" />
+        <link rel="icon" type="image/png" href="{{ asset('icon.png') }}" />
+        <link rel="apple-touch-icon" type="image/png" href="{{ asset('icon.png') }}" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     </head>
-
     <body>
-        {% if error is defined and error is not empty %}
-            <p class="error">{{ error }}</p>
-        {% endif %}
-
-        {% if notice is defined and notice is not empty %}
-            <p class="notice">{{ notice }}</p>
-        {% endif %}
-
         {% block body %}{% endblock %}
-
         {% block javascripts %}
-            <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-            <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+            <script src="https://cdn.datatables.net/2.2.1/js/dataTables.min.js"></script>
             <script>
-                // Set player1 in compare form after leaving lookup form to keep both in sync
-                $(".lookup-form [name='player1']").blur(function() {
-                    $(".compare-form [name='player1']").val($(this).val());
-                });
-
                 // Make elements with "data-href" attribute act as anchors
-                $("[data-href]").click(function() {
-                    window.location.href = $(this).data("href");
+                document.querySelectorAll('[data-href]').forEach((element) => {
+                    element.addEventListener('click', (event) => {
+                        event.stopImmediatePropagation();
+                        window.location.href = element.dataset.href;
+                    });
                 });
 
                 // Clicking on tables with "row-select" class causes toggling of a "selected" class
-                $("table.row-select tr").click(function(){
-                    // Clear selected for this table
-                    $(this).closest("table").find("tr.selected").removeClass("selected");
-                    $(this).addClass("selected");
+                document.querySelectorAll('table.row-select tr').forEach((element) => {
+                    element.addEventListener('click', () => {
+                        const wasSelected = element.classList.contains('selected');
+                        // Clear selected (globally).
+                        document.querySelectorAll('tr.selected').forEach((selectedElement) =>
+                            selectedElement.classList.remove('selected')
+                        );
+
+                        element.classList.toggle('selected', !wasSelected);
+                    });
                 });
 
-                $(".dataTable").dataTable({
-                    paging: false,
-                    searching: false,
-                    info: false,
-                    sorting: [],
-                    drawCallback: function() {
-                        if ($(this).hasClass("compare-table")) {
-                            $(".infobox-container").css("width", $(this).css("width"));
-                        }
-                    }
+                document.querySelectorAll('.datatable').forEach((element) => {
+                    new DataTable(element, {
+                        paging: false,
+                        searching: false,
+                        info: false,
+                        sorting: [],
+                        autoWidth: false,
+                        drawCallback: function () {
+                            if (element.classList.contains('compare-table')) {
+                                document.querySelector('.infobox-container').style.width = element.style.width;
+                            }
+                        },
+                    });
                 });
             </script>
         {% endblock %}

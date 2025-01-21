@@ -4,38 +4,28 @@ namespace App\Repository;
 
 use App\Entity\PersonalRecord;
 use App\Entity\TrackedPlayer;
-use Doctrine\ORM\EntityRepository;
+use App\Model\Records;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 
-class PersonalRecordRepository extends EntityRepository
+/**
+ * @extends ServiceEntityRepository<PersonalRecord>
+ */
+class PersonalRecordRepository extends ServiceEntityRepository
 {
-    /**
-     * Returns the most recent/highest record for each skill of the given player. Records are indexed by skill id for
-     * convenience.
-     *
-     * @return PersonalRecord[]
-     */
-    public function findHighestRecords(TrackedPlayer $player, bool $oldSchool): array
+    public function __construct(ManagerRegistry $registry)
     {
-        $qb = $this->createQueryBuilder("record");
+        parent::__construct($registry, PersonalRecord::class);
+    }
 
-        /** @var PersonalRecord[] $records */
-        $records = $qb
-            ->andWhere($qb->expr()->eq("record.player", ":player"))
-            ->andWhere($qb->expr()->eq("record.oldSchool", ":oldSchool"))
-            ->setParameter("player", $player)
-            ->setParameter("oldSchool", $oldSchool)
-            ->addGroupBy("record.skill")
-            ->addGroupBy("record.id")
-            ->andHaving($qb->expr()->eq("record.xpGain", "MAX(record.xpGain)"))
-            ->getQuery()
-            ->getResult();
-
-        // Index by skill id
-        $indexedRecords = [];
-        foreach($records as $record) {
-            $indexedRecords[$record->getSkill()->getId()] = $record;
-        }
-
-        return $indexedRecords;
+    /**
+     * @return Records<PersonalRecord>
+     */
+    public function findRecords(TrackedPlayer $player, bool $oldSchool): Records
+    {
+        return new Records($this->findBy([
+            'player' => $player,
+            'type.oldSchool' => $oldSchool,
+        ]));
     }
 }

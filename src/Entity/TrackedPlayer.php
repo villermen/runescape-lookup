@@ -2,51 +2,34 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-use Villermen\RuneScape\Exception\FetchFailedException;
-use Villermen\RuneScape\Exception\RuneScapeException;
+use App\Repository\TrackedPlayerRepository;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\Table;
 use Villermen\RuneScape\Player;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\TrackedPlayerRepository")
- * @ORM\Table(name="player")
- * @ORM\HasLifecycleCallbacks()
- */
-class TrackedPlayer extends Player
+#[Entity(repositoryClass: TrackedPlayerRepository::class)]
+#[Table(name: 'player')]
+class TrackedPlayer
 {
-    /**
-     * @ORM\Column(type="integer")
-     * @ORM\Id()
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[Id]
+    #[Column]
+    #[GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=12, unique=true)
-     */
-    protected $name;
+    #[Column(length: 12, unique: true)]
+    protected string $name;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(type="boolean")
-     */
-    protected $active = true;
+    #[Column]
+    protected bool $active = true;
+
+    // TODO: createdAt? (work back from high_score MIN(date))
 
     public function __construct(string $name)
     {
-        parent::__construct($name);
-    }
-
-    /**
-     * @throws FetchFailedException
-     */
-    public function getTrackedHighScore(bool $oldSchool = false, int $timeOut = 5): TrackedHighScore
-    {
-        $this->dataFetcher->setTimeOut($timeOut);
-
-        $highScore = $oldSchool ? $this->getSkillHighScore() : $this->getOldSchoolSkillHighScore();
-        return new TrackedHighScore($highScore->getSkills(), $this, $oldSchool);
+        $this->name = $name;
     }
 
     public function getId(): ?int
@@ -54,23 +37,28 @@ class TrackedPlayer extends Player
         return $this->id;
     }
 
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
     public function isActive(): bool
     {
         return $this->active;
     }
 
-    public function setActive(bool $active): TrackedPlayer
+    public function setActive(bool $active): void
     {
         $this->active = $active;
-
-        return $this;
     }
 
-    /**
-     * @ORM\PostLoad()
-     */
-    public function postLoad(): void
+    public function getPlayer(): Player
     {
-        parent::__construct($this->getName());
+        return new Player($this->getName());
     }
 }

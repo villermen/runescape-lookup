@@ -2,94 +2,88 @@
 
 namespace App\Entity;
 
-use DateTime;
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\TrackedActivityFeedItemRepository;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use Villermen\RuneScape\ActivityFeed\ActivityFeedItem;
-use Villermen\RuneScape\HighScore\HighScoreSkillComparison;
-use Villermen\RuneScape\Player;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\TrackedActivityFeedItemRepository")
- * @ORM\Table(name="activity_feed_item", uniqueConstraints={
- *     @ORM\UniqueConstraint(columns={"player_id", "sequence_number"})
- * })
- * @ORM\HasLifecycleCallbacks()
- */
-class TrackedActivityFeedItem extends ActivityFeedItem
+#[Entity(repositoryClass: TrackedActivityFeedItemRepository::class)]
+#[Table(name: 'activity_feed_item')]
+#[UniqueConstraint('unique_sequence', ['player_id', 'sequence_number'])]
+class TrackedActivityFeedItem
 {
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id()
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[Id]
+    #[Column]
+    #[GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     */
-    protected $sequenceNumber;
+    #[ManyToOne]
+    #[JoinColumn(nullable: false)]
+    protected TrackedPlayer $player;
 
-    /**
-     * @var DateTime
-     *
-     * @ORM\Column(type="datetime")
-     */
-    protected $time;
+    #[Column]
+    protected int $sequenceNumber;
 
-    /**
-     * @var Player
-     *
-     * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    protected $player;
+    #[Column(type: 'datetime_immutable')]
+    protected \DateTimeImmutable $time;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=1000)
-     */
-    protected $title;
+    #[Column(length: 1000)]
+    protected string $title;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="string", length=10000)
-     */
-    protected $description;
+    #[Column(length: 10000)]
+    protected string $description;
 
     public function __construct(ActivityFeedItem $originalItem, TrackedPlayer $player, int $sequenceNumber)
     {
-        parent::__construct($originalItem->getTime(), $originalItem->getTitle(), $originalItem->getDescription());
-
         $this->player = $player;
         $this->sequenceNumber = $sequenceNumber;
+        $this->time = $originalItem->time;
+        $this->title = $originalItem->title;
+        $this->description = $originalItem->description;
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getPlayer(): Player
+    public function getPlayer(): TrackedPlayer
     {
         return $this->player;
-    }
-
-    /**
-     * @ORM\PostLoad()
-     */
-    public function postLoad(): void
-    {
-        parent::__construct($this->getTime(), $this->getTitle(), $this->getDescription());
     }
 
     public function getSequenceNumber(): int
     {
         return $this->sequenceNumber;
+    }
+
+    public function getTime(): \DateTimeImmutable
+    {
+        return $this->time;
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function getItem(): ActivityFeedItem
+    {
+        return new ActivityFeedItem(
+            $this->getTime(),
+            $this->getTitle(),
+            $this->getDescription(),
+        );
     }
 }

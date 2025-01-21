@@ -4,23 +4,38 @@ namespace App\Repository;
 
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
-use DateTime;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
+use Villermen\RuneScape\HighScore\OsrsHighScore;
+use Villermen\RuneScape\HighScore\Rs3HighScore;
 
-class TrackedHighScoreRepository extends EntityRepository
+/**
+ * @extends ServiceEntityRepository<TrackedHighScore>
+ */
+class TrackedHighScoreRepository extends ServiceEntityRepository
 {
-    public function findByDate(DateTime $date, TrackedPlayer $player, bool $oldSchool): ?TrackedHighScore
+    public function __construct(ManagerRegistry $registry)
     {
-        $qb = $this->createQueryBuilder("highScore");
+        parent::__construct($registry, TrackedHighScore::class);
+    }
 
-        return $qb
-            ->andWhere($qb->expr()->eq("highScore.date", ":date"))
-            ->andWhere($qb->expr()->eq("highScore.player", ":player"))
-            ->andWhere($qb->expr()->eq("highScore.oldSchool", ":oldSchool"))
-            ->setParameter("date", (clone $date)->modify("midnight"))
-            ->setParameter("player", $player)
-            ->setParameter("oldSchool", $oldSchool)
-            ->getQuery()
-            ->getOneOrNullResult();
+    /**
+     * @return TrackedHighScore<($oldSchool is true ? OsrsHighScore : Rs3HighScore)>
+     */
+    public function findByDate(\DateTimeInterface $date, TrackedPlayer $player, bool $oldSchool): ?TrackedHighScore
+    {
+        return $this->findOneBy([
+            'date' => $date,
+            'player' => $player,
+            'highScore.oldSchool' => $oldSchool,
+        ]);
+    }
+
+    public function hasAnyAtDate(\DateTimeInterface $date, TrackedPlayer $player): bool
+    {
+        return (bool)$this->findOneBy([
+            'date' => $date,
+            'player' => $player,
+        ]);
     }
 }

@@ -1,10 +1,14 @@
 twig:
-    paths: ['%kernel.project_dir%/templates']
-    debug: '%kernel.debug%'
-    strict_variables: '%kernel.debug%'
+    file_name_pattern: '*.twig'
     number_format:
         decimals: 0
         decimal_point: '.'
         thousands_separator: ','
     date:
         format: 'j-n-Y'
+    globals:
+        app_readonly: '%app.readonly%'
+
+when@test:
+    twig:
+        strict_variables: true

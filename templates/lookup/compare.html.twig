@@ -1,111 +1,187 @@
+{# @var lookup1 App\Model\LookupResult #}
+{# @var lookup2 App\Model\LookupResult #}
+{# @var comparison Villermen\RuneScape\HighScore\HighScoreComparison #}
+{# @var activities Villermen\RuneScape\HighScore\ActivityInterface[] #}
 {% extends "base.html.twig" %}
-
+{% block title %}{{ lookup1.player.name }} vs. {{ lookup2.player.name }}{% endblock %}
 {% block body %}
-    {{ include("component/lookup-form.html.twig") }}
-
-    {% if not error %}
-        <div class="horizontal-scroller">
-            <div class="infobox-container">
-                {{ include("component/player-infobox.html.twig", {"player": player1, "mode": "compare", "tracked": tracked1, "oldSchool": oldSchool, "runeScore": runeScore1}) }}
-                {{ include("component/player-infobox.html.twig", {"player": player2, "mode": "compare", "tracked": tracked2, "oldSchool": oldSchool, "runeScore": runeScore2}) }}
-            </div>
-
-            <table class="center dataTable row-select compare-table">
+    {{ include('component/lookup-form.html.twig', {
+        oldSchool: lookup1.oldSchool,
+        name1: lookup1.player.name,
+        name2: lookup2.player.name,
+    }) }}
+    <div class="horizontal-scroller">
+        <div class="infobox-container infobox-container--compare">
+            {{ include('component/player-infobox.html.twig', {lookup: lookup1, compare: true}) }}
+            {{ include('component/player-infobox.html.twig', {lookup: lookup2, compare: true}) }}
+            <table class="center datatable row-select">
                 <thead>
                     <tr>
                         <th>Skill</th>
                         <th>Level</th>
                         <th>XP</th>
                         <th>Rank</th>
-                        {% if trained1 %}
+                        {% if lookup1.trainedYesterday %}
                             <th>Trained</th>
                         {% endif %}
-
-                        <th class="spacer-cell">
-
-                        <th>Level</th>
+                        <th class="border-left">Level</th>
                         <th>XP</th>
                         <th>Rank</th>
-                        {% if trained1 and trained2 %}
+                        {% if lookup1.trainedYesterday and lookup2.trainedYesterday %}
                             <th>Trained</th>
                         {% endif %}
-
-                        <th class="spacer-cell">
-
-                        <th>Level</th>
+                        <th class="border-left">Level</th>
                         <th>XP</th>
                         <th>Rank</th>
-                        {% if trained2 %}
+                        {% if lookup2.trainedYesterday %}
                             <th>Trained</th>
                         {% endif %}
                         <th>Skill</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for skill1 in stats1.skills %}
-                        {% set skill2 = stats2.getSkill(skill1.skill.id) %}
-                        {% set trainedSkill1 = trained1 ? trained1.getSkill(skill1.skill.id) : false %}
-                        {% set trainedSkill2 = trained2 ? trained2.getSkill(skill1.skill.id) : false %}
-                        {% set comparisonSkill = comparison.getSkill(skill1.skill.id) %}
-
-                        {% set levelColor1 = skill1.level|red_to_green(0, 69) %}
-                        {% set levelColor2 = skill2.level|red_to_green(0, 69) %}
-
+                    {% for skill1 in lookup1.highScore.skills %}
+                        {% set skill = skill1.skill %}
+                        {% set skill2 = lookup2.highScore.skill(skill) %}
+                        {% set levelColor1 = skill1.level|red_to_green(1, 99) %}
+                        {% set levelColor2 = skill2.level|red_to_green(1, 99) %}
+                        {% set trained1 = lookup1.trainedYesterday ? lookup1.trainedYesterday.xpDifference(skill) : null %}
+                        {% set trained2 = lookup2.trainedYesterday ? lookup2.trainedYesterday.xpDifference(skill) : null %}
+                        {% set levelDifference = comparison.virtualLevelDifference(skill) %}
+                        {% set xpDifference = comparison.xpDifference(skill) %}
+                        {% set rankDifference = comparison.rankDifference(skill) %}
+                        {% set trainedDifference = trained1 and trained2 ? trained1 - trained2 : null %}
                         <tr>
                             <td style="color:{{ levelColor1 }}">
-                                {{ skill1.name }}
+                                {{ skill.getName() }}
                             </td>
                             <td style="color:{{ levelColor1 }}">
                                 {{ skill1.virtualLevel }}
                             </td>
                             <td style="color:{{ levelColor1 }}">
-                                {{ skill1.xp|number_format }}
+                                {{ skill1.xp is not null ? skill1.xp|number_format : '' }}
                             </td>
-                            <td style="color:{{ skill1.rank|red_to_green(1000000, 1) }}" data-order="{{ skill1.rank ? skill1.rank : 10000000 }}">
-                                {{ skill1.rank ? skill1.rank|number_format : "" }}
+                            <td style="color:{{ skill1.rank|red_to_green(2000000, 1) }}" data-order="{{ skill1.rank ? skill1.rank : 2000000 }}">
+                                {{ skill1.rank ? skill1.rank|number_format : '' }}
                             </td>
-                            {% if trained1 %}
-                                <td style="color:{{ trainedSkill1.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedSkill1.xpDifference }}">
-                                    {{ trainedSkill1.xpDifference|format_difference }}
+                            {% if lookup1.trainedYesterday %}
+                                <td style="color:{{ trained1|red_to_green(-1, 1) }}" data-order="{{ trained1 }}">
+                                    {{ trained1 is not null ? trained1|format_difference : '' }}
                                 </td>
                             {% endif %}
-
-                            <td class="spacer-cell"></td>
-
-                            <td style="color:{{ comparisonSkill.virtualLevelDifference|red_to_green(-1, 1) }}" data-order="{{ comparisonSkill.virtualLevelDifference }}">
-                                {{ comparisonSkill.virtualLevelDifference|format_difference }}
+                            <td
+                                class="border-left"
+                                style="color:{{ levelDifference|red_to_green(-1, 1) }}" data-order="{{ levelDifference }}"
+                            >
+                                {{ levelDifference is not null ? levelDifference|format_difference : '' }}
                             </td>
-                            <td style="color:{{ comparisonSkill.xpDifference|red_to_green(-1, 1) }}" data-order="{{ comparisonSkill.xpDifference }}">
-                                {{ comparisonSkill.xpDifference|format_difference }}
+                            <td style="color:{{ xpDifference|red_to_green(-1, 1) }}" data-order="{{ xpDifference }}">
+                                {{ xpDifference is not null ? xpDifference|format_difference : '' }}
                             </td>
-                            <td style="color:{{ comparisonSkill.rankDifference|red_to_green(-1, 1) }}" data-order="{{ comparisonSkill.rankDifference }}">
-                                {{ comparisonSkill.rankDifference ? comparisonSkill.rankDifference|format_difference : "" }}
+                            <td style="color:{{ rankDifference|red_to_green(-1, 1) }}" data-order="{{ rankDifference }}">
+                                {{ rankDifference is not null ? rankDifference|format_difference : '' }}
                             </td>
-                            {% if trained1 and trained2 %}
-                                <td style="color:{{ (trainedSkill1.xpDifference - trainedSkill2.xpDifference)|red_to_green(-1, 1) }}" data-order="{{ (trainedSkill1.xpDifference - trainedSkill2.xpDifference) }}">
-                                    {{ (trainedSkill1.xpDifference  - trainedSkill2.xpDifference)|format_difference }}
+                            {% if lookup1.trainedYesterday and lookup2.trainedYesterday %}
+                                <td style="color:{{ trainedDifference|red_to_green(-1, 1) }}" data-order="{{ trainedDifference }}">
+                                    {{ trainedDifference is not null ? trainedDifference|format_difference : '' }}
                                 </td>
                             {% endif %}
-
-                            <td class="spacer-cell"></td>
-
-                            <td style="color:{{ levelColor2 }}">
+                            <td
+                                class="border-left"
+                                style="color:{{ levelColor2 }}"
+                            >
                                 {{ skill2.virtualLevel }}
                             </td>
                             <td style="color:{{ levelColor2 }}">
-                                {{ skill2.xp|number_format }}
+                                {{ skill2.xp is not null ? skill2.xp|number_format : '' }}
                             </td>
-                            <td style="color:{{ skill2.rank|red_to_green(1000000, 1) }}" data-order="{{ skill2.rank ? skill2.rank : 10000000 }}">
-                                {{ skill2.rank ? skill2.rank|number_format : "" }}
+                            <td style="color:{{ skill2.rank|red_to_green(2000000, 1) }}" data-order="{{ skill2.rank ? skill2.rank : 2000000 }}">
+                                {{ skill2.rank ? skill2.rank|number_format : '' }}
                             </td>
-                            {% if trained2 %}
-                                <td style="color:{{ trainedSkill2.xpDifference|red_to_green(-1, 1) }}" data-order="{{ trainedSkill2.xpDifference }}">
-                                    {{ trainedSkill2.xpDifference|format_difference }}
+                            {% if lookup2.trainedYesterday %}
+                                <td style="color:{{ trained2|red_to_green(-1, 1) }}" data-order="{{ trained2 }}">
+                                    {{ trained2 is not null ? trained2|format_difference : '' }}
                                 </td>
                             {% endif %}
                             <td style="color:{{ levelColor2 }}">
-                                {{ skill1.name }}
+                                {{ skill.getName() }}
                             </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if activities %}
+        <div class="horizontal-scroller">
+            <table class="center datatable row-select">
+                <thead>
+                    <tr>
+                        <th>Activity</th>
+                        <th>Score</th>
+                        <th>Rank</th>
+                        {% if lookup1.trainedYesterday %}
+                            <th>Scored</th>
+                        {% endif %}
+                        <th class="border-left">Score</th>
+                        <th>Rank</th>
+                        {% if lookup1.trainedYesterday and lookup2.trainedYesterday %}
+                            <th>Scored</th>
+                        {% endif %}
+                        <th class="border-left">Score</th>
+                        <th>Rank</th>
+                        {% if lookup2.trainedYesterday %}
+                            <th>Scored</th>
+                        {% endif %}
+                        <th>Activity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in activities %}
+                        {% set activity1 = lookup1.highScore.activity(activity) %}
+                        {% set activity2 = lookup2.highScore.activity(activity) %}
+                        {% set scored1 = lookup1.trainedYesterday ? lookup1.trainedYesterday.scoreDifference(activity) : null %}
+                        {% set scored2 = lookup2.trainedYesterday ? lookup2.trainedYesterday.scoreDifference(activity) : null %}
+                        {% set scoreDifference = comparison.scoreDifference(activity) %}
+                        {% set rankDifference = comparison.rankDifference(activity) %}
+                        {% set scoredDifference = scored1 and scored1 ? scored1 - scored2 : null %}
+                        <tr>
+                            <td>{{ activity.getName() }}</td>
+                            <td>{{ activity1.score is not null ? activity1.score|number_format : '' }}</td>
+                            <td style="color:{{ activity1.rank|red_to_green(2000000, 1) }}" data-order="{{ activity1.rank ? activity1.rank : 2000000 }}">
+                                {{ activity1.rank ? activity1.rank|number_format : '' }}
+                            </td>
+                            {% if lookup1.trainedYesterday %}
+                                <td style="color:{{ scored1|red_to_green(-1, 1) }}" data-order="{{ scored1 }}">
+                                    {{ scored1 is not null ? scored1|format_difference : '' }}
+                                </td>
+                            {% endif %}
+                            <td
+                                class="border-left"
+                                style="color:{{ scoreDifference|red_to_green(-1, 1) }}" data-order="{{ scoreDifference }}"
+                            >
+                                {{ scoreDifference is not null ? scoreDifference|format_difference : '' }}
+                            </td>
+                            <td style="color:{{ rankDifference|red_to_green(-1, 1) }}" data-order="{{ rankDifference }}">
+                                {{ rankDifference is not null ? rankDifference|format_difference : '' }}
+                            </td>
+                            {% if lookup1.trainedYesterday and lookup2.trainedYesterday %}
+                                <td style="color:{{ scoredDifference|red_to_green(-1, 1) }}" data-order="{{ scoredDifference }}">
+                                    {{ scoredDifference is not null ? scoredDifference|format_difference : '' }}
+                                </td>
+                            {% endif %}
+                            <td class="border-left">
+                                {{ activity2.score is not null ? activity2.score|number_format : '' }}
+                            </td>
+                            <td style="color:{{ activity2.rank|red_to_green(2000000, 1) }}" data-order="{{ activity2.rank ? activity2.rank : 2000000 }}">
+                                {{ activity2.rank ? activity2.rank|number_format : '' }}
+                            </td>
+                            {% if lookup2.trainedYesterday %}
+                                <td style="color:{{ scored2|red_to_green(-1, 1) }}" data-order="{{ scored2 }}">
+                                    {{ scored2 is not null ? scored2|format_difference : '' }}
+                                </td>
+                            {% endif %}
+                            <td>{{ activity.getName() }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

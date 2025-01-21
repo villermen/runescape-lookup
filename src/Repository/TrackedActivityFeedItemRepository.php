@@ -4,52 +4,41 @@ namespace App\Repository;
 
 use App\Entity\TrackedActivityFeedItem;
 use App\Entity\TrackedPlayer;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Villermen\RuneScape\ActivityFeed\ActivityFeed;
-use Villermen\RuneScape\Exception\FetchFailedException;
+use Villermen\RuneScape\ActivityFeed\ActivityFeedItem;
 
-class TrackedActivityFeedItemRepository extends EntityRepository
+/**
+ * @extends ServiceEntityRepository<TrackedActivityFeedItem>
+ */
+class TrackedActivityFeedItemRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, TrackedActivityFeedItem::class);
+    }
+
     public function findLast(TrackedPlayer $player): ?TrackedActivityFeedItem
     {
-        $qb = $this->createQueryBuilder("activity");
-
-        return $qb
-            ->andWhere($qb->expr()->eq("activity.player", ":player"))
-            ->setParameter("player", $player)
-            ->addOrderBy($qb->expr()->desc("activity.sequenceNumber"))
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
+        return $this->findOneBy([
+            'player' => $player,
+        ], [
+            'sequenceNumber' => 'DESC'
+        ]);
     }
 
     /**
-     * Returns all tracked activity feed items from latest to earliest.
+     * Returns all tracked activity feed items from latest to earliest as a feed.
      *
-     * @param bool $mergeLive Fetch live activity feed and prepend.
+     * @return TrackedActivityFeedItem[]
      */
-    public function findByPlayer(TrackedPlayer $player, $mergeLive = false): ActivityFeed
+    public function findByPlayer(TrackedPlayer $player, ?int $limit = null): array
     {
-        $qb = $this->createQueryBuilder("activity");
-
-        $trackedActivityFeedItems = $qb
-            ->andWhere($qb->expr()->eq("activity.player", ":player"))
-            ->setParameter("player", $player)
-            ->addOrderBy($qb->expr()->desc("activity.time"))
-            ->getQuery()
-            ->getResult();
-
-        $activityFeed = new ActivityFeed($trackedActivityFeedItems);
-
-        if ($mergeLive) {
-            try {
-                $liveActivityFeed = $player->getActivityFeed();
-
-                $activityFeed = $activityFeed->merge($liveActivityFeed);
-            } catch (FetchFailedException $exception) {
-            }
-        }
-
-        return $activityFeed;
+        return $this->findBy([
+            'player' => $player,
+        ], [
+            'sequenceNumber' => 'DESC',
+        ], $limit);
     }
 }

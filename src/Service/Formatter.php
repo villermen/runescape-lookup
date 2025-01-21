@@ -7,18 +7,21 @@ use Twig\TwigFilter;
 
 class Formatter extends AbstractExtension
 {
-    public function getFilters()
+    /**
+     * @return TwigFilter[]
+     */
+    public function getFilters(): array
     {
         return [
-            new TwigFilter("red_to_green", [$this, "redToGreen"]),
-            new TwigFilter("format_difference", [$this, "formatDifference"])
+            new TwigFilter('red_to_green', [$this, 'redToGreen']),
+            new TwigFilter('format_difference', [$this, 'formatDifference'])
         ];
     }
 
     /**
      * Converts a value into a hex color scaled by the bounds supplied by $redValue and $greenValue.
      */
-    public function redToGreen(?float $value, float $redBound = 0, float $greenBound = 1): string
+    public function redToGreen(?float $value, float $redBound = 0.0, float $greenBound = 1.0): string
     {
         $fraction = (($value ?? 0.0) - $redBound) / ($greenBound - $redBound);
         $fraction = max(0, min(1, $fraction));
@@ -32,15 +35,15 @@ class Formatter extends AbstractExtension
             $redComponent = 510 - round($fraction * 510);
         }
 
-        return sprintf("#%06X", $redComponent * 256 * 256 + $greenComponent * 256);
+        return sprintf('#%06X', $redComponent * 256 * 256 + $greenComponent * 256);
     }
 
     public function formatDifference(?float $difference): string
     {
         if (!$difference) {
-            return "=";
+            return '=';
         }
 
-        return ($difference > 0 ? "+" : "") . number_format($difference);
+        return ($difference > 0 ? '+' : '') . number_format($difference);
     }
 }

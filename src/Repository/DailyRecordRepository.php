@@ -3,25 +3,45 @@
 namespace App\Repository;
 
 use App\Entity\DailyRecord;
-use DateTime;
-use Doctrine\ORM\EntityRepository;
+use App\Model\Records;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 
-class DailyRecordRepository extends EntityRepository
+/**
+ * @extends ServiceEntityRepository<DailyRecord>
+ */
+class DailyRecordRepository extends ServiceEntityRepository
 {
-    /**
-     * @return DailyRecord[]
-     */
-    public function findByDate(DateTime $date, bool $oldSchool): array
+    public function __construct(ManagerRegistry $registry)
     {
-        $qb = $this->createQueryBuilder("record");
+        parent::__construct($registry, DailyRecord::class);
+    }
 
-        return $qb
-            ->andWhere($qb->expr()->eq("record.date", ":date"))
-            ->andWhere($qb->expr()->eq("record.oldSchool", ":oldSchool"))
-            ->setParameter("date", (clone $date)->modify("midnight"))
-            ->setParameter("oldSchool", $oldSchool)
-            ->addOrderBy($qb->expr()->desc("record.xpGain"))
+    /**
+     * @return Records<DailyRecord>
+     */
+    public function findRecords(\DateTimeInterface $date, bool $oldSchool): Records
+    {
+        // findBy() but with join on player to greatly reduce amount of queries on overview.
+        /** @var DailyRecord[] $records */
+        $records = $this->createQueryBuilder('record')
+            ->join('record.player', 'player')
+            ->addSelect('player')
+            ->andWhere('record.date = :date')
+            ->setParameter('date', $date)
+            ->andWhere('record.type.oldSchool = :oldSchool')
+            ->setParameter('oldSchool', $oldSchool)
+            ->orderBy('record.score', 'DESC')
             ->getQuery()
             ->getResult();
+
+        return new Records($records);
+    }
+
+    public function hasAnyAtDate(\DateTimeInterface $date): bool
+    {
+        return (bool)$this->findOneBy([
+            'date' => $date,
+        ]);
     }
 }

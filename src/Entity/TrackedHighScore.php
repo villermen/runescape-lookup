@@ -2,66 +2,56 @@
 
 namespace App\Entity;
 
-use DateTime;
-use Doctrine\ORM\Mapping as ORM;
-use Villermen\RuneScape\HighScore\HighScoreSkill;
-use Villermen\RuneScape\HighScore\SkillHighScore;
+use App\Entity\Embeddable\HighScoreType;
+use App\Repository\TrackedHighScoreRepository;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Embedded;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
+use Villermen\RuneScape\HighScore\HighScore;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\TrackedHighScoreRepository")
- * @ORM\Table(name="high_score", uniqueConstraints={
- *     @ORM\UniqueConstraint(columns={"player_id", "date", "old_school"})
- * })
- * @ORM\HasLifecycleCallbacks()
+ * @template T of HighScore = HighScore
  */
-class TrackedHighScore extends SkillHighScore
+#[Entity(repositoryClass: TrackedHighScoreRepository::class)]
+#[Table(name: 'high_score')]
+#[UniqueConstraint('unique_high_score', ['player_id', 'old_school', 'date'])]
+class TrackedHighScore
 {
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id()
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[Id]
+    #[Column]
+    #[GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
+
+    #[ManyToOne]
+    #[JoinColumn(nullable: false)]
+    protected TrackedPlayer $player;
+
+    #[Column(type: 'date_immutable')]
+    protected \DateTimeImmutable $date;
+
+    /** @var HighScoreType<T> */
+    #[Embedded(columnPrefix: false)]
+    protected HighScoreType $highScore;
 
     /**
-     * @ORM\Column(type="high_score_skill_array")
+     * @param T $highScore
      */
-    protected $skills;
-
-    /**
-     * @var bool
-     *
-     * @ORM\Column(type="boolean")
-     */
-    protected $oldSchool;
-
-    /**
-     * @var DateTime
-     *
-     * @ORM\Column(type="date")
-     */
-    protected $date;
-
-    /**
-     * @var TrackedPlayer
-     *
-     * @ORM\ManyToOne(targetEntity="App\Entity\TrackedPlayer")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    protected $player;
-
-    /**
-     * @param HighScoreSkill[] $skills
-     */
-    public function __construct(array $skills, TrackedPlayer $player, bool $oldSchool)
+    public function __construct(TrackedPlayer $player, \DateTimeImmutable $date, bool $oldSchool, HighScore $highScore)
     {
-        parent::__construct($skills);
-
         $this->player = $player;
-        $this->oldSchool = $oldSchool;
-        $this->date = new DateTime();
+        $this->date = $date;
+        $this->highScore = new HighScoreType($oldSchool, $highScore);
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function getPlayer(): TrackedPlayer
@@ -69,26 +59,16 @@ class TrackedHighScore extends SkillHighScore
         return $this->player;
     }
 
-    public function isOldSchool(): bool
-    {
-        return $this->oldSchool;
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function getDate(): DateTime
+    public function getDate(): \DateTimeImmutable
     {
         return $this->date;
     }
 
     /**
-     * @ORM\PostLoad()
+     * @return T
      */
-    public function postLoad(): void
+    public function getHighScore(): HighScore
     {
-        parent::__construct($this->getSkills());
+        return $this->highScore->getHighScore();
     }
 }

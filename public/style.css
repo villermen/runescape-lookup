@@ -13,15 +13,23 @@ body {
 h1 {
     margin-bottom: 5px;
 }
-input {
-    width: 12em;
-    height: 2em;
+input, button {
     font: bold 12pt Verdana;
     text-align: center;
     background-color: black;
     border: 1px solid #505050;
     color: #B0B0B0;
-    line-height: 27px;
+    padding: 10px;
+}
+button {
+    cursor: pointer;
+}
+button[disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+input:hover, button:hover {
+    background-color: #212121;
 }
 [data-href] {
     cursor: pointer;
@@ -29,29 +37,30 @@ input {
 .content {
     overflow-x: hidden;
 }
-.forms {
+.lookup-form {
     margin-bottom: 20px;
     margin-top: 20px;
 }
-.lookup-form,
-.compare-form {
-    display: inline-block;
-}
-.swapicon {
-    vertical-align: middle;
-    height: 27px;
+.back {
+    margin-top: 0;
 }
 .infobox-container {
-    position: relative;
-    height: 140px;
-    width: 100%;
+    display: inline-block;
     margin: 0 auto;
-    overflow: hidden;
+    max-width: 100%;
 }
 .infobox {
+    display: inline-block;
     height: 140px;
-    margin: 0 20px;
+    overflow-y: hidden;
     white-space: nowrap;
+    width: 100%;
+}
+.infobox--compare {
+    width: auto;
+}
+.infobox--compare ~ .infobox--compare {
+    margin-left: 40px;
 }
 .infobox-text {
     display: inline-block;
@@ -70,30 +79,17 @@ input {
     height: 100px;
 }
 .infobox-avatar--head {
+    float: left;
 }
 .infobox-avatar--body {
+    float: right;
     width: 60px;
     /* Same total width (100px) as .infobox-avatar--head to center .infobox-text */
-    margin-right: 40px;
-}
-.infobox--compare {
-    position: absolute;
-    left: 0;
-}
-.infobox--compare:nth-child(2) {
-    right: 0;
-    left: unset;
-}
-.statstable {
-    margin: auto;
+    margin-left: 40px;
 }
 a {
     color: #00FF7F;
     text-decoration: none;
-}
-#loadtimes {
-    color: #505050;
-    margin: 10px auto auto auto;
 }
 table {
     border-collapse: collapse;
@@ -113,18 +109,12 @@ tr:nth-child(odd) td {
     background-color: #2e2e2e;
 }
 tr:hover td,
-.active,
 tr.selected td {
     background-color: #707070;
 }
 th {
     font-weight: bold;
     color: #B0B0B0;
-}
-.tablespacer {
-    border-top-width: 0;
-    border-bottom-width: 0;
-    width: 25px;
 }
 .center {
     margin-left: auto;
@@ -149,31 +139,24 @@ th>a {
 }
 .activity-description {
 }
-.dataTable th {
-    cursor: pointer;
+.border-top {
+    border-top: 1px solid #505050;
 }
-.spacer-cell {
-    padding: 0;
-    position: relative;
-    border-right: 1px solid #505050;
-}
-.compare-table {
-    width: 1250px;
+.border-left {
+    border-left: 1px solid #505050;
 }
 .error {
     color: red;
 }
-.notice {
+.info {
+    color: green;
 }
 .nolifer-table-container {
     display: inline-block;
     vertical-align: top;
 }
-.nolifer-table-container--rs3 {
-    margin-right: 30px;
-}
-.dataTables_wrapper {
-    display: inline;
+.nolifer-table-container + .nolifer-table-container {
+    margin-left: 30px;
 }
 .index-infotable {
     margin: 50px 50px 0 0;
@@ -198,53 +181,36 @@ th>a {
     overflow-x: auto;
     margin-bottom: 1rem;
 }
-.sorting,
-.sorting_asc,
-.sorting_desc {
+th {
     white-space: nowrap;
 }
-.sorting_asc::after {
+.dt-orderable-asc, dt-orderable-desc {
+    cursor: pointer;
+}
+.dt-ordering-asc::after {
     content: " ▲";
 }
-.sorting_desc::after {
+.dt-ordering-desc::after {
     content: " ▼";
 }
 
-/* fixed first column */
-.lookup-table {
+.sticky-first-column {
     border-left-width: 0;
 }
-.lookup-table td:first-child,
-.lookup-table th:first-child {
+.sticky-first-column td:first-child,
+.sticky-first-column th:first-child {
     position: absolute;
     width: 160px;
     border-right: 1px solid #505050;
     border-left: 1px solid #505050;
 }
-.lookup-table td:nth-child(2),
-.lookup-table th:nth-child(2) {
+.sticky-first-column td:nth-child(2),
+.sticky-first-column th:nth-child(2) {
     padding-left: 179px;
 }
 
-.table {
-    display: table;
-}
-.table-header {
-    display: table-header-group;
-}
-.table-body {
-    display: table-row-group;
-}
-.table-row {
-    display: table-row;
-}
-.table-cell {
-    display: table-column;
-}
-
 @media (max-width: 360px) {
-    .lookup-form, .compare-form {
-        display: block;
+    .lookup-form {
         margin-top: 10px;
         margin-bottom: 10px;
     }
