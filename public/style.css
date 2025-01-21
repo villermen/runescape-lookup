@@ -47,6 +47,7 @@ input:hover, button:hover {
 .infobox-container {
     display: inline-block;
     margin: 0 auto;
+    max-width: 100%;
 }
 .infobox {
     display: inline-block;

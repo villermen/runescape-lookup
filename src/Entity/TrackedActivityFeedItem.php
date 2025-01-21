@@ -77,4 +77,13 @@ class TrackedActivityFeedItem
     {
         return $this->description;
     }
+
+    public function getItem(): ActivityFeedItem
+    {
+        return new ActivityFeedItem(
+            $this->getTime(),
+            $this->getTitle(),
+            $this->getDescription(),
+        );
+    }
 }

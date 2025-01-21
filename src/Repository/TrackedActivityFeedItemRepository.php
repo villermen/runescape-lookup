@@ -21,41 +21,24 @@ class TrackedActivityFeedItemRepository extends ServiceEntityRepository
 
     public function findLast(TrackedPlayer $player): ?TrackedActivityFeedItem
     {
-        $qb = $this->createQueryBuilder('activity');
-
-        return $qb
-            ->andWhere($qb->expr()->eq('activity.player', ':player'))
-            ->setParameter('player', $player)
-            ->addOrderBy($qb->expr()->desc('activity.sequenceNumber'))
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
+        return $this->findOneBy([
+            'player' => $player,
+        ], [
+            'sequenceNumber' => 'DESC'
+        ]);
     }
 
     /**
      * Returns all tracked activity feed items from latest to earliest as a feed.
+     *
+     * @return TrackedActivityFeedItem[]
      */
-    public function findFeed(TrackedPlayer $player): ActivityFeed
+    public function findByPlayer(TrackedPlayer $player, ?int $limit = null): array
     {
-        return $this->createFeedFromTrackedItems($this->findBy([
+        return $this->findBy([
             'player' => $player,
         ], [
             'sequenceNumber' => 'DESC',
-        ]));
-    }
-
-    /**
-     * @param TrackedActivityFeedItem[] $trackedItems
-     */
-    private function createFeedFromTrackedItems(array $trackedItems): ActivityFeed
-    {
-        return new ActivityFeed(array_map(
-            fn (TrackedActivityFeedItem $trackedItem): ActivityFeedItem => new ActivityFeedItem(
-                $trackedItem->getTime(),
-                $trackedItem->getTitle(),
-                $trackedItem->getDescription(),
-            ),
-            $trackedItems
-        ));
+        ], $limit);
     }
 }

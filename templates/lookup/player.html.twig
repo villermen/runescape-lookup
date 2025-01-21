@@ -6,11 +6,11 @@
         oldSchool: lookup.oldSchool,
         name1: lookup.player.name,
     }) }}
-    <div class="horizontal-scroller">
-        <div class="infobox-container">
-            {{ include('component/player-infobox.html.twig', {
-                lookup,
-            }) }}
+    <div class="infobox-container">
+        {{ include('component/player-infobox.html.twig', {
+            lookup,
+        }) }}
+        <div class="horizontal-scroller">
             <table class="center row-select sticky-first-column datatable">
                 <thead>
                     <tr>

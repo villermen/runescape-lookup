@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
+use Villermen\RuneScape\Player;
 
 #[Entity(repositoryClass: TrackedPlayerRepository::class)]
 #[Table(name: 'player')]
@@ -41,7 +42,7 @@ class TrackedPlayer
         return $this->name;
     }
 
-    public function setName(string $name): string
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -54,5 +55,10 @@ class TrackedPlayer
     public function setActive(bool $active): void
     {
         $this->active = $active;
+    }
+
+    public function getPlayer(): Player
+    {
+        return new Player($this->getName());
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\PersonalRecord;
+use App\Entity\TrackedActivityFeedItem;
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
 use App\Model\LookupResult;
@@ -14,6 +15,8 @@ use App\Repository\TrackedHighScoreRepository;
 use App\Repository\TrackedPlayerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Villermen\RuneScape\ActivityFeed\ActivityFeed;
+use Villermen\RuneScape\ActivityFeed\ActivityFeedItem;
 use Villermen\RuneScape\Exception\FetchFailedException;
 use Villermen\RuneScape\HighScore\HighScore;
 use Villermen\RuneScape\HighScore\HighScoreComparison;
@@ -91,7 +94,10 @@ class LookupService
             $records = $this->personalRecordRepository->findRecords($trackedPlayer, $oldSchool);
 
             if (!$oldSchool) {
-                $trackedActivityFeed = $this->trackedActivityFeedItemRepository->findFeed($trackedPlayer);
+                $trackedActivityFeed = new ActivityFeed(array_map(
+                    fn (TrackedActivityFeedItem $item): ActivityFeedItem => $item->getItem(),
+                    $this->trackedActivityFeedItemRepository->findByPlayer($trackedPlayer),
+                ));
                 $activityFeed = $activityFeed ? $trackedActivityFeed->merge($activityFeed) : $trackedActivityFeed;
             }
         }
@@ -137,7 +143,7 @@ class LookupService
      *
      * @throws FetchFailedException
      */
-    public function updateTrackedHighScores(TrackedPlayer $trackedPlayer, int $maxTries = 3): UpdateResult
+    public function updateTrackedHighScores(TrackedPlayer $player, int $maxTries = 3): UpdateResult
     {
         if ($this->isReadonly()) {
             throw new \LogicException('Tracked high score can\'t be updated in readonly mode.');
@@ -146,11 +152,9 @@ class LookupService
         $updateTime = $this->timeKeeper->getUpdateTime();
 
         // Player probably got tracked very recently.
-        if ($this->trackedHighScoreRepository->hasAnyAtDate($updateTime, $trackedPlayer)) {
-            return new UpdateResult($trackedPlayer);
+        if ($this->trackedHighScoreRepository->hasAnyAtDate($updateTime, $player)) {
+            return new UpdateResult($player);
         }
-
-        $player = new Player($trackedPlayer->getName());
 
         /** @var Rs3HighScore|null $rs3HighScore */
         $rs3HighScore = null;
@@ -158,13 +162,13 @@ class LookupService
         $runeMetrics = null;
         for ($i = 0; !$rs3HighScore && $i < $maxTries; $i++) {
             try {
-                $rs3HighScore = $this->playerDataFetcher->fetchIndexLite($player, oldSchool: false);
+                $rs3HighScore = $this->playerDataFetcher->fetchIndexLite($player->getPlayer(), oldSchool: false);
             } catch (FetchFailedException) {
             }
         }
         for ($i = 0; !$rs3HighScore && $i < $maxTries; $i++) {
             try {
-                $runeMetrics = $this->playerDataFetcher->fetchRuneMetrics($player);
+                $runeMetrics = $this->playerDataFetcher->fetchRuneMetrics($player->getPlayer());
                 $rs3HighScore = $runeMetrics->highScore;
                 break;
             } catch (FetchFailedException) {
@@ -175,18 +179,22 @@ class LookupService
         $osrsHighScore = null;
         for ($i = 0; !$osrsHighScore && $i < $maxTries; $i++) {
             try {
-                $osrsHighScore = $this->playerDataFetcher->fetchIndexLite($player, oldSchool: true);
+                $osrsHighScore = $this->playerDataFetcher->fetchIndexLite($player->getPlayer(), oldSchool: true);
             } catch (FetchFailedException) {
             }
         }
 
         if (!$rs3HighScore && !$osrsHighScore) {
-            throw new FetchFailedException(sprintf('Failed to obtain any highscores for "%s" after %s tries.', $trackedPlayer->getName(), $maxTries));
+            throw new FetchFailedException(sprintf(
+                'Failed to obtain any highscores for "%s" after %s tries.',
+                $player->getName(),
+                $maxTries
+            ));
         }
 
         if ($rs3HighScore) {
             $trackedHighScore = new TrackedHighScore(
-                player: $trackedPlayer,
+                player: $player,
                 date: $updateTime,
                 oldSchool: false,
                 highScore: $rs3HighScore,
@@ -196,7 +204,7 @@ class LookupService
 
         if ($osrsHighScore) {
             $trackedHighScore = new TrackedHighScore(
-                player: $trackedPlayer,
+                player: $player,
                 date: $updateTime,
                 oldSchool: true,
                 highScore: $osrsHighScore,
@@ -205,17 +213,17 @@ class LookupService
         }
 
         // Fix player name.
-        if ($runeMetrics && $runeMetrics->displayName !== $trackedPlayer->getName()) {
-            $trackedPlayer->setName($runeMetrics->displayName);
+        if ($runeMetrics && $runeMetrics->displayName !== $player->getName()) {
+            $player->setName($runeMetrics->displayName);
         }
 
         // Update records.
-        $trainedRs3 = $rs3HighScore ? $this->updateRecords($trackedPlayer, $rs3HighScore, oldSchool: false) : null;
-        $trainedOsrs = $osrsHighScore ? $this->updateRecords($trackedPlayer, $osrsHighScore, oldSchool: true) : null;
+        $trainedRs3 = $rs3HighScore ? $this->updateRecords($player, $rs3HighScore, oldSchool: false) : null;
+        $trainedOsrs = $osrsHighScore ? $this->updateRecords($player, $osrsHighScore, oldSchool: true) : null;
 
         $this->entityManager->flush();
 
-        return new UpdateResult($trackedPlayer, $trainedRs3, $trainedOsrs);
+        return new UpdateResult($player, $trainedRs3, $trainedOsrs);
     }
 
     private function updateRecords(
@@ -269,13 +277,38 @@ class LookupService
         return $trained;
     }
 
-    public function updateTrackedActivityFeed(TrackedPlayer $trackedPlayer): void
+    /**
+     * @return TrackedActivityFeedItem[]
+     * @throws FetchFailedException
+     */
+    public function updateTrackedActivityFeed(TrackedPlayer $player): array
     {
         if ($this->isReadonly()) {
             throw new \LogicException('Tracked activity feed can\'t be updated in readonly mode.');
         }
 
-        // TODO
+        $liveFeed = $this->playerDataFetcher->fetchRuneMetrics($player->getPlayer())->activityFeed;
+        $latestTrackedItem = $this->trackedActivityFeedItemRepository->findLast($player);
+
+        // Obtain and persist all newly discovered activity feed items
+        if ($latestTrackedItem) {
+            $newItems = $liveFeed->getItemsAfter($latestTrackedItem->getItem());
+            $nextSequenceNumber = $latestTrackedItem->getSequenceNumber() + 1;
+        } else {
+            $newItems = $liveFeed->items;
+            $nextSequenceNumber = 0;
+        }
+
+        $newTrackedItems = [];
+        foreach (array_reverse($newItems) as $newItem) {
+            $newTrackedItem = new TrackedActivityFeedItem($newItem, $player, $nextSequenceNumber++);
+            $this->entityManager->persist($newTrackedItem);
+            $newTrackedItems[] = $newTrackedItem;
+        }
+
+        $this->entityManager->flush();
+
+        return $newTrackedItems;
     }
 
     public function isReadonly(): bool
