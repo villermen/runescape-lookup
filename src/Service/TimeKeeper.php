@@ -33,4 +33,13 @@ class TimeKeeper
 
         return $updateTime;
     }
+
+    /**
+     * Returns the record date corresponding to the update time (see {@see getUpdateTime()}). This is the day before the
+     * update time.
+     */
+    public function getRecordDate(int $offsetDays = 0): \DateTimeImmutable
+    {
+        return $this->getUpdateTime($offsetDays - 1)->modify('midnight');
+    }
 }

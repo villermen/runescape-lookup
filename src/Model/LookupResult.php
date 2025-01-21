@@ -9,18 +9,18 @@ use Villermen\RuneScape\HighScore\HighScoreActivity;
 use Villermen\RuneScape\HighScore\HighScoreComparison;
 use Villermen\RuneScape\Player;
 
-class LookupResult
+readonly class LookupResult
 {
     public function __construct(
-        public readonly Player $player,
-        public readonly bool $oldSchool,
-        public readonly HighScore $highScore,
-        public readonly ?ActivityFeed $activityFeed,
-        public readonly ?TrackedPlayer $trackedPlayer,
-        public readonly ?HighScoreComparison $trainedToday,
-        public readonly ?HighScoreComparison $trainedYesterday,
-        public readonly ?HighScoreComparison $trainedWeek,
-        public readonly Records $records,
+        public Player $player,
+        public bool $oldSchool,
+        public HighScore $highScore,
+        public ?ActivityFeed $activityFeed,
+        public ?TrackedPlayer $trackedPlayer,
+        public ?HighScoreComparison $trainedToday,
+        public ?HighScoreComparison $trainedYesterday,
+        public ?HighScoreComparison $trainedWeek,
+        public Records $records,
     ) {
     }
 

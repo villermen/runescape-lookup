@@ -10,13 +10,13 @@ use Villermen\RuneScape\HighScore\SkillInterface;
  * @template T of AbstractRecord = AbstractRecord
  * @implements \IteratorAggregate<array-key, T>
  */
-class Records implements \IteratorAggregate
+readonly class Records implements \IteratorAggregate
 {
     /**
      * @param array<array-key, T> $records
      */
     public function __construct(
-        protected readonly array $records,
+        protected array $records,
     ) {
     }
 

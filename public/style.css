@@ -193,10 +193,6 @@ th {
     content: " ▼";
 }
 
-table {
-    margin-bottom: 1em;
-}
-
 .sticky-first-column {
     border-left-width: 0;
 }

@@ -2,10 +2,12 @@
 
 namespace App\Service;
 
+use App\Entity\PersonalRecord;
 use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
 use App\Model\LookupResult;
 use App\Model\Records;
+use App\Model\UpdateResult;
 use App\Repository\PersonalRecordRepository;
 use App\Repository\TrackedActivityFeedItemRepository;
 use App\Repository\TrackedHighScoreRepository;
@@ -13,7 +15,12 @@ use App\Repository\TrackedPlayerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Villermen\RuneScape\Exception\FetchFailedException;
+use Villermen\RuneScape\HighScore\HighScore;
+use Villermen\RuneScape\HighScore\HighScoreComparison;
+use Villermen\RuneScape\HighScore\OsrsHighScore;
+use Villermen\RuneScape\HighScore\Rs3HighScore;
 use Villermen\RuneScape\Player;
+use Villermen\RuneScape\PlayerData\RuneMetricsData;
 use Villermen\RuneScape\Service\PlayerDataFetcher;
 
 class LookupService
@@ -63,9 +70,21 @@ class LookupService
 
         $trackedPlayer = $this->isReadonly() ? null : $this->trackedPlayerRepository->findByName($player->getName());
         if ($trackedPlayer) {
-            $highScoreToday = $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(), $trackedPlayer, $oldSchool)?->getHighScore();
-            $highScoreYesterday = $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(-1), $trackedPlayer, $oldSchool)?->getHighScore();
-            $highScoreWeek = $this->trackedHighScoreRepository->findByDate($this->timeKeeper->getUpdateTime(-7), $trackedPlayer, $oldSchool)?->getHighScore();
+            $highScoreToday = $this->trackedHighScoreRepository->findByDate(
+                $this->timeKeeper->getUpdateTime(),
+                $trackedPlayer,
+                $oldSchool
+            )?->getHighScore();
+            $highScoreYesterday = $this->trackedHighScoreRepository->findByDate(
+                $this->timeKeeper->getUpdateTime(-1),
+                $trackedPlayer,
+                $oldSchool
+            )?->getHighScore();
+            $highScoreWeek = $this->trackedHighScoreRepository->findByDate(
+                $this->timeKeeper->getUpdateTime(-7),
+                $trackedPlayer,
+                $oldSchool
+            )?->getHighScore();
             $trainedToday = $highScoreToday ? $highScore->compareTo($highScoreToday) : null;
             $trainedYesterday = $highScoreYesterday ? $highScoreToday?->compareTo($highScoreYesterday) : null;
             $trainedWeek = $highScoreWeek ? $highScoreToday?->compareTo($highScoreWeek) : null;
@@ -113,18 +132,30 @@ class LookupService
     }
 
     /**
+     * Fetches and inserts high scores at current update time. Fixes player name. Updates personal records and returns
+     * trained since yesterday when available.
+     *
      * @throws FetchFailedException
      */
-    public function updateTrackedHighScores(TrackedPlayer $trackedPlayer, int $maxTries = 3): void
+    public function updateTrackedHighScores(TrackedPlayer $trackedPlayer, int $maxTries = 3): UpdateResult
     {
         if ($this->isReadonly()) {
             throw new \LogicException('Tracked high score can\'t be updated in readonly mode.');
         }
 
         $updateTime = $this->timeKeeper->getUpdateTime();
+
+        // Player probably got tracked very recently.
+        if ($this->trackedHighScoreRepository->hasAnyAtDate($updateTime, $trackedPlayer)) {
+            return new UpdateResult($trackedPlayer);
+        }
+
         $player = new Player($trackedPlayer->getName());
 
+        /** @var Rs3HighScore|null $rs3HighScore */
         $rs3HighScore = null;
+        /** @var RuneMetricsData|null $runeMetrics */
+        $runeMetrics = null;
         for ($i = 0; !$rs3HighScore && $i < $maxTries; $i++) {
             try {
                 $rs3HighScore = $this->playerDataFetcher->fetchIndexLite($player, oldSchool: false);
@@ -133,13 +164,14 @@ class LookupService
         }
         for ($i = 0; !$rs3HighScore && $i < $maxTries; $i++) {
             try {
-                $rs3HighScore = $this->playerDataFetcher->fetchRuneMetrics($player)->highScore;
+                $runeMetrics = $this->playerDataFetcher->fetchRuneMetrics($player);
+                $rs3HighScore = $runeMetrics->highScore;
                 break;
             } catch (FetchFailedException) {
             }
         }
 
-        // OSRS
+        /** @var OsrsHighScore|null $osrsHighScore */
         $osrsHighScore = null;
         for ($i = 0; !$osrsHighScore && $i < $maxTries; $i++) {
             try {
@@ -172,7 +204,69 @@ class LookupService
             $this->entityManager->persist($trackedHighScore);
         }
 
+        // Fix player name.
+        if ($runeMetrics && $runeMetrics->displayName !== $trackedPlayer->getName()) {
+            $trackedPlayer->setName($runeMetrics->displayName);
+        }
+
+        // Update records.
+        $trainedRs3 = $rs3HighScore ? $this->updateRecords($trackedPlayer, $rs3HighScore, oldSchool: false) : null;
+        $trainedOsrs = $osrsHighScore ? $this->updateRecords($trackedPlayer, $osrsHighScore, oldSchool: true) : null;
+
         $this->entityManager->flush();
+
+        return new UpdateResult($trackedPlayer, $trainedRs3, $trainedOsrs);
+    }
+
+    private function updateRecords(
+        TrackedPlayer $player,
+        HighScore $currentHighScore,
+        bool $oldSchool
+    ): ?HighScoreComparison {
+        $recordDate = $this->timeKeeper->getRecordDate();
+        $previousHighScore = $this->trackedHighScoreRepository->findByDate(
+            $this->timeKeeper->getUpdateTime(-1),
+            $player,
+            $oldSchool,
+        )?->getHighScore();
+        if (!$previousHighScore) {
+            return null;
+        }
+
+        $trained = $currentHighScore->compareTo($previousHighScore);
+        $records = $this->personalRecordRepository->findRecords($player, $oldSchool);
+
+        foreach ($currentHighScore->getSkills() as $highScoreSkill) {
+            /** @var PersonalRecord|null $record */
+            $record = $records->get($highScoreSkill->skill);
+            $score = $trained->getXpDifference($highScoreSkill->skill);
+
+            if ($score && $score > ($record?->getScore() ?? 0)) {
+                if ($record) {
+                    $record->updateScore($score, $recordDate);
+                } else {
+                    $record = new PersonalRecord($player, $highScoreSkill->skill, $score, $recordDate);
+                    $this->entityManager->persist($record);
+                }
+            }
+        }
+
+        foreach ($currentHighScore->getActivities() as $highScoreActivity) {
+            /** @var PersonalRecord|null $record */
+            $record = $records->get($highScoreActivity->activity);
+            $score = $trained->getScoreDifference($highScoreActivity->activity);
+
+            if ($score && $score > ($record?->getScore() ?? 0)) {
+                if ($record) {
+                    $record->updateScore($score, $recordDate);
+                } else {
+                    $record = new PersonalRecord($player, $highScoreActivity->activity, $score, $recordDate);
+                    $this->entityManager->persist($record);
+                }
+            }
+        }
+
+        return $trained;
     }
 
     public function updateTrackedActivityFeed(TrackedPlayer $trackedPlayer): void

@@ -27,9 +27,9 @@
                 <tbody>
                     {% for record in dailyRecords %}
                         <tr data-href="{{ path('lookup', {player1: record.player.name}) }}">
-                            <td>{{ record.skill.name }}</td>
+                            <td>{{ record.type.getName() }}</td>
                             <td>{{ record.player.name }}</td>
-                            <td>{{ record.xpGain|number_format }}</td>
+                            <td>{{ record.score|number_format }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -44,9 +44,9 @@
                 <tbody>
                     {% for record in dailyOldSchoolRecords %}
                         <tr data-href="{{ path('lookup', {player1: record.player.name, oldschool: true}) }}">
-                            <td>{{ record.skill.name }}</td>
+                            <td>{{ record.type.getName() }}</td>
                             <td>{{ record.player.name }}</td>
-                            <td>{{ record.xpGain|number_format }}</td>
+                            <td>{{ record.score|number_format }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

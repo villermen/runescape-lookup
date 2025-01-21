@@ -3,40 +3,40 @@
 namespace App\Command;
 
 use App\Entity\DailyRecord;
-use App\Entity\PersonalRecord;
-use App\Entity\TrackedHighScore;
 use App\Entity\TrackedPlayer;
+use App\Model\UpdateResult;
+use App\Repository\DailyRecordRepository;
+use App\Repository\TrackedPlayerRepository;
+use App\Service\LookupService;
 use App\Service\TimeKeeper;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
-use Symfony\Bridge\Monolog\Formatter\ConsoleFormatter;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
-use Symfony\Component\Console\Formatter\OutputFormatter;
-use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Villermen\RuneScape\Exception\FetchFailedException;
+use Villermen\RuneScape\HighScore\ActivityInterface;
+use Villermen\RuneScape\HighScore\OsrsActivity;
+use Villermen\RuneScape\HighScore\OsrsSkill;
+use Villermen\RuneScape\HighScore\Rs3Activity;
+use Villermen\RuneScape\HighScore\Rs3Skill;
+use Villermen\RuneScape\HighScore\SkillInterface;
 
 class UpdateHighScoresCommand extends Command
 {
     use LockableTrait;
 
-    private const RETRY_COUNT = 5;
+    private const MAX_TRIES = 2;
+    private const MAX_RETRIES = 2;
 
-    private EntityManagerInterface $entityManager;
-
-    private TimeKeeper $timeKeeper;
-
-    /** @var DailyRecord[][] [bool oldSchool][int skillId] */
-    private array $dailyRecords = [false => [], true => []];
-
-    public function __construct(EntityManagerInterface $entityManager, TimeKeeper $timeKeeper)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly TimeKeeper $timeKeeper,
+        private readonly TrackedPlayerRepository $trackedPlayerRepository,
+        private readonly LookupService $lookupService,
+        private readonly DailyRecordRepository $dailyRecordRepository,
+    ) {
         parent::__construct();
-
-        $this->entityManager = $entityManager;
-        $this->timeKeeper = $timeKeeper;
     }
 
     protected function configure(): void
@@ -47,152 +47,100 @@ class UpdateHighScoresCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $writeln = function (string $message) use ($output): void {
-            $output->writeln(sprintf('[%s] %s', date('H:i:s'), $message));
-        };
-
-        try {
-            if (!$this->lock()) {
-                $writeln('<error>Command is already running in another process.</error>');
-                return 1;
-            }
-
-            /** @var TrackedPlayer[] $players */
-            $players = $this->entityManager->getRepository(TrackedPlayer::class)->findActive();
-
-            if ($this->entityManager->getRepository(TrackedHighScore::class)->findOneBy([
-                'date' => $this->timeKeeper->getUpdateTime(0)->modify('midnight')
-            ])) {
-                $writeln('<error>There already exist high scores for today.</error>');
-                return 1;
-            }
-
-            /** @var TrackedPlayer[] $failedPlayers */
-            $failedPlayers = [];
-            /** @var TrackedPlayer[] $failedOldSchoolPlayers */
-            $failedOldSchoolPlayers = [];
-
-            $writeln(sprintf('Starting high score update for %s players...', count($players)));
-            foreach ($players as $player) {
-                try {
-                    $this->updatePlayer($player, oldSchool: false);
-                    $writeln(sprintf('Updated high score for %s.', $player->getName()));
-                } catch (FetchFailedException) {
-                    $failedPlayers[] = $player;
-                }
-
-                try {
-                    $this->updatePlayer($player, oldSchool: true);
-                    $writeln(sprintf('Updated old school high score for %s.', $player->getName()));
-                } catch (FetchFailedException) {
-                    $failedOldSchoolPlayers[] = $player;
-                }
-            }
-
-            // Retry failed players
-            $writeln(sprintf('Retrying %s failed updates...', count($failedPlayers)));
-            for ($i = 0; $i < self::RETRY_COUNT; $i++) {
-                foreach ($failedPlayers as $key => $player) {
-                    try {
-                        $this->updatePlayer($player, oldSchool: false);
-                        unset($failedPlayers[$key]);
-                        $writeln(sprintf('Updated high score for %s after %d retries.', $player->getName(), $i + 1));
-                    } catch (FetchFailedException) {
-                    }
-                }
-
-                foreach ($failedOldSchoolPlayers as $key => $player) {
-                    try {
-                        $this->updatePlayer($player, oldSchool: true);
-                        unset($failedOldSchoolPlayers[$key]);
-                        $writeln(sprintf('Updated old school high score for %s after %d retries.', $player->getName(), $i + 1));
-                    } catch (FetchFailedException) {
-                    }
-                }
-            }
-
-            // Mark players failed in both high scores as inactive, unless all players failed
-            if (count($failedPlayers) + count($failedOldSchoolPlayers) < count($players) * 2) {
-                foreach ($failedPlayers as $player) {
-                    if (in_array($player, $failedOldSchoolPlayers, true)) {
-                        $player->setActive(false);
-
-                        $writeln(sprintf('<error>Failed to update any high score for %s, deactivating...</error>', $player->getName()));
-                    }
-                }
-            } else {
-                $writeln('<error>Failed to update high scores for every tracked player!</error>');
-
-                return 1;
-            }
-
-            $this->entityManager->flush();
-
-            // Persist daily records
-            $writeln('Updating daily records...');
-            foreach ($this->dailyRecords as $dailyRecordArray) {
-                foreach ($dailyRecordArray as $dailyRecord) {
-                    $this->entityManager->persist($dailyRecord);
-                }
-            }
-
-            $this->entityManager->flush();
-
-            $writeln('<info>Successfully updated high scores.</info>');
-
-            return 0;
-        } catch (\Throwable $exception) {
-            $writeln(sprintf('<error>An unexpected error occurred: %s', $exception->getMessage()));
+        if (!$this->lock()) {
+            $output->writeln('<error>Command is already running in another process!</error>');
             return 1;
         }
-    }
 
-    /**
-     * @throws FetchFailedException
-     */
-    private function updatePlayer(TrackedPlayer $player, bool $oldSchool): void
-    {
-        $highScore = $oldSchool ? $player->getOldSchoolSkillHighScore() : $player->getSkillHighScore();
+        // Prevent multiple runs in a day.
+        $recordDate = $this->timeKeeper->getRecordDate();
+        if ($this->dailyRecordRepository->hasAnyAtDate($recordDate)) {
+            $output->writeln('<error>There already exist records for today!</error>');
+            return 1;
+        }
 
-        // Fix name if readily available
-        $player->fixNameIfCached();
+        /** @var array<array{SkillInterface|ActivityInterface, DailyRecord}> $dailyRecords */
+        $dailyRecords = [];
+        $processDailyRecords = function (UpdateResult $updateResult) use (&$dailyRecords, $recordDate): void {
+            $entries = [
+                ...Rs3Skill::cases(),
+                ...Rs3Activity::cases(),
+                ...OsrsSkill::cases(),
+                ...OsrsActivity::cases(),
+            ];
 
-        $trackedHighScore = new TrackedHighScore($highScore->getSkills(), $player, $oldSchool);
+            foreach ($entries as $entry) {
+                if ($entry instanceof Rs3Skill) {
+                    $score = $updateResult->trainedRs3?->getXpDifference($entry);
+                } elseif ($entry instanceof Rs3Activity) {
+                    $score = $updateResult->trainedRs3?->getScoreDifference($entry);
+                } elseif ($entry instanceof OsrsSkill) {
+                    $score = $updateResult->trainedOsrs?->getXpDifference($entry);
+                } elseif ($entry instanceof OsrsActivity) { // @phpstan-ignore instanceof.alwaysTrue
+                    $score = $updateResult->trainedOsrs?->getScoreDifference($entry);
+                } else {
+                    $score = null;
+                }
 
-        $this->entityManager->persist($trackedHighScore);
-
-        // Create personal records
-        $previousHighScore = $this->entityManager->getRepository(TrackedHighScore::class)->findByDate(
-            $this->timeKeeper->getUpdateTime(-1), $player, $oldSchool
-        );
-
-        if ($previousHighScore) {
-            $comparison = $highScore->compareTo($previousHighScore);
-
-            $records = $this->entityManager->getRepository(PersonalRecord::class)->findHighestRecords($player, $oldSchool);
-
-            foreach($comparison->getSkills() as $skillComparison) {
-                if ($skillComparison->getXpDifference() > 0) {
-                    $skillId = $skillComparison->getSkill()->getId();
-                    if (!isset($records[$skillId]) || $skillComparison->getXpDifference() > $records[$skillId]->getXpGain()) {
-                        $newRecord = new PersonalRecord(
-                            $player, $skillComparison->getSkill(), $skillComparison->getXpDifference(),
-                            $oldSchool, $this->timeKeeper->getUpdateTime(-1)
-                        );
-
-                        $this->entityManager->persist($newRecord);
+                if ($score > 0) {
+                    // PHP 8.4: array_find()
+                    /** @var DailyRecord|null $dailyRecord */
+                    $dailyRecord = null;
+                    foreach ($dailyRecords as [$recordEntry, $record]) {
+                        if ($recordEntry === $entry) {
+                            $dailyRecord = $record;
+                            break;
+                        }
                     }
 
-                    // Set in daily records if it is greater
-                    if (!isset($this->dailyRecords[$oldSchool][$skillId]) ||
-                        $skillComparison->getXpDifference() > $this->dailyRecords[$oldSchool][$skillId]->getXpGain()) {
-                        $this->dailyRecords[$oldSchool][$skillId] = new DailyRecord(
-                            $player, $skillComparison->getSkill(), $skillComparison->getXpDifference(),
-                            $oldSchool, $this->timeKeeper->getUpdateTime(-1)
-                        );
+                    if ($dailyRecord) {
+                        $dailyRecord->updateScore($score, $updateResult->player);
+                    } else {
+                        $dailyRecord = new DailyRecord($updateResult->player, $entry, $score, $recordDate);
+                        $dailyRecords[] = [$entry, $dailyRecord];
                     }
                 }
             }
+        };
+
+        $players = $this->trackedPlayerRepository->findActive();
+        /** @var TrackedPlayer[] $failedPlayers */
+        $failedPlayers = [];
+
+        $output->writeln(sprintf('Starting high score update for %s players...', count($players)));
+        foreach ($players as $player) {
+            try {
+                $processDailyRecords($this->lookupService->updateTrackedHighScores($player, self::MAX_TRIES));
+                $output->writeln(sprintf('Updated high scores for %s.', $player->getName()));
+            } catch (FetchFailedException) {
+                $failedPlayers[] = $player;
+            }
         }
+
+        if (count($failedPlayers) === count($players)) {
+            $output->writeln('<error>Failed to update high scores for every tracked player!</error>');
+            return 1;
+        }
+
+        // Retry all failed players a few more times. Mitigates temporary outages.
+        foreach ($failedPlayers as $player) {
+            try {
+                $processDailyRecords($this->lookupService->updateTrackedHighScores($player, self::MAX_RETRIES));
+                $output->writeln(sprintf('Updated high scores for %s after initial failure.', $player->getName()));
+            } catch (FetchFailedException) {
+                // Deactivate player. Flushed as side effect.
+                $player->setActive(false);
+                $output->writeln(sprintf('Failed to update high scores for %s again. Deactivating...', $player->getName()));
+            }
+        }
+
+        $output->writeln(sprintf('Updating %s daily records...', count($dailyRecords)));
+        foreach ($dailyRecords as [$entry, $dailyRecord]) {
+            $this->entityManager->persist($dailyRecord);
+        }
+        $this->entityManager->flush();
+
+        $output->writeln('<info>Successfully updated high scores.</info>');
+        return 0;
     }
 }

@@ -68,16 +68,16 @@ class LookupController extends AbstractController
 
         // Fetch yesterday's records
         $readonly = $this->lookupService->isReadonly();
-        $updateTime = $this->timeKeeper->getUpdateTime();
-        $dailyRecords = $readonly ? [] : $this->dailyRecordRepository->findRecords($updateTime, oldSchool: false);
-        $dailyOldSchoolRecords = $readonly ? [] : $this->dailyRecordRepository->findRecords($updateTime, oldSchool: true);
-        $timeTillUpdate = (new \DateTime())->diff($this->timeKeeper->getUpdateTime(1));
+        $recordTime = $this->timeKeeper->getRecordDate();
+        $dailyRecords = $readonly ? [] : $this->dailyRecordRepository->findRecords($recordTime, oldSchool: false);
+        $dailyOldSchoolRecords = $readonly ? [] : $this->dailyRecordRepository->findRecords($recordTime, oldSchool: true);
+        $nextUpdateTime = $this->timeKeeper->getUpdateTime(1);
 
         return $this->render('lookup/overview.html.twig', [
             'dailyRecords' => $dailyRecords,
             'dailyOldSchoolRecords' => $dailyOldSchoolRecords,
-            'updateTime' => $updateTime->format('G:i'),
-            'timeTillUpdate' => $timeTillUpdate->format('%h:%I'),
+            'updateTime' => $nextUpdateTime->format('G:i'),
+            'timeTillUpdate' => (new \DateTime())->diff($nextUpdateTime)->format('%h:%I'),
             'formValues' => [
                 'oldSchool' => $oldSchool,
                 'name1' => $name1,

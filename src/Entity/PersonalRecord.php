@@ -16,4 +16,9 @@ use Villermen\RuneScape\HighScore\SkillInterface;
 #[UniqueConstraint('unique_record', ['player_id', 'old_school', 'activity', 'type_id'])]
 class PersonalRecord extends AbstractRecord
 {
+    public function updateScore(int $score, \DateTimeImmutable $date): void
+    {
+        $this->score = $score;
+        $this->date = $date;
+    }
 }
