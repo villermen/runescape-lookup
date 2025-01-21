@@ -4768,12 +4768,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/villermen/runescape-lookup-commons.git",
-                "reference": "76843d0245bbced26869688621dec08d2196ef84"
+                "reference": "ec51b867cf2e04791b7d514e8988478a6003a232"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/76843d0245bbced26869688621dec08d2196ef84",
-                "reference": "76843d0245bbced26869688621dec08d2196ef84",
+                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/ec51b867cf2e04791b7d514e8988478a6003a232",
+                "reference": "ec51b867cf2e04791b7d514e8988478a6003a232",
                 "shasum": ""
             },
             "require": {
@@ -4802,7 +4802,7 @@
                 "issues": "https://github.com/villermen/runescape-lookup-commons/issues",
                 "source": "https://github.com/villermen/runescape-lookup-commons/tree/fix-osrs-combat-level"
             },
-            "time": "2025-01-19T11:58:46+00:00"
+            "time": "2025-01-21T12:22:47+00:00"
         }
     ],
     "packages-dev": [

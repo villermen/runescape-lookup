@@ -15,12 +15,7 @@ class HighScoreType
     #[Column]
     protected bool $oldSchool;
 
-    /**
-     * @var array{
-     *     skills: list<array{rank: int|null, level: int|null, xp: int|null}>,
-     *     activities: list<array{rank: int|null, score: int|null}>
-     * }
-     */
+    /** @var mixed[] */
     #[Column(type: 'json')]
     protected array $data;
 
@@ -46,6 +41,7 @@ class HighScoreType
             return $this->highScore;
         }
 
+        // @phpstan-ignore argument.type
         $this->highScore = HighScore::fromArray($this->data, $this->oldSchool);
         return $this->highScore;
     }
