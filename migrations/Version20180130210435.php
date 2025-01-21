@@ -13,6 +13,11 @@ class Version20180130210435 extends AbstractMigration
         return 'Pre-Symfony database structure.';
     }
 
+    public function isTransactional(): bool
+    {
+        return false;
+    }
+
     public function up(Schema $schema): void
     {
         $this->abortIf(!($this->platform instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
@@ -59,10 +64,5 @@ class Version20180130210435 extends AbstractMigration
         $this->addSql('ALTER TABLE activity ADD FOREIGN KEY activity_ibfk_1 (player_id) REFERENCES player (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE daily_highscore ADD FOREIGN KEY daily_highscore_ibfk_1 (player_id) REFERENCES player (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE stats ADD FOREIGN KEY stats_ibfk_1 (player_id) REFERENCES player (id) ON DELETE CASCADE');
-    }
-
-    public function down(Schema $schema): void
-    {
-        $this->throwIrreversibleMigrationException();
     }
 }

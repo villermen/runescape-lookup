@@ -13,6 +13,11 @@ class Version20250120201647 extends AbstractMigration
         return 'High score activities and unique records.';
     }
 
+    public function isTransactional(): bool
+    {
+        return false;
+    }
+
     public function up(Schema $schema): void
     {
         $this->abortIf(!($this->platform instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
@@ -48,10 +53,5 @@ class Version20250120201647 extends AbstractMigration
         ');
 
         // TODO: Remove DC2Type comments
-    }
-
-    public function down(Schema $schema): void
-    {
-        $this->throwIrreversibleMigrationException();
     }
 }

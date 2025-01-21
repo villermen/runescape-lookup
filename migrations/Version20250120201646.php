@@ -76,9 +76,4 @@ class Version20250120201646 extends AbstractMigration
             $this->write(sprintf('Migrated %s/%s high score entries.', $progress, $startTotal));
         } while (count($highScores) === $batchSize);
     }
-
-    public function down(Schema $schema): void
-    {
-        $this->throwIrreversibleMigrationException();
-    }
 }

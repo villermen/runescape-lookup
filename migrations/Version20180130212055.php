@@ -14,6 +14,11 @@ class Version20180130212055 extends AbstractMigration
         return 'First Symfony layout.';
     }
 
+    public function isTransactional(): bool
+    {
+        return false;
+    }
+
     public function up(Schema $schema): void
     {
         $this->abortIf(!($this->platform instanceof AbstractMySQLPlatform), 'Migration can only be executed safely on MySQL platform.');
@@ -28,6 +33,7 @@ class Version20180130212055 extends AbstractMigration
             ADD sequence_number INT NOT NULL,
             DROP guid,
             RENAME INDEX player_id TO IDX_7894E9FE99E6F5DF,
+            ADD INDEX sequence_number (sequence_number),
             CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci
         ');
         $this->addSql('UPDATE activity_feed_item SET sequence_number = id');
@@ -160,10 +166,5 @@ class Version20180130212055 extends AbstractMigration
 
             $offset += count($highScores);
         } while (count($highScores));
-    }
-
-    public function down(Schema $schema): void
-    {
-        $this->throwIrreversibleMigrationException();
     }
 }
