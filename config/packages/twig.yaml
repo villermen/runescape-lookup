@@ -1,5 +1,11 @@
 twig:
     file_name_pattern: '*.twig'
+    number_format:
+        decimals: 0
+        decimal_point: '.'
+        thousands_separator: ','
+    date:
+        format: 'j-n-Y'
     globals:
         app_readonly: '%app.readonly%'
 
