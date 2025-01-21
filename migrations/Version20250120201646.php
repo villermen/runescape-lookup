@@ -28,13 +28,12 @@ class Version20250120201646 extends AbstractMigration
             ADD data JSON DEFAULT NULL
         ');
 
-        // Only keep latest records.
+        // Only keep latest (highest) personal records.
         $this->addSql('DELETE FROM personal_record WHERE id NOT IN (
             SELECT MAX(id)
             FROM personal_record
             GROUP BY player_id, old_school, skill
         )');
-        $this->addSql('DELETE FROM daily_record WHERE `date` != DATE_SUB(CURRENT_DATE, INTERVAL 1 DAY)');
     }
 
     public function postUp(Schema $schema): void

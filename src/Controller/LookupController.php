@@ -68,10 +68,10 @@ class LookupController extends AbstractController
 
         // Fetch yesterday's records
         $readonly = $this->lookupService->isReadonly();
-        $dailyRecords = $readonly ? [] : $this->dailyRecordRepository->findRecords(oldSchool: false);
-        $dailyOldSchoolRecords = $readonly ? [] : $this->dailyRecordRepository->findRecords(oldSchool: true);
-        $updateTime = $this->timeKeeper->getUpdateTime(1);
-        $timeTillUpdate = (new \DateTime())->diff($updateTime);
+        $updateTime = $this->timeKeeper->getUpdateTime();
+        $dailyRecords = $readonly ? [] : $this->dailyRecordRepository->findRecords($updateTime, oldSchool: false);
+        $dailyOldSchoolRecords = $readonly ? [] : $this->dailyRecordRepository->findRecords($updateTime, oldSchool: true);
+        $timeTillUpdate = (new \DateTime())->diff($this->timeKeeper->getUpdateTime(1));
 
         return $this->render('lookup/overview.html.twig', [
             'dailyRecords' => $dailyRecords,

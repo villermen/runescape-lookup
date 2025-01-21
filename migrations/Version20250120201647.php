@@ -40,18 +40,16 @@ class Version20250120201647 extends AbstractMigration
         ');
         $this->addSql('ALTER TABLE daily_record
             DROP INDEX UNIQ_1A0AA83D5E3DE477AA9E377AB051093C,
-            DROP date,
+            MODIFY date DATE NOT NULL AFTER id,
             MODIFY old_school TINYINT(1) NOT NULL AFTER player_id,
             CHANGE skill type_id INT NOT NULL,
             CHANGE xp_gain score INT NOT NULL,
             ADD activity TINYINT(1) NOT NULL AFTER player_id,
-            ADD UNIQUE INDEX unique_record (old_school, activity, type_id)
+            ADD UNIQUE INDEX unique_record (date, old_school, activity, type_id)
         ');
         $this->addSql('ALTER TABLE activity_feed_item
             DROP INDEX sequence_number,
             RENAME INDEX UNIQ_7894E9FE99E6F5DFF2803B3D TO unique_sequence
         ');
-
-        // TODO: Remove DC2Type comments
     }
 }

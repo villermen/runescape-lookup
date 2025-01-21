@@ -20,9 +20,10 @@ class DailyRecordRepository extends ServiceEntityRepository
     /**
      * @return Records<DailyRecord>
      */
-    public function findRecords(bool $oldSchool): Records
+    public function findRecords(\DateTimeInterface $date, bool $oldSchool): Records
     {
         return new Records($this->findBy([
+            'date' => $date,
             'type.oldSchool' => $oldSchool,
         ], [
             'score' => 'DESC'

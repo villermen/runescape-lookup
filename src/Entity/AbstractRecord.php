@@ -35,14 +35,18 @@ abstract class AbstractRecord
     #[Column]
     protected int $score;
 
+    #[Column(type: 'date_immutable')]
+    protected \DateTimeImmutable $date;
+
     /**
      * @param T $type
      */
-    public function __construct(TrackedPlayer $player, SkillInterface|ActivityInterface $type, int $score)
+    public function __construct(TrackedPlayer $player, SkillInterface|ActivityInterface $type, int $score, \DateTimeImmutable $date)
     {
         $this->player = $player;
         $this->type = new RecordType($type);
         $this->score = $score;
+        $this->date = $date;
     }
 
     public function getId(): ?int
@@ -66,5 +70,10 @@ abstract class AbstractRecord
     public function getScore(): int
     {
         return $this->score;
+    }
+
+    public function getDate(): \DateTimeImmutable
+    {
+        return $this->date;
     }
 }

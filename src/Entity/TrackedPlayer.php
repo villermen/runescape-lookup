@@ -24,6 +24,8 @@ class TrackedPlayer
     #[Column]
     protected bool $active = true;
 
+    // TODO: createdAt? (work back from high_score MIN(date))
+
     public function __construct(string $name)
     {
         $this->name = $name;
