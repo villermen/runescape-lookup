@@ -2,33 +2,39 @@
 {# @var lookup App\Model\LookupResult #}
 {% set compare = compare ?? false %}
 {% set runeScore = lookup.oldSchool ? null : lookup.highScore.activity(enum('Villermen\\RuneScape\\HighScore\\Rs3Activity').RUNESCORE) %}
-<div class="infobox {{ compare ? 'infobox--compare' : '' }}">
+<div class="{{ html_classes('infobox', {
+    'infobox--compare': compare,
+}) }}">
     {% if not lookup.oldSchool %}
-        <img class="infobox-avatar infobox-avatar--head" src="{{ lookup.player.chatHeadUrl }}" alt="Forum chat head" />
+        <img
+            class="infobox-avatar infobox-avatar--head"
+            src="{{ lookup.player.chatHeadUrl }}"
+            alt="Forum chat head"
+        />
     {% endif %}
     <div class="infobox-text">
         <h1 class="infobox-title">{{ lookup.player.name }}</h1>
         <div class="infobox-line">
             {% if compare %}
-                <a href="{{ path('lookup_player', { game: lookup.game, name: lookup.player.name }) }}">
-                    Details
-                </a>
+                <a
+                    href="{{ path('lookup_player', { game: lookup.game, name: lookup.player.name }) }}"
+                >Details</a>
             {% else %}
-                <a href="{{ path('lookup_player', { game: lookup.oldSchool ? 'rs3' : 'osrs', name: lookup.player.name }) }}">
-                    {{ lookup.oldSchool ? 'RS3' : 'OSRS' }}
-                </a>
+                <span style="text-decoration:underline;">{{ lookup.oldSchool ? 'OSRS' : 'RS3' }}</span>
+                |
+                <a
+                    href="{{ path('lookup_player', { game: lookup.oldSchool ? 'rs3' : 'osrs', name: lookup.player.name }) }}"
+                >{{ lookup.oldSchool ? 'RS3' : 'OSRS' }}</a>
             {% endif %}
             {% if not lookup.oldSchool %}
                 |
-                <a href="{{ lookup.player.runeMetricsUrl }}">
-                    RuneMetrics
-                </a>
+                <a href="{{ lookup.player.runeMetricsUrl }}">RuneMetrics</a>
             {% endif %}
             {% if not lookup.tracked and not app_readonly %}
                 |
-                <a href="{{ path('lookup_player', { game: lookup.game, name: lookup.player.name, track: true }) }}">
-                    Track
-                </a>
+                <a
+                    href="{{ path('lookup_player', { game: lookup.game, name: lookup.player.name, track: true }) }}"
+                >Track</a>
             {% endif %}
         </div>
         <div class="infobox-line">

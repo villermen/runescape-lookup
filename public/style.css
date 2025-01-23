@@ -6,12 +6,14 @@ body {
 }
 body {
     font: 16px 'Roboto', sans-serif;
+    text-underline-offset: 0.1em;
     background-color: black;
     color: lime;
     text-align: center;
 }
 h1 {
-    margin-bottom: 5px;
+    font-size: 32px;
+    margin-bottom: 0.5em;
 }
 input, button {
     font: bold 12pt Verdana;
@@ -51,10 +53,10 @@ input:hover, button:hover {
 }
 .infobox {
     display: inline-block;
-    height: 140px;
     overflow-y: hidden;
     white-space: nowrap;
     width: 100%;
+    margin-bottom: 1em;
 }
 .infobox--compare {
     width: auto;
@@ -90,6 +92,9 @@ input:hover, button:hover {
 a {
     color: #00FF7F;
     text-decoration: none;
+}
+a:hover, [data-href]:hover {
+    text-decoration: underline;
 }
 table {
     border-collapse: collapse;
