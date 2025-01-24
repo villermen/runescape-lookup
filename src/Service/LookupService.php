@@ -151,10 +151,35 @@ class LookupService
 
         $updateTime = $this->timeKeeper->getUpdateTime();
 
-        // Player probably got tracked very recently.
-        if ($this->trackedHighScoreRepository->hasAnyAtDate($updateTime, $player)) {
-            // TODO: Return trained for record calculation in case update process failed.
-            return new UpdateResult($player);
+        // Check if high scores already exist. Player may have been tracked very recently or the update process was
+        // restarted. Return trained for record calculation.
+        $rs3HighScore = $this->trackedHighScoreRepository->findByDate(
+            $updateTime,
+            $player,
+            oldSchool: false
+        )?->getHighScore();
+        $osrsHighScore = $this->trackedHighScoreRepository->findByDate(
+            $updateTime,
+            $player,
+            oldSchool: true
+        )?->getHighScore();
+        if ($rs3HighScore || $osrsHighScore) {
+            $previousRs3HighScore = $this->trackedHighScoreRepository->findByDate(
+                $this->timeKeeper->getUpdateTime(-1),
+                $player,
+                oldSchool: false
+            )?->getHighScore();
+            $previousOsrsHighScore = $this->trackedHighScoreRepository->findByDate(
+                $this->timeKeeper->getUpdateTime(-1),
+                $player,
+                oldSchool: true
+            )?->getHighScore();
+
+            return new UpdateResult(
+                $player,
+                trainedRs3: $previousRs3HighScore ? $rs3HighScore?->compareTo($previousRs3HighScore) : null,
+                trainedOsrs: $previousOsrsHighScore ? $osrsHighScore?->compareTo($previousOsrsHighScore) : null,
+            );
         }
 
         /** @var Rs3HighScore|null $rs3HighScore */

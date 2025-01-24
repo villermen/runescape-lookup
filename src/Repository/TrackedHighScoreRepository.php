@@ -30,12 +30,4 @@ class TrackedHighScoreRepository extends ServiceEntityRepository
             'highScore.oldSchool' => $oldSchool,
         ]);
     }
-
-    public function hasAnyAtDate(\DateTimeInterface $date, TrackedPlayer $player): bool
-    {
-        return (bool)$this->findOneBy([
-            'date' => $date,
-            'player' => $player,
-        ]);
-    }
 }
