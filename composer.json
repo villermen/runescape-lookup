@@ -25,7 +25,7 @@
         "twig/extra-bundle": "^2.12|^3.0",
         "twig/html-extra": "^3.18",
         "twig/twig": "^2.12|^3.0",
-        "villermen/runescape-lookup-commons": "^6.0"
+        "villermen/runescape-lookup-commons": "^6.0.2"
     },
     "config": {
         "allow-plugins": {

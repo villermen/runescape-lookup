@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7c5bc068538b0a620fd32247d0ff1ede",
+    "content-hash": "a3ffb6a931063d17b971f8788869a78c",
     "packages": [
         {
             "name": "beberlei/doctrineextensions",
@@ -5077,16 +5077,16 @@
         },
         {
             "name": "villermen/runescape-lookup-commons",
-            "version": "v6.0.0",
+            "version": "v6.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/villermen/runescape-lookup-commons.git",
-                "reference": "195e705ebc828df198784904ce80a3de7690a5ea"
+                "reference": "1dafea171f2d418aadc91849a698b42b688ab202"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/195e705ebc828df198784904ce80a3de7690a5ea",
-                "reference": "195e705ebc828df198784904ce80a3de7690a5ea",
+                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/1dafea171f2d418aadc91849a698b42b688ab202",
+                "reference": "1dafea171f2d418aadc91849a698b42b688ab202",
                 "shasum": ""
             },
             "require": {
@@ -5113,9 +5113,9 @@
             "description": "A PHP library containing RuneScape lookup components.",
             "support": {
                 "issues": "https://github.com/villermen/runescape-lookup-commons/issues",
-                "source": "https://github.com/villermen/runescape-lookup-commons/tree/v6.0.0"
+                "source": "https://github.com/villermen/runescape-lookup-commons/tree/v6.0.2"
             },
-            "time": "2025-01-21T22:34:21+00:00"
+            "time": "2025-01-24T07:30:07+00:00"
         }
     ],
     "packages-dev": [

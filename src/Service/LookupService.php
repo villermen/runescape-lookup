@@ -153,6 +153,7 @@ class LookupService
 
         // Player probably got tracked very recently.
         if ($this->trackedHighScoreRepository->hasAnyAtDate($updateTime, $player)) {
+            // TODO: Return trained for record calculation in case update process failed.
             return new UpdateResult($player);
         }
 
