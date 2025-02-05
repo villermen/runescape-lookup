@@ -1038,16 +1038,16 @@
         },
         {
             "name": "doctrine/orm",
-            "version": "3.3.1",
+            "version": "3.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/orm.git",
-                "reference": "b1f8253105aa5382c495e5f9f8ef34e297775428"
+                "reference": "c9557c588b3a70ed93caff069d0aa75737f25609"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/orm/zipball/b1f8253105aa5382c495e5f9f8ef34e297775428",
-                "reference": "b1f8253105aa5382c495e5f9f8ef34e297775428",
+                "url": "https://api.github.com/repos/doctrine/orm/zipball/c9557c588b3a70ed93caff069d0aa75737f25609",
+                "reference": "c9557c588b3a70ed93caff069d0aa75737f25609",
                 "shasum": ""
             },
             "require": {
@@ -1122,9 +1122,9 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/orm/issues",
-                "source": "https://github.com/doctrine/orm/tree/3.3.1"
+                "source": "https://github.com/doctrine/orm/tree/3.3.2"
             },
-            "time": "2024-12-19T07:08:14+00:00"
+            "time": "2025-02-04T19:43:15+00:00"
         },
         {
             "name": "doctrine/persistence",
@@ -5068,16 +5068,16 @@
         },
         {
             "name": "villermen/runescape-lookup-commons",
-            "version": "v6.1.0",
+            "version": "v6.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/villermen/runescape-lookup-commons.git",
-                "reference": "e67605884817f08ed6ea0ea8ddf353b380763777"
+                "reference": "85573d5883955ae6046fee11f3a7bbe1ecc164f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/e67605884817f08ed6ea0ea8ddf353b380763777",
-                "reference": "e67605884817f08ed6ea0ea8ddf353b380763777",
+                "url": "https://api.github.com/repos/villermen/runescape-lookup-commons/zipball/85573d5883955ae6046fee11f3a7bbe1ecc164f3",
+                "reference": "85573d5883955ae6046fee11f3a7bbe1ecc164f3",
                 "shasum": ""
             },
             "require": {
@@ -5104,9 +5104,9 @@
             "description": "A PHP library containing RuneScape lookup components.",
             "support": {
                 "issues": "https://github.com/villermen/runescape-lookup-commons/issues",
-                "source": "https://github.com/villermen/runescape-lookup-commons/tree/v6.1.0"
+                "source": "https://github.com/villermen/runescape-lookup-commons/tree/v6.1.1"
             },
-            "time": "2025-01-29T22:14:07+00:00"
+            "time": "2025-02-05T22:12:36+00:00"
         }
     ],
     "packages-dev": [
