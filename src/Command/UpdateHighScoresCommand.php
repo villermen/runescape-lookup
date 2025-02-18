@@ -93,11 +93,11 @@ class UpdateHighScoresCommand extends Command
                         }
                     }
 
-                    if ($dailyRecord) {
-                        $dailyRecord->updateScore($score, $updateResult->player);
-                    } else {
+                    if (!$dailyRecord) {
                         $dailyRecord = new DailyRecord($updateResult->player, $entry, $score, $recordDate);
                         $dailyRecords[] = [$entry, $dailyRecord];
+                    } elseif ($score > $dailyRecord->getScore()) {
+                        $dailyRecord->updateScore($score, $updateResult->player);
                     }
                 }
             }
