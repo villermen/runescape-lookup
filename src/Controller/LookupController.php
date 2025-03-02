@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Villermen\RuneScape\Exception\FetchFailedException;
@@ -182,15 +183,13 @@ class LookupController extends AbstractController
         return $this->handleMulti($game, $group->players, sprintf('Ironman group: %s', $group->displayName));
     }
 
-    #[Route('{game<rs3|osrs>}/multi/{names}', 'lookup_multi', requirements: [
-        'names' => '.+',
-    ])]
-    public function multiAction(string $game, string $names): Response
+    #[Route('{game<rs3|osrs>}/multi', 'lookup_multi')]
+    public function multiAction(string $game, #[MapQueryParameter] string $players): Response
     {
-        $names = explode('/', $names);
+        $players = explode(',', $players);
 
         try {
-            $players = array_map(fn (string $name) => new Player($name), $names);
+            $players = array_map(fn (string $name) => new Player($name), $players);
         } catch (InvalidNameException $exception) {
             throw new BadRequestException(sprintf('Invalid name "%s".', $exception->name), previous: $exception);
         }
