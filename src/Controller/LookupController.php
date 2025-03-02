@@ -179,9 +179,35 @@ class LookupController extends AbstractController
             throw new NotFoundHttpException(sprintf('%s ironman group "%s" could not be found.', strtoupper($game), $name), $exception);
         }
 
+        return $this->handleMulti($game, $group->players, sprintf('Ironman group: %s', $group->displayName));
+    }
+
+    #[Route('{game<rs3|osrs>}/multi/{names}', 'lookup_multi', requirements: [
+        'names' => '.+',
+    ])]
+    public function multiAction(string $game, string $names): Response
+    {
+        $names = explode('/', $names);
+
+        try {
+            $players = array_map(fn (string $name) => new Player($name), $names);
+        } catch (InvalidNameException $exception) {
+            throw new BadRequestException(sprintf('Invalid name "%s".', $exception->name), previous: $exception);
+        }
+
+        return $this->handleMulti($game, $players, 'Multi lookup');
+    }
+
+    /**
+     * @param non-empty-array<Player> $players
+     */
+    private function handleMulti(string $game, array $players, string $title): Response
+    {
+        $oldSchool = $game === 'osrs';
+
         /** @var LookupResult[] $lookups */
         $lookups = [];
-        foreach ($group->players as $player) {
+        foreach ($players as $player) {
             $lookup = $this->lookupService->lookUpPlayer($player, $oldSchool);
             if (!$lookup) {
                 throw new NotFoundHttpException(sprintf('%s player "%s" could not be found.', strtoupper($game), $player->getName()));
@@ -230,9 +256,8 @@ class LookupController extends AbstractController
             }
         }
 
-
-        return $this->render('lookup/group.html.twig', [
-            'group' => $group,
+        return $this->render('lookup/multi.html.twig', [
+            'title' => $title,
             'lookups' => $lookups,
             'skills' => $skills,
             'activities' => $activities,

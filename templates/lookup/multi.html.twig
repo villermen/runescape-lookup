@@ -1,15 +1,15 @@
-{# @var group Villermen\RuneScape\PlayerData\GroupIronmanData #}
+{# @var title string #}
 {# @var lookups App\Model\LookupResult[] #}
 {# @var skills array<array{skill: Villermen\RuneScape\HighScore\SkillInterface, highestXp: int}> #}
 {# @var activities array<array{activity: Villermen\RuneScape\HighScore\ActivityInterface, highestScore: int}> #}
 {% extends "base.html.twig" %}
-{% block title %}{{ group.displayName }}{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 {% block body %}
     {{ include('component/lookup-form.html.twig', {
         oldSchool: lookups|first.oldSchool,
-        group: group.displayName,
+        group: true,
     }) }}
-    <h1>{{ group.displayName }}</h1>
+    <h1>{{ title }}</h1>
     <div class="horizontal-scroller">
         <table class="center datatable row-select">
             <thead>
