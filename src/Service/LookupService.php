@@ -45,6 +45,7 @@ class LookupService
     {
         $highScore = null;
         $activityFeed = null;
+        $displayName = null;
 
         try {
             $highScore = $this->playerDataFetcher->fetchIndexLite($player, oldSchool: $oldSchool);
@@ -58,6 +59,7 @@ class LookupService
                 // Use RuneMetrics as fallback (index_lite includes activities).
                 $highScore = $highScore ?? $runeMetrics->highScore;
                 $activityFeed = $runeMetrics->activityFeed;
+                $displayName = $runeMetrics->displayName;
             } catch (FetchFailedException) {
             }
         }
@@ -73,6 +75,8 @@ class LookupService
 
         $trackedPlayer = $this->isReadonly() ? null : $this->trackedPlayerRepository->findByName($player->getName());
         if ($trackedPlayer) {
+            $displayName ??= $trackedPlayer->getName();
+
             $highScoreToday = $this->trackedHighScoreRepository->findByDate(
                 $this->timeKeeper->getUpdateTime(),
                 $trackedPlayer,
@@ -100,6 +104,11 @@ class LookupService
                 ));
                 $activityFeed = $activityFeed ? $trackedActivityFeed->merge($activityFeed) : $trackedActivityFeed;
             }
+        }
+
+        // Correct passed name of player with obtained display name.
+        if ($displayName) {
+            $player = new Player($displayName);
         }
 
         return new LookupResult(
