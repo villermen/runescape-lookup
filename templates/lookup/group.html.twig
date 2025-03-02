@@ -36,6 +36,7 @@
                                 lookup.player.name ~ ' - ' ~ skill.getName(),
                                 'Level: ' ~ (lookup.highScore.skill(skill).level ?? 0)|number_format,
                                 'XP: ' ~ (lookup.highScore.skill(skill).xp ?? 0)|number_format,
+                                'Rank: ' ~ (lookup.highScore.skill(skill).rank ?? 0)|number_format,
                             ] %}
                             {% if lookup.trainedToday %}
                                 {% set tooltip = tooltip|merge(['Trained today: ' ~ (lookup.trainedToday.xpDifference(skill) ?? 0)|number_format]) %}
@@ -64,6 +65,7 @@
                             {% set tooltip = [
                                 lookup.player.name ~ ' - ' ~ activity.getName(),
                                 'Score: ' ~ (lookup.highScore.activity(activity).score ?? 0)|number_format,
+                                'Rank: ' ~ (lookup.highScore.activity(activity).rank ?? 0)|number_format,
                             ] %}
                             {% if lookup.trainedToday %}
                                 {% set tooltip = tooltip|merge(['Scored today: ' ~ (lookup.trainedToday.scoreDifference(activity) ?? 0)|number_format]) %}
