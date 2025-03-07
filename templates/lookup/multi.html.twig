@@ -16,12 +16,14 @@
                 <tr>
                     <th></th>
                     {% for lookup in lookups %}
-                        <th
-                            data-href="{{ path('lookup_player', {
-                                game: lookup.game,
-                                name: lookup.player.name,
-                            }) }}"
-                        >{{ lookup.player.name }}</th>
+                        <th>
+                            <a
+                                href="{{ path('lookup_player', {
+                                    game: lookup.game,
+                                    name: lookup.player.name,
+                                }) }}"
+                            >{{ lookup.player.name }}</a>
+                        </th>
                     {% endfor %}
                 </tr>
             </thead>

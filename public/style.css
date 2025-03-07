@@ -33,9 +33,6 @@ button[disabled] {
 input:hover, button:hover {
     background-color: #212121;
 }
-[data-href] {
-    cursor: pointer;
-}
 .content {
     overflow-x: hidden;
 }
@@ -93,7 +90,7 @@ a {
     color: #00FF7F;
     text-decoration: none;
 }
-a:hover, [data-href]:hover {
+a:hover {
     text-decoration: underline;
 }
 table {
@@ -125,9 +122,8 @@ th {
     margin-left: auto;
     margin-right: auto;
 }
-th>a {
-    color: #B0B0B0;
-    text-decoration: underline;
+th a, td a {
+    color: inherit;
 }
 .activity {
     border-bottom: 1px solid #505050;

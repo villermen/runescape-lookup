@@ -20,15 +20,19 @@
         </p>
         <div class="nolifer-table-container">
             <h3>RS3</h3>
-            <table class="nolifer-table datatable">
+            <table class="nolifer-table datatable row-select">
                 <thead>
                     <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
                 </thead>
                 <tbody>
                     {% for record in dailyRecords %}
-                        <tr data-href="{{ path('lookup', {player1: record.player.name}) }}">
+                        <tr>
                             <td>{{ record.type.getName() }}</td>
-                            <td>{{ record.player.name }}</td>
+                            <td>
+                                <a
+                                    href="{{ path('lookup', {player1: record.player.name}) }}"
+                                >{{ record.player.name }}</a>
+                            </td>
                             <td>{{ record.score|number_format }}</td>
                         </tr>
                     {% endfor %}
@@ -37,15 +41,19 @@
         </div>
         <div class="nolifer-table-container">
             <h3>OSRS</h3>
-            <table class="nolifer-table datatable">
+            <table class="nolifer-table datatable row-select">
                 <thead>
                     <tr><th>Skill</th><th>Player</th><th>Xp</th></tr>
                 </thead>
                 <tbody>
                     {% for record in dailyOldSchoolRecords %}
-                        <tr data-href="{{ path('lookup', {player1: record.player.name, oldschool: true}) }}">
+                        <tr>
                             <td>{{ record.type.getName() }}</td>
-                            <td>{{ record.player.name }}</td>
+                            <td>
+                                <a
+                                    href="{{ path('lookup', {player1: record.player.name, oldschool: true}) }}"
+                                >{{ record.player.name }}</a>
+                            </td>
                             <td>{{ record.score|number_format }}</td>
                         </tr>
                     {% endfor %}

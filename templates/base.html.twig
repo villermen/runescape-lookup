@@ -14,14 +14,6 @@
             <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
             <script src="https://cdn.datatables.net/2.2.1/js/dataTables.min.js"></script>
             <script>
-                // Make elements with "data-href" attribute act as anchors
-                document.querySelectorAll('[data-href]').forEach((element) => {
-                    element.addEventListener('click', (event) => {
-                        event.stopImmediatePropagation();
-                        window.location.href = element.dataset.href;
-                    });
-                });
-
                 // Clicking on tables with "row-select" class causes toggling of a "selected" class
                 document.querySelectorAll('table.row-select tr').forEach((element) => {
                     element.addEventListener('click', () => {
