@@ -61,28 +61,28 @@
                             <td style="color:{{ levelColor1 }}">
                                 {{ skill1.xp is not null ? skill1.xp|number_format : '' }}
                             </td>
-                            <td style="color:{{ skill1.rank|red_to_green(2000000, 1) }}" data-order="{{ skill1.rank ? skill1.rank : 2000000 }}">
+                            <td style="color:{{ skill1.rank|red_to_green(2000000, 1) }}" data-sort="{{ skill1.rank ? skill1.rank : 2000000 }}">
                                 {{ skill1.rank ? skill1.rank|number_format : '' }}
                             </td>
                             {% if lookup1.trainedYesterday %}
-                                <td style="color:{{ trained1|red_to_green(-1, 1) }}" data-order="{{ trained1 }}">
+                                <td style="color:{{ trained1|red_to_green(-1, 1) }}" data-sort="{{ trained1 }}">
                                     {{ trained1 is not null ? trained1|format_difference : '' }}
                                 </td>
                             {% endif %}
                             <td
                                 class="border-left"
-                                style="color:{{ levelDifference|red_to_green(-1, 1) }}" data-order="{{ levelDifference }}"
+                                style="color:{{ levelDifference|red_to_green(-1, 1) }}" data-sort="{{ levelDifference }}"
                             >
                                 {{ levelDifference is not null ? levelDifference|format_difference : '' }}
                             </td>
-                            <td style="color:{{ xpDifference|red_to_green(-1, 1) }}" data-order="{{ xpDifference }}">
+                            <td style="color:{{ xpDifference|red_to_green(-1, 1) }}" data-sort="{{ xpDifference }}">
                                 {{ xpDifference is not null ? xpDifference|format_difference : '' }}
                             </td>
-                            <td style="color:{{ rankDifference|red_to_green(-1, 1) }}" data-order="{{ rankDifference }}">
+                            <td style="color:{{ rankDifference|red_to_green(-1, 1) }}" data-sort="{{ rankDifference }}">
                                 {{ rankDifference is not null ? rankDifference|format_difference : '' }}
                             </td>
                             {% if lookup1.trainedYesterday and lookup2.trainedYesterday %}
-                                <td style="color:{{ trainedDifference|red_to_green(-1, 1) }}" data-order="{{ trainedDifference }}">
+                                <td style="color:{{ trainedDifference|red_to_green(-1, 1) }}" data-sort="{{ trainedDifference }}">
                                     {{ trainedDifference is not null ? trainedDifference|format_difference : '' }}
                                 </td>
                             {% endif %}
@@ -95,11 +95,11 @@
                             <td style="color:{{ levelColor2 }}">
                                 {{ skill2.xp is not null ? skill2.xp|number_format : '' }}
                             </td>
-                            <td style="color:{{ skill2.rank|red_to_green(2000000, 1) }}" data-order="{{ skill2.rank ? skill2.rank : 2000000 }}">
+                            <td style="color:{{ skill2.rank|red_to_green(2000000, 1) }}" data-sort="{{ skill2.rank ? skill2.rank : 2000000 }}">
                                 {{ skill2.rank ? skill2.rank|number_format : '' }}
                             </td>
                             {% if lookup2.trainedYesterday %}
-                                <td style="color:{{ trained2|red_to_green(-1, 1) }}" data-order="{{ trained2 }}">
+                                <td style="color:{{ trained2|red_to_green(-1, 1) }}" data-sort="{{ trained2 }}">
                                     {{ trained2 is not null ? trained2|format_difference : '' }}
                                 </td>
                             {% endif %}
@@ -148,36 +148,36 @@
                         <tr>
                             <td>{{ activity.getName() }}</td>
                             <td>{{ activity1.score is not null ? activity1.score|number_format : '' }}</td>
-                            <td style="color:{{ activity1.rank|red_to_green(2000000, 1) }}" data-order="{{ activity1.rank ? activity1.rank : 2000000 }}">
+                            <td style="color:{{ activity1.rank|red_to_green(2000000, 1) }}" data-sort="{{ activity1.rank ? activity1.rank : 2000000 }}">
                                 {{ activity1.rank ? activity1.rank|number_format : '' }}
                             </td>
                             {% if lookup1.trainedYesterday %}
-                                <td style="color:{{ scored1|red_to_green(-1, 1) }}" data-order="{{ scored1 }}">
+                                <td style="color:{{ scored1|red_to_green(-1, 1) }}" data-sort="{{ scored1 }}">
                                     {{ scored1 is not null ? scored1|format_difference : '' }}
                                 </td>
                             {% endif %}
                             <td
                                 class="border-left"
-                                style="color:{{ scoreDifference|red_to_green(-1, 1) }}" data-order="{{ scoreDifference }}"
+                                style="color:{{ scoreDifference|red_to_green(-1, 1) }}" data-sort="{{ scoreDifference }}"
                             >
                                 {{ scoreDifference is not null ? scoreDifference|format_difference : '' }}
                             </td>
-                            <td style="color:{{ rankDifference|red_to_green(-1, 1) }}" data-order="{{ rankDifference }}">
+                            <td style="color:{{ rankDifference|red_to_green(-1, 1) }}" data-sort="{{ rankDifference }}">
                                 {{ rankDifference is not null ? rankDifference|format_difference : '' }}
                             </td>
                             {% if lookup1.trainedYesterday and lookup2.trainedYesterday %}
-                                <td style="color:{{ scoredDifference|red_to_green(-1, 1) }}" data-order="{{ scoredDifference }}">
+                                <td style="color:{{ scoredDifference|red_to_green(-1, 1) }}" data-sort="{{ scoredDifference }}">
                                     {{ scoredDifference is not null ? scoredDifference|format_difference : '' }}
                                 </td>
                             {% endif %}
                             <td class="border-left">
                                 {{ activity2.score is not null ? activity2.score|number_format : '' }}
                             </td>
-                            <td style="color:{{ activity2.rank|red_to_green(2000000, 1) }}" data-order="{{ activity2.rank ? activity2.rank : 2000000 }}">
+                            <td style="color:{{ activity2.rank|red_to_green(2000000, 1) }}" data-sort="{{ activity2.rank ? activity2.rank : 2000000 }}">
                                 {{ activity2.rank ? activity2.rank|number_format : '' }}
                             </td>
                             {% if lookup2.trainedYesterday %}
-                                <td style="color:{{ scored2|red_to_green(-1, 1) }}" data-order="{{ scored2 }}">
+                                <td style="color:{{ scored2|red_to_green(-1, 1) }}" data-sort="{{ scored2 }}">
                                     {{ scored2 is not null ? scored2|format_difference : '' }}
                                 </td>
                             {% endif %}
