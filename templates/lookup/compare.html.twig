@@ -58,7 +58,7 @@
                             <td style="color:{{ levelColor1 }}">
                                 {{ skill1.virtualLevel }}
                             </td>
-                            <td style="color:{{ levelColor1 }}">
+                            <td style="color:{{ levelColor1 }}" data-sort="{{ skill1.xp ?? 0 }}">
                                 {{ skill1.xp is not null ? skill1.xp|number_format : '' }}
                             </td>
                             <td style="color:{{ skill1.rank|red_to_green(2000000, 1) }}" data-sort="{{ skill1.rank ? skill1.rank : 2000000 }}">
@@ -92,7 +92,7 @@
                             >
                                 {{ skill2.virtualLevel }}
                             </td>
-                            <td style="color:{{ levelColor2 }}">
+                            <td style="color:{{ levelColor2 }}" data-sort="{{ skill2.xp ?? 0 }}">
                                 {{ skill2.xp is not null ? skill2.xp|number_format : '' }}
                             </td>
                             <td style="color:{{ skill2.rank|red_to_green(2000000, 1) }}" data-sort="{{ skill2.rank ? skill2.rank : 2000000 }}">
