@@ -33,11 +33,7 @@
                                     href="{{ path('lookup', {player1: record.player.name}) }}"
                                 >{{ record.player.name }}</a>
                             </td>
-                            <td
-                                data-sort="{{ record.score }}"
-                            >
-                                {{ record.score|number_format }}
-                            </td>
+                            <td data-sort="{{ record.score }}">{{ record.score|number_format }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -58,7 +54,7 @@
                                     href="{{ path('lookup', {player1: record.player.name, oldschool: true}) }}"
                                 >{{ record.player.name }}</a>
                             </td>
-                            <td>{{ record.score|number_format }}</td>
+                            <td data-sort="{{ record.score }}">{{ record.score|number_format }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
