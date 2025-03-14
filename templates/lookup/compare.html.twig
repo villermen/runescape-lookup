@@ -14,7 +14,7 @@
         <div class="infobox-container infobox-container--compare">
             {{ include('component/player-infobox.html.twig', {lookup: lookup1, compare: true}) }}
             {{ include('component/player-infobox.html.twig', {lookup: lookup2, compare: true}) }}
-            <table class="center datatable row-select">
+            <table class="center sortable row-select">
                 <thead>
                     <tr>
                         <th>Skill</th>
@@ -114,7 +114,7 @@
     </div>
     {% if activities %}
         <div class="horizontal-scroller">
-            <table class="center datatable row-select">
+            <table class="center sortable row-select">
                 <thead>
                     <tr>
                         <th>Activity</th>

@@ -11,11 +11,11 @@
     <body>
         {% block body %}{% endblock %}
         {% block javascripts %}
-            <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
-            <script src="https://cdn.datatables.net/2.2.1/js/dataTables.min.js"></script>
+            {# https://github.com/tofsjonas/sortable/releases #}
+            <script src="{{ asset('sortable.min.js?v=4.0.1') }}" async defer></script>
             <script>
                 // Clicking on tables with "row-select" class causes toggling of a "selected" class
-                document.querySelectorAll('table.row-select tr').forEach((element) => {
+                document.querySelectorAll('table.row-select tbody tr').forEach((element) => {
                     element.addEventListener('click', () => {
                         const wasSelected = element.classList.contains('selected');
                         // Clear selected (globally).
@@ -24,21 +24,6 @@
                         );
 
                         element.classList.toggle('selected', !wasSelected);
-                    });
-                });
-
-                document.querySelectorAll('.datatable').forEach((element) => {
-                    new DataTable(element, {
-                        paging: false,
-                        searching: false,
-                        info: false,
-                        sorting: [],
-                        autoWidth: false,
-                        drawCallback: function () {
-                            if (element.classList.contains('compare-table')) {
-                                document.querySelector('.infobox-container').style.width = element.style.width;
-                            }
-                        },
                     });
                 });
             </script>

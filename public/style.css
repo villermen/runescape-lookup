@@ -185,13 +185,14 @@ th a, td a {
 th {
     white-space: nowrap;
 }
-.dt-orderable-asc, dt-orderable-desc {
+.sortable th:not(.no-sort) {
+    user-select: none;
     cursor: pointer;
 }
-.dt-ordering-asc::after {
+th[aria-sort=ascending]::after {
     content: " ▲";
 }
-.dt-ordering-desc::after {
+th[aria-sort=descending]::after {
     content: " ▼";
 }
 

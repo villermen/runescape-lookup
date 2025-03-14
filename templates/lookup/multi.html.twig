@@ -11,12 +11,12 @@
     }) }}
     <h1>{{ title }}</h1>
     <div class="horizontal-scroller">
-        <table class="center datatable row-select">
+        <table class="center sortable row-select">
             <thead>
                 <tr>
                     <th></th>
                     {% for lookup in lookups %}
-                        <th data-dt-order="disable">
+                        <th class="no-sort">
                             <a
                                 href="{{ path('lookup_player', {
                                     game: lookup.game,
