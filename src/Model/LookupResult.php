@@ -36,7 +36,7 @@ readonly class LookupResult
     {
         $activitiesWithScore = [];
         foreach ($this->highScore->getActivities() as $activity) {
-            if ($activity->score === null) {
+            if (!$activity->score) {
                 continue;
             }
 
