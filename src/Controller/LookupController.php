@@ -241,13 +241,18 @@ class LookupController extends AbstractController
         $activities = [];
         foreach (reset($lookups)->highScore->getActivities() as $highScoreActivity) {
             $activity = $highScoreActivity->activity;
-            $highestScore = 0;
+            $highestScore = null;
             foreach ($lookups as $lookup) {
-                $highestScore = max($highestScore, $lookup->highScore->getActivity($activity)->score ?? 0);
+                $score = $lookup->highScore->getActivity($activity)->score ?? $activity->getDefaultScore();
+                if ($score === $activity->getDefaultScore()) {
+                    continue;
+                }
+
+                $highestScore = max($highestScore ?? 0, $score);
             }
 
-            // Only includes activities for which one of the group members is ranked.
-            if ($highestScore > 0) {
+            // Only includes activities for which one of the group members is listed.
+            if ($highestScore !== null) {
                 $activities[] = [
                     'activity' => $activity,
                     'highestScore' => $highestScore,
