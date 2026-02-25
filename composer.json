@@ -34,7 +34,10 @@
             "symfony/runtime": true
         },
         "bump-after-update": true,
-        "sort-packages": true
+        "sort-packages": true,
+        "platform": {
+            "php": "8.2.0"
+        }
     },
     "autoload": {
         "psr-4": {
@@ -75,9 +78,6 @@
         "symfony": {
             "allow-contrib": false,
             "require": "7.4.*"
-        },
-        "platform": {
-            "php": "8.2.0"
         }
     },
     "require-dev": {
