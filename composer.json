@@ -75,6 +75,9 @@
         "symfony": {
             "allow-contrib": false,
             "require": "7.4.*"
+        },
+        "platform": {
+            "php": "8.2.0"
         }
     },
     "require-dev": {
