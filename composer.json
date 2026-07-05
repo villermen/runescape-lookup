@@ -23,8 +23,8 @@
         "symfony/twig-bundle": "7.4.*",
         "symfony/yaml": "7.4.*",
         "twig/extra-bundle": "^2.12|^3.24.0",
-        "twig/html-extra": "^3.24.0",
-        "twig/twig": "^2.12|^3.27.1",
+        "twig/html-extra": "^3.28.0",
+        "twig/twig": "^2.12|^3.28.0",
         "villermen/runescape-lookup-commons": "^6.2.2"
     },
     "config": {
@@ -81,7 +81,7 @@
         }
     },
     "require-dev": {
-        "phpstan/phpstan": "^2.2.3",
+        "phpstan/phpstan": "^2.2.4",
         "symfony/stopwatch": "7.4.*",
         "symfony/web-profiler-bundle": "7.4.*"
     }

@@ -16,15 +16,15 @@ jobs:
     name: PHP ${{ matrix.php-version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v7.0.0
       - name: Install PHP
-        uses: shivammathur/setup-php@2.32.0
+        uses: shivammathur/setup-php@2.37.2
         with:
           php-version: ${{ matrix.php-version }}
       - name: Validate composer.json
         run: composer validate --no-check-publish
       - name: Cache Composer dependencies
-        uses: actions/cache@v4.2.0
+        uses: actions/cache@v6.1.0
         with:
           path: vendor
           key: php-${{ matrix.php-version }}-${{ hashFiles('**/composer.json') }}
