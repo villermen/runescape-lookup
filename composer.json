@@ -8,8 +8,8 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "beberlei/doctrineextensions": "^1.5",
-        "doctrine/dbal": "^4.4.3",
-        "doctrine/doctrine-bundle": "^2.18.3",
+        "doctrine/dbal": "^4.4.4",
+        "doctrine/doctrine-bundle": "^2.19.0",
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.6.7",
         "symfony/apache-pack": "^1.0.1",
@@ -25,7 +25,7 @@
         "twig/extra-bundle": "^2.12|^3.24.0",
         "twig/html-extra": "^3.28.0",
         "twig/twig": "^2.12|^3.28.0",
-        "villermen/runescape-lookup-commons": "^6.2.2"
+        "villermen/runescape-lookup-commons": "^6.2.3"
     },
     "config": {
         "allow-plugins": {
@@ -81,7 +81,7 @@
         }
     },
     "require-dev": {
-        "phpstan/phpstan": "^2.2.4",
+        "phpstan/phpstan": "^2.2.6",
         "symfony/stopwatch": "7.4.*",
         "symfony/web-profiler-bundle": "7.4.*"
     }
