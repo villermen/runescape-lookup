@@ -8,10 +8,10 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "beberlei/doctrineextensions": "^1.5",
-        "doctrine/dbal": "^4.4.4",
-        "doctrine/doctrine-bundle": "^2.19.0",
-        "doctrine/doctrine-migrations-bundle": "^3.7",
-        "doctrine/orm": "^3.6.8",
+        "doctrine/dbal": "^4.5.0",
+        "doctrine/doctrine-bundle": "^2.19.1",
+        "doctrine/doctrine-migrations-bundle": "^3.7.1",
+        "doctrine/orm": "^3.7.5",
         "symfony/apache-pack": "^1.0.1",
         "symfony/asset": "7.4.*",
         "symfony/console": "7.4.*",
@@ -22,10 +22,10 @@
         "symfony/runtime": "7.4.*",
         "symfony/twig-bundle": "7.4.*",
         "symfony/yaml": "7.4.*",
-        "twig/extra-bundle": "^2.12|^3.24.0",
-        "twig/html-extra": "^3.28.0",
-        "twig/twig": "^2.12|^3.28.0",
-        "villermen/runescape-lookup-commons": "^6.2.5"
+        "twig/extra-bundle": "^2.12|^3.29.0",
+        "twig/html-extra": "^3.29.0",
+        "twig/twig": "^2.12|^3.30.0",
+        "villermen/runescape-lookup-commons": "^6.2.6"
     },
     "config": {
         "allow-plugins": {
@@ -81,7 +81,7 @@
         }
     },
     "require-dev": {
-        "phpstan/phpstan": "^2.2.8",
+        "phpstan/phpstan": "^2.3.1",
         "symfony/stopwatch": "7.4.*",
         "symfony/web-profiler-bundle": "7.4.*"
     }
